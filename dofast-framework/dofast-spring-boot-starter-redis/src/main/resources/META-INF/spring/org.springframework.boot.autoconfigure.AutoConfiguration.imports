@@ -1,0 +1,2 @@
+com.dofast.framework.redis.config.DofastRedisAutoConfiguration
+com.dofast.framework.redis.config.DofastCacheAutoConfiguration

@@ -1,0 +1,258 @@
+package com.dofast.module.pro.controller.admin.workorder;
+
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import com.dofast.module.mes.api.ProductBomApi.ProductBomApi;
+import com.dofast.module.mes.api.ProductBomApi.dto.MdProductBomDTO;
+import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.pro.controller.admin.task.vo.TaskExportReqVO;
+import com.dofast.module.pro.controller.admin.task.vo.TaskRespVO;
+import com.dofast.module.pro.controller.admin.workorderbom.vo.WorkorderBomBaseVO;
+import com.dofast.module.pro.controller.admin.workorderbom.vo.WorkorderBomCreateReqVO;
+import com.dofast.module.pro.dal.dataobject.task.TaskDO;
+import com.dofast.module.pro.enums.ErrorCodeConstants;
+import com.dofast.module.pro.service.task.TaskService;
+import com.dofast.module.pro.service.workorderbom.WorkorderBomService;
+import com.dofast.module.report.api.PrintLog.PrintLogApi;
+import org.springframework.web.bind.annotation.*;
+import javax.annotation.Resource;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.security.access.prepost.PreAuthorize;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Operation;
+
+import javax.validation.constraints.*;
+import javax.validation.*;
+import javax.servlet.http.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.*;
+import java.io.IOException;
+import java.util.stream.Collectors;
+
+import com.dofast.framework.common.pojo.PageResult;
+import com.dofast.framework.common.pojo.CommonResult;
+
+import static com.dofast.framework.common.pojo.CommonResult.error;
+import static com.dofast.framework.common.pojo.CommonResult.success;
+
+import com.dofast.framework.excel.core.util.ExcelUtils;
+
+import com.dofast.framework.operatelog.core.annotations.OperateLog;
+import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.*;
+
+import com.dofast.module.pro.controller.admin.workorder.vo.*;
+import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
+import com.dofast.module.pro.convert.workorder.WorkorderConvert;
+import com.dofast.module.pro.service.workorder.WorkorderService;
+
+@Tag(name = "生产管理 - 生产工单")
+@RestController
+@RequestMapping("/mes/pro/workorder")
+@Validated
+public class WorkorderController {
+
+    @Resource
+    private WorkorderService workorderService;
+    @Resource
+    private WorkorderBomService workorderBomService;
+
+    @Resource
+    private ProductBomApi productBomApi;
+
+    @PostMapping("/create")
+    @Operation(summary = "创建生产工单")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:create')")
+    public CommonResult<Long> createWorkorder(@Valid @RequestBody WorkorderCreateReqVO createReqVO) {
+        if(Constant.NOT_UNIQUE.equals(workorderService.checkWorkorderCodeUnique(createReqVO))){
+            return error(ErrorCodeConstants.WORKORDER_CODE_EXISTS);
+        }
+
+        if(createReqVO.getParentId()==null || createReqVO.getParentId()==0){
+            createReqVO.setAncestors("0");
+        }
+        Long workorderId =  workorderService.createWorkorder(createReqVO);
+        generateBomLine(workorderId);
+        return success(workorderId);
+    }
+
+    @PutMapping("/update")
+    @Operation(summary = "更新生产工单")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:update')")
+    public CommonResult<Boolean> updateWorkorder(@Valid @RequestBody WorkorderUpdateReqVO updateReqVO) {
+        WorkorderDO workorder = workorderService.getWorkorder(updateReqVO.getId());
+        workorderService.updateWorkorder(updateReqVO);
+
+        if(workorder.getProductId().longValue() != updateReqVO.getProductId().longValue() ||
+                workorder.getQuantity() > updateReqVO.getQuantity()){
+            removeBomLine(updateReqVO.getId());
+            generateBomLine(updateReqVO.getId());
+            generateBomLine(updateReqVO.getId());
+        }
+
+        return success(true);
+    }
+
+    @DeleteMapping("/delete")
+    @Operation(summary = "删除生产工单")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('pro:workorder:delete')")
+    public CommonResult<Boolean> deleteWorkorder(@RequestParam("id") Long id) {
+        WorkorderDO workorder = workorderService.getWorkorder(id);
+        if(!Constant.ORDER_STATUS_PREPARE.equals(workorder.getStatus())){
+            return error(ErrorCodeConstants.WORKORDER_NOT_DELETED);
+        }
+        removeBomLine(id);
+        workorderService.deleteWorkorder(id);
+        return success(true);
+    }
+
+    @GetMapping("/get")
+    @Operation(summary = "获得生产工单")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<WorkorderRespVO> getWorkorder(@RequestParam("id") Long id) {
+        WorkorderDO workorder = workorderService.getWorkorder(id);
+        return success(WorkorderConvert.INSTANCE.convert(workorder));
+    }
+
+    @GetMapping("/list")
+    @Operation(summary = "获得生产工单列表")
+    @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<List<WorkorderRespVO>> getWorkorderList(@RequestParam("ids") Collection<Long> ids) {
+        List<WorkorderDO> list = workorderService.getWorkorderList(ids);
+        return success(WorkorderConvert.INSTANCE.convertList(list));
+    }
+
+    @GetMapping("/list-all")
+    @Operation(summary = "获得生产工单列表")
+    @Parameter(name = "mixinOrderId", description = "销售订单编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<List<WorkorderRespVO>> getWorkorderAllList(@Valid @RequestParam("mixinOrderId") Long mixinOrderId) {
+        WorkorderListAllReqVO reqVO = new WorkorderListAllReqVO();
+        reqVO.setMixinOrderId(mixinOrderId);
+        List<WorkorderDO> list = workorderService.getWorkorderList(reqVO);
+        return success(WorkorderConvert.INSTANCE.convertList(list));
+    }
+
+    /*@GetMapping("/page")
+    @Operation(summary = "获得生产工单分页")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<PageResult<WorkorderRespVO>> getWorkorderPage(@Valid WorkorderPageReqVO pageVO) {
+        PageResult<WorkorderDO> pageResult = workorderService.getWorkorderPage(pageVO);
+        return success(WorkorderConvert.INSTANCE.convertPage(pageResult));
+    }*/
+
+
+    @Resource
+    private TaskService taskService;
+
+    @Resource
+    private PrintLogApi printLogApi;
+    @GetMapping("/page")
+    @Operation(summary = "获得生产工单分页")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<PageResult<WorkorderRespPlusVO>> getWorkorderPage(@Valid WorkorderPageReqVO pageVO) {
+        PageResult<WorkorderDO> pageResult = workorderService.getWorkorderPage(pageVO);
+        List<WorkorderRespPlusVO> workorderRespPlusVOList=new ArrayList<>();
+
+        for (WorkorderDO workorderDO : pageResult.getList()) {
+            TaskExportReqVO taskExportReqVO = new TaskExportReqVO();
+            taskExportReqVO.setWorkorderId(workorderDO.getId());
+            List<TaskDO> taskList = taskService.getTaskList(taskExportReqVO);
+            List<WorkorderDO> workorder = workorderService.getWorkderByParentId(BigInteger.valueOf(workorderDO.getId()));
+            WorkorderRespPlusVO bean = BeanUtil.toBean(workorderDO, WorkorderRespPlusVO.class);
+            bean.setTaskNum(taskList.size());
+            bean.setGenerated(taskList.size());
+            List<WorkorderRespVO> workorderRespVOS = WorkorderConvert.INSTANCE.convertList(workorder);
+            for (WorkorderRespVO workorderRespVO : workorderRespVOS) {
+                taskExportReqVO.setWorkorderId(workorderRespVO.getId());
+                List<TaskDO> taskList1 = taskService.getTaskList(taskExportReqVO);
+                workorderRespVO.setGenerated(taskList1.size());
+            }
+            bean.setWorkorderDOList(workorderRespVOS);
+            bean.setIsPrint(printLogApi.selectAllByPrintLog(workorderDO.getWorkorderCode()).size());
+            workorderRespPlusVOList.add(bean);
+        }
+
+        PageResult<WorkorderRespPlusVO> result=new PageResult<>();
+        result.setList(workorderRespPlusVOList);
+        result.setTotal(pageResult.getTotal());
+
+        return success(result);
+    }
+
+    @GetMapping("/export-excel")
+    @Operation(summary = "导出生产工单 Excel")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:export')")
+    @OperateLog(type = EXPORT)
+    public void exportWorkorderExcel(@Valid WorkorderExportReqVO exportReqVO,
+              HttpServletResponse response) throws IOException {
+        List<WorkorderDO> list = workorderService.getWorkorderList(exportReqVO);
+        // 导出 Excel
+        List<WorkorderExcelVO> datas = WorkorderConvert.INSTANCE.convertList02(list);
+        ExcelUtils.write(response, "生产工单.xls", "数据", WorkorderExcelVO.class, datas);
+    }
+
+
+    /**
+     * 根据生产工单中的产品生成BOM物料行
+     * @param workorderId
+     */
+    private void generateBomLine(Long workorderId){
+        //先根据ID找到对应的产品
+        WorkorderDO workorder = workorderService.getWorkorder(workorderId);
+
+        //根据产品找到BOM组成
+        List<MdProductBomDTO> boms = productBomApi.selectListByItemId((workorder.getProductId()));
+
+        //生成BOM数据
+        Double orderQuantitiy = workorder.getQuantity();
+        WorkorderBomCreateReqVO workorderBom = new WorkorderBomCreateReqVO();
+        if(CollUtil.isNotEmpty(boms)){
+            for (MdProductBomDTO bom:boms
+            ) {
+                workorderBom.setWorkorderId(workorderId);
+                workorderBom.setItemId(bom.getBomItemId());
+                workorderBom.setItemCode(bom.getBomItemCode());
+                workorderBom.setItemName(bom.getBomItemName());
+                workorderBom.setItemSpc(bom.getBomItemSpec());
+                workorderBom.setItemOrProduct(bom.getItemOrProduct());
+                workorderBom.setUnitOfMeasure(bom.getUnitOfMeasure());
+                workorderBom.setQuantity(orderQuantitiy * bom.getQuantity());
+                workorderBomService.createWorkorderBom(workorderBom);
+            }
+        }
+    }
+
+    /**
+     * 删除当前工单下所有BOM组成
+     * @param workorderId
+     */
+    private void removeBomLine(Long workorderId){
+        workorderBomService.deleteProWorkorderBomByWorkorderId(workorderId);
+    }
+
+    @GetMapping("/count-all")
+    @Operation(summary = "获得生产工单总数")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<Integer> CountAll() {
+        WorkorderExportReqVO workorderExportReqVO = new WorkorderExportReqVO();
+        List<WorkorderDO> list = workorderService.getWorkorderList(workorderExportReqVO);
+        Integer result = list == null?0: list.size();
+        return success(result);
+    }
+
+    @GetMapping("/count-out-all")
+    @Operation(summary = "获得委外工单总数")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<Integer> CountOutAll() {
+        WorkorderExportReqVO workorderExportReqVO = new WorkorderExportReqVO();
+        workorderExportReqVO.setOrderSource("3");
+        List<WorkorderDO> list = workorderService.getWorkorderList(workorderExportReqVO);
+        Integer result = list == null?0: list.size();
+        return success(result);
+    }
+}

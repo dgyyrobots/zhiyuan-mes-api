@@ -1,0 +1,347 @@
+#set ($baseURL = "/${table.moduleName}/${simpleClassName_strikeCase}")
+#set ($baseApiName = "${table.moduleName}_${simpleClassName_underlineCase}")
+#set ($baseUViewU = "$u")
+#set ($baseRefs = "$refs")
+#set ($baseEvent = "$event")
+#set ($event = "$event")
+<template>
+	<view class="wrap form_right">
+		<u-form class="form" :model="model" :rules="rules" ref="uForm" label-position="left">
+#set ($dictMethods = [])## 使用到的 dict 字典方法
+#foreach($column in $columns)
+    #if ($column.createOperation || $column.updateOperation)
+        #set ($dictType = $column.dictType)
+        #set ($javaField = $column.javaField)
+        #set ($javaType = $column.javaType)
+        #set ($AttrName = $column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+        #set ($comment = $column.columnComment)
+        #set ($required = (($column.createOperation || $column.updateOperation) && !$column.nullable && !${column.primaryKey}))
+        #set ($dictMethod = "getDictDatas")## 计算使用哪个 dict 字典方法
+        #if ($column.htmlType == "input" && !$column.primaryKey)## 忽略主键，不用在表单里
+			<u-form-item  label="${comment}" prop="${javaField}" label-width="180" :required="${required}">
+				<u-input placeholder="请输入${comment}" v-model="model.${javaField}" style="text-align: right;" :disabled="!editable" ></u-input>
+			</u-form-item>
+        #elseif($column.htmlType == "imageUpload")## 图片上传
+            <u-form-item  label="${comment}" prop="${javaField}" label-width="180" :required="${required}">
+                <u-upload :action="upload_image_params.action" :header="upload_image_params.header" :file-list="uploaders.${javaField}" @on-uploaded="model.${javaField} = ${baseEvent}.map(({response: {data}}) => data).join(',')" :max-count="1" :disabled="!editable"></u-upload>
+			</u-form-item>
+        #elseif($column.htmlType == "fileUpload")## 文件上传
+            <u-form-item  label="${comment}" prop="${javaField}" label-width="180" :required="${required}">
+                <u-upload :action="upload_image_params.action" upload-text="选择文件" :header="upload_image_params.header" :file-list="uploaders.${javaField}" @on-uploaded="model.${javaField} = ${baseEvent}.map(({response: {data}}) => data).join(',')" :max-count="1" :disabled="!editable"></u-upload>
+            </u-form-item>
+        #elseif($column.htmlType == "editor")## 文本编辑器
+            <u-form-item  label="${comment}" prop="${javaField}" label-position="top" :required="${required}">
+                <u-html-editor type="textarea" placeholder="请输入${comment}" v-model="model.${javaField}" style="text-align: left;" height="100" @edit="cache" field="${javaField}" :disabled="!editable" />
+            </u-form-item>
+        #elseif($column.htmlType == "select")## 下拉框
+            <u-form-item  label="${comment}" prop="${javaField}" label-width="180" @click.native="pickers.${javaField} = editable" :required="${required}">
+                <u-input placeholder="请选择${comment}" v-model="selectors.${javaField}" type="text" style="text-align: right;pointer-events: none;" readonly></u-input>
+            #if ("" != $dictType)## 有数据字典
+                #if (!$dictMethods.contains($dictMethod))## 如果不存在，则添加到 dictMethods 数组中，后续好 import
+                    #set($ignore = $dictMethods.add($dictMethod) )
+                #end
+                <u-select v-model="pickers.${javaField}" :list="$dictMethod(DICT_TYPE.$dictType.toUpperCase())" @confirm="model.${javaField} = ${baseEvent}.map(({value})=> value).join(',')"></u-select>
+            #else##没数据字典
+                <u-select v-model="pickers.${javaField}" :list="[{value: null, label: '请选择字典生成' }]"></u-select>
+            #end
+            </u-form-item>
+        #elseif($column.htmlType == "checkbox")## 多选框
+            <u-form-item  label="${comment}" prop="${javaField}" label-width="180" :required="${required}">
+                <u-checkbox-group v-model="model.${javaField}" :disabled="!editable" style="justify-content:flex-end;width:100%">
+                #if ("" != $dictType)## 有数据字典
+                    #if (!$dictMethods.contains($dictMethod))## 如果不存在，则添加到 dictMethods 数组中，后续好 import
+                        #set($ignore = $dictMethods.add($dictMethod) )
+                    #end
+                    <u-checkbox
+                            v-for="dict in $dictMethod(DICT_TYPE.$dictType.toUpperCase())"
+                            :key="dict.value"
+                            :name="dict.value"
+                    >
+                        {{ dict.label }}
+                    </u-checkbox>
+                #else##没数据字典
+                    <u-checkbox>请选择字典生成</u-checkbox>
+                #end
+                </u-checkbox-group>
+            </u-form-item>
+        #elseif($column.htmlType == "radio")## 单选框
+            <u-form-item  label="${comment}" prop="${javaField}" label-width="180" :required="${required}">
+                <u-radio-group v-model="model.${javaField}" :disabled="!editable" style="justify-content:flex-end;width:100%">
+                #if ("" != $dictType)## 有数据字典
+                    #if (!$dictMethods.contains($dictMethod))## 如果不存在，则添加到 dictMethods 数组中，后续好 import
+                        #set($ignore = $dictMethods.add($dictMethod) )
+                    #end
+                    <u-radio
+                            v-for="dict in $dictMethod(DICT_TYPE.$dictType.toUpperCase())"
+                            :key="dict.value"
+                            :name="dict.value"
+                    >
+                        {{ dict.label }}
+                    </u-radio>
+                #else##没数据字典
+                    <u-radio>请选择字典生成</u-radio>
+                #end
+                </u-radio-group>
+            </u-form-item>
+        #elseif($column.htmlType == "datetime")## 时间框
+            <u-form-item label="${comment}" prop="${javaField}" label-width="180" @click.native="pickers.${javaField} = editable" :required="${required}">
+                <u-input placeholder="请输入${comment}" v-model="model.${javaField}" type="text" style="text-align: right;pointer-events: none;" disabled></u-input>
+                #if ($column.javaType == "LocalDateTime")## 时间类型
+                <u-picker v-model="pickers.${javaField}" mode="time" :params="{year: true, month: true, day: true, hour: true, minute: true}" :default-time="model.${javaField}" @confirm="model.${javaField} = timeObjToStr($event)"></u-picker>
+                #else
+                <u-calendar v-model="pickers.${javaField}" mode="date" :default-time="model.${javaField}" @change="model.${javaField} = ${event}.result"></u-calendar>
+                #end
+            </u-form-item>
+        #elseif($column.htmlType == "textarea")## 文本框
+            <u-form-item  label="${comment}" prop="${javaField}" label-width="180" label-position="top" :required="${required}">
+				<u-input type="textarea" placeholder="请输入${comment}" v-model="model.${javaField}" style="text-align: left;" :disabled="!editable" height="100" />
+			</u-form-item>
+        #end
+    #end
+#end
+		</u-form>
+		<view class="form-footer">
+			<u-button class="btn" type="primary" @click="submit" v-if="editable">提交</u-button>
+			<u-button class="btn" type="default" @click="cancel" v-else>关闭</u-button>
+		</view>
+	</view>
+</template>
+<script>
+	/**
+	 * Copyright (c) 2013-Now http://aidex.vip All rights reserved.
+	 */
+    const defaultModel = {
+#set ($listOperationLastIndex = -1)## 求最后一个需要 , 的地方
+#foreach ($column in $columns)
+    #if ($column.createOperation || $column.updateOperation)
+        #set ($listOperationLastIndex = $foreach.index)
+    #end
+#end
+#foreach ($column in $columns)
+    #if ($column.createOperation || $column.updateOperation)
+    #if ($column.htmlType == "checkbox")
+        $column.javaField: []#if($foreach.index < $listOperationLastIndex),#end
+    #else
+        $column.javaField: undefined#if($foreach.index < $listOperationLastIndex),#end
+    #end
+    #end
+#end
+    }
+    const defaultPickers = {
+#set ($listOperationLastIndex = -1)## 求最后一个需要 , 的地方
+#foreach ($column in $columns)
+    #if ($column.createOperation || $column.updateOperation)
+        #if ($column.htmlType == "select" || $column.htmlType == "datetime")
+            #set ($listOperationLastIndex = $foreach.index)
+        #end
+    #end
+#end
+#foreach ($column in $columns)
+    #if ($column.createOperation || $column.updateOperation)
+    #if ($column.htmlType == "select" || $column.htmlType == "datetime")
+        $column.javaField: false#if($foreach.index < $listOperationLastIndex),#end
+    #end
+    #end
+#end
+    }
+	export default {
+		data() {
+			return {
+				editable: 0,
+				pickers: this.${baseUViewU}.deepClone(defaultPickers),
+				model: this.${baseUViewU}.deepClone(defaultModel),
+				rules: {
+            #set ($listOperationLastIndex = -1)## 求最后一个需要 , 的地方
+            #foreach ($column in $columns)
+                #if (($column.createOperation || $column.updateOperation) && !$column.nullable && !${column.primaryKey})## 创建或者更新操作 && 要求非空 && 非主键
+                    #set ($listOperationLastIndex = $foreach.index)
+                #end
+            #end
+            #foreach ($column in $columns)
+                #if (($column.createOperation || $column.updateOperation) && !$column.nullable && !${column.primaryKey})## 创建或者更新操作 && 要求非空 && 非主键
+                    #set($comment=$column.columnComment)
+                    $column.javaField: [{ required: true, message: '${comment}不能为空', trigger: #if($column.htmlType == 'select')'change'#else'blur'#end }]#if($foreach.index < $listOperationLastIndex),#end
+                #end
+            #end
+				}
+			};
+		},
+        computed: {
+            upload_image_params() {
+                return {
+                    action: this.vuex_config.baseUrl + this.vuex_config.adminPath + '/infra/file/upload',
+                    header: {
+                        'tenant-id': this.vuex_config?.tenantId,
+                        'Authorization': 'Bearer ' + this.vuex_token?.accessToken
+                    }
+                }
+            },
+            upload_file_params() {
+                return {
+                    action: this.vuex_config.baseUrl + this.vuex_config.adminPath + '/infra/file/upload',
+                    header: {
+                        'tenant-id': this.vuex_config?.tenantId,
+                        'Authorization': 'Bearer ' + this.vuex_token?.accessToken
+                    }
+                }
+            },
+            uploaders() {
+                const getFileList = (urls) => {
+                    if (typeof urls != "string") {
+                        return urls || [];
+                    }
+                    urls = urls.replace(/\s/g, '')
+                    if (!urls) {
+                        return []
+                    }
+                    return urls.split(',').map((url) => ({url}))
+                }
+                return {
+        #set ($listOperationLastIndex = -1)## 求最后一个需要 , 的地方
+        #foreach ($column in $columns)
+            #if ($column.createOperation || $column.updateOperation)
+                #if ($column.htmlType == "select" || $column.htmlType == "datetime")
+                    #set ($listOperationLastIndex = $foreach.index)
+                #end
+            #end
+        #end
+        #foreach ($column in $columns)
+            #if ($column.createOperation || $column.updateOperation)
+                #if ($column.htmlType == "select" || $column.htmlType == "datetime")
+                    $column.javaField: getFileList(this.model.${column.javaField})#if($foreach.index < $listOperationLastIndex),#end
+                #end
+            #end
+        #end
+                }
+            },
+            selectors() {
+                return {
+        #set ($listOperationLastIndex = -1)## 求最后一个需要 , 的地方
+        #foreach ($column in $columns)
+            #if ($column.createOperation || $column.updateOperation)
+                #if ($column.htmlType == "select" || $column.htmlType == "datetime")
+                    #set ($listOperationLastIndex = $foreach.index)
+                #end
+            #end
+        #end
+        #foreach ($column in $columns)
+            #set ($dictType = $column.dictType)
+            #if ($column.createOperation || $column.updateOperation)
+                #if ($column.htmlType == "select" || $column.htmlType == "datetime")
+                    #if ("" != $dictType)
+                    $column.javaField: this.getDictDataLabel(this.DICT_TYPE.$dictType.toUpperCase(), this.model.${column.javaField})#if($foreach.index < $listOperationLastIndex),#end
+                    #else
+                    $column.javaField: this.getDictDataLabel([], this.model.${column.javaField})#if($foreach.index < $listOperationLastIndex),#end
+                    #end
+                #end
+            #end
+        #end
+                }
+            }
+        },
+		onLoad(params) {
+			const cache = uni.getStorageSync('edit_page_cache');
+			if (params.id) {
+				if (!cache) {
+					this.${baseUViewU}.api.${baseApiName}.get(params.id).then(res => {
+						if (res.data) {
+							this.model = res.data
+							return;
+						}
+						this.${baseUViewU}.toast('获取${table.classComment}失败}');
+						setTimeout(() => {
+							uni.redirectTo({
+								url: './index'
+							})
+						}, 500)
+					});
+				}
+			} else {
+				params.editable = 1;
+			}
+			this.editable = params.editable == 1
+		},
+		onShow() {
+			const cache = uni.getStorageSync('edit_page_cache');
+			const cacheEditorField = uni.getStorageSync('editor_cache_field');
+			const cacheEditor = uni.getStorageSync('editor_cache');
+			uni.setStorageSync('edit_page_cache', '')
+			uni.setStorageSync('editor_cache_field', '')
+			uni.setStorageSync('editor_cache', '')
+			if (!cache) {
+				return;
+			}
+			if (cacheEditorField) {
+				cache[cacheEditorField] = cacheEditor
+			}
+			this.model = cache
+		},
+		onReady() {
+			this.${baseRefs}.uForm.setRules(this.rules);
+		},
+		methods: {
+			cache() {
+				uni.setStorageSync('edit_page_cache', this.model)
+			},
+			submit() {
+				this.${baseRefs}.uForm.validate(valid => {
+					if (valid) {
+						if (this.model.id) {
+							this.${baseUViewU}.api.${baseApiName}.update(this.model).then(res => {
+								uni.showModal({
+									title: '提示',
+									content: res.message || '更新成功',
+									showCancel: false,
+									success: function() {
+										if (res.code == 0) {
+											uni.navigateBack();
+										}
+									}
+								});
+							});
+						} else {
+							this.${baseUViewU}.api.${baseApiName}.create(this.model).then(res => {
+								uni.showModal({
+									title: '提示',
+									content: res.message || '创建成功',
+									showCancel: false,
+									success: function() {
+                                        if (res.code == 0) {
+											uni.navigateBack();
+										}
+									}
+								});
+							});
+						}
+					} else {
+						this.${baseUViewU}.toast('您填写的信息有误，请根据提示修正。');
+					}
+				});
+			},
+			cancel() {
+				uni.navigateBack();
+			}
+		}
+	};
+</script>
+<style lang="scss" scoped>
+	.input-placeholder {
+		text-align: right;
+	}
+
+	.u-input {
+		text-align: right !important;
+	}
+
+	.u-form-item__message {
+		text-align: right !important;
+	}
+
+	.uni-textarea-placeholder {
+		text-align: left;
+	}
+
+	.u-form-item {
+		font-size: 36 rpx;
+	}
+</style>

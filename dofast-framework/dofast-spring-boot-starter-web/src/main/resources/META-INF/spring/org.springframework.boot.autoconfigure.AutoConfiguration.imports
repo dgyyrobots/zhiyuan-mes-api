@@ -1,0 +1,3 @@
+com.dofast.framework.datasource.config.DofastDataSourceAutoConfiguration
+com.dofast.framework.mybatis.config.DofastMybatisAutoConfiguration
+com.dofast.framework.banner.config.DofastBannerAutoConfiguration

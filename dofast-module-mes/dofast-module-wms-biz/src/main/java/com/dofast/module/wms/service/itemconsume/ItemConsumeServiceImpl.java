@@ -1,0 +1,259 @@
+package com.dofast.module.wms.service.itemconsume;
+
+import cn.hutool.core.collection.CollectionUtil;
+import com.dofast.framework.common.pojo.UserConstants;
+import com.dofast.module.mes.api.WorkStationAPi.WorkStationApi;
+import com.dofast.module.mes.api.WorkStationAPi.dto.WorkStationDTO;
+import com.dofast.module.pro.api.FeedbackApi.dto.FeedbackDTO;
+import com.dofast.module.pro.api.ProcessApi.ProcessApi;
+import com.dofast.module.pro.api.ProcessApi.dto.ProcessDTO;
+import com.dofast.module.pro.api.RouteApi.RouteApi;
+import com.dofast.module.pro.api.RouteApi.RouteDTO;
+import com.dofast.module.pro.api.RouteProductBomApi.RouteProductBomApi;
+import com.dofast.module.pro.api.RouteProductBomApi.dto.RouteProductBomDTO;
+import com.dofast.module.pro.api.TaskApi.TaskApi;
+import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
+import com.dofast.module.pro.api.WorkorderApi.WorkorderApi;
+import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderDTO;
+import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
+import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeTxBean;
+import com.dofast.module.wms.dal.dataobject.itemconsumeline.ItemConsumeLineDO;
+import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
+import com.dofast.module.wms.dal.mysql.itemconsumeline.ItemConsumeLineMapper;
+import com.dofast.module.wms.dal.mysql.materialstock.MaterialStockMapper;
+import org.springframework.stereotype.Service;
+import javax.annotation.Resource;
+import org.springframework.validation.annotation.Validated;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
+import com.dofast.module.wms.controller.admin.itemconsume.vo.*;
+import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeDO;
+import com.dofast.framework.common.pojo.PageResult;
+
+import com.dofast.module.wms.convert.itemconsume.ItemConsumeConvert;
+import com.dofast.module.wms.dal.mysql.itemconsume.ItemConsumeMapper;
+
+import static com.dofast.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.dofast.module.wms.enums.ErrorCodeConstants.*;
+
+/**
+ * 物料消耗记录 Service 实现类
+ *
+ * @author 惠智造
+ */
+@Service
+@Validated
+public class ItemConsumeServiceImpl implements ItemConsumeService {
+
+    @Resource
+    private ItemConsumeMapper itemConsumeMapper;
+
+    @Resource
+    private ProcessApi processApi;
+
+    @Resource
+    private WorkStationApi workStationApi;
+
+    @Resource
+    private WorkorderApi workorderApi;
+
+    @Resource
+    private TaskApi taskApi;
+
+    @Resource
+    private RouteApi routeApi;
+
+    @Resource
+    private RouteProductBomApi routeProductBomApi;
+
+    @Resource
+    private ItemConsumeLineMapper itemConsumeLineMapper;
+
+    @Resource
+    private MaterialStockMapper materialStockMapper;
+
+    @Override
+    public Long createItemConsume(ItemConsumeCreateReqVO createReqVO) {
+        // 插入
+        ItemConsumeDO itemConsume = ItemConsumeConvert.INSTANCE.convert(createReqVO);
+        itemConsumeMapper.insert(itemConsume);
+        // 返回
+        return itemConsume.getId();
+    }
+
+    @Override
+    public void updateItemConsume(ItemConsumeUpdateReqVO updateReqVO) {
+        // 校验存在
+        validateItemConsumeExists(updateReqVO.getId());
+        // 更新
+        ItemConsumeDO updateObj = ItemConsumeConvert.INSTANCE.convert(updateReqVO);
+        itemConsumeMapper.updateById(updateObj);
+    }
+
+    @Override
+    public void deleteItemConsume(Long id) {
+        // 校验存在
+        validateItemConsumeExists(id);
+        // 删除
+        itemConsumeMapper.deleteById(id);
+    }
+
+    private void validateItemConsumeExists(Long id) {
+        if (itemConsumeMapper.selectById(id) == null) {
+            throw exception(ITEM_CONSUME_NOT_EXISTS);
+        }
+    }
+
+    @Override
+    public ItemConsumeDO getItemConsume(Long id) {
+        return itemConsumeMapper.selectById(id);
+    }
+
+    @Override
+    public List<ItemConsumeDO> getItemConsumeList(Collection<Long> ids) {
+        return itemConsumeMapper.selectBatchIds(ids);
+    }
+
+    @Override
+    public PageResult<ItemConsumeDO> getItemConsumePage(ItemConsumePageReqVO pageReqVO) {
+        return itemConsumeMapper.selectPage(pageReqVO);
+    }
+
+    @Override
+    public List<ItemConsumeDO> getItemConsumeList(ItemConsumeExportReqVO exportReqVO) {
+        return itemConsumeMapper.selectList(exportReqVO);
+    }
+
+    @Override
+    public ItemConsumeDO generateItemConsume(FeedbackDTO feedback) {
+        WorkorderDTO workorder = workorderApi.getWorkorder(feedback.getWorkorderId());
+        WorkStationDTO workstation = workStationApi.getWorkstation(feedback.getWorkstationId());
+        ProcessDTO process = processApi.getcess(workstation.getProcessId());
+        TaskDTO task = taskApi.getTask(feedback.getTaskId());
+        RouteDTO route = routeApi.getRoute(feedback.getItemId());
+
+        //生成消耗单头信息
+        ItemConsumeDO itemConsume = new ItemConsumeDO();
+        itemConsume.setWorkorderId(feedback.getWorkorderId());
+        itemConsume.setWorkorderCode(workorder.getWorkorderCode());
+        itemConsume.setWorkorderName(workorder.getWorkorderName());
+
+        itemConsume.setWorkstationId(feedback.getWorkstationId());
+        itemConsume.setWorkstationCode(workstation.getWorkstationCode());
+        itemConsume.setWorkstationName(workstation.getWorkstationName());
+
+        itemConsume.setTaskId(feedback.getTaskId());
+        itemConsume.setTaskCode(task.getTaskCode());
+        itemConsume.setTaskName(task.getTaskName());
+
+        itemConsume.setProcessId(process.getId());
+        itemConsume.setProcessCode(process.getProcessCode());
+        itemConsume.setProcessName(process.getProcessName());
+
+        itemConsume.setConsumeDate(LocalDateTime.now());
+        itemConsume.setStatus(UserConstants.ORDER_STATUS_PREPARE);
+        itemConsumeMapper.insert(itemConsume);
+
+        //生成行信息
+        //先获取当前生产的产品在此道工序中配置的物料BOM
+        RouteProductBomDTO param = new RouteProductBomDTO();
+        param.setProductId(feedback.getItemId());
+        param.setRouteId(route.getId());
+        List<RouteProductBomDTO> boms = routeProductBomApi.getList(param);
+        if(CollectionUtil.isNotEmpty(boms)){
+            for (RouteProductBomDTO bom: boms
+            ) {
+                //这里根据需要消耗的原材料/半成品信息 匹配出对应的线边库库存记录。
+                BigDecimal quantityToConsume = BigDecimal.valueOf(bom.getQuantity()).multiply(BigDecimal.valueOf(feedback.getQuantityFeedback())); //总的消耗量
+
+                //从线边库中，根据生产工单、物料按照先进先出的原则查询库存现有量
+                MaterialStockExportReqVO p = new MaterialStockExportReqVO();
+                p.setWorkorderCode(feedback.getWorkorderCode()); //当前工单
+                p.setItemId(bom.getItemId()); //指定物料
+                p.setWarehouseCode(UserConstants.VIRTUAL_WH); //线边库
+                List<MaterialStockDO> ms = materialStockMapper.selectList(p);
+                if(CollectionUtil.isNotEmpty(ms)){
+                    MaterialStockDO theStock = null;
+                    for(int i=0;i<ms.size();i++){
+                        theStock = ms.get(i);
+                        if(theStock.getQuantityOnhand().compareTo(quantityToConsume)>=0){
+                            //当前库存记录的库存量大于等于本次需要消耗的库存量, 则直接使用当前记录
+                            ItemConsumeLineDO line = new ItemConsumeLineDO();
+                            line.setMaterialStockId(theStock.getId());
+                            line.setRecordId(itemConsume.getId());
+                            line.setItemId(bom.getItemId());
+                            line.setItemCode(bom.getItemCode());
+                            line.setItemName(bom.getItemName());
+                            line.setSpecification(bom.getSpecification());
+                            line.setUnitOfMeasure(bom.getUnitOfMeasure());
+                            line.setQuantityConsume(quantityToConsume);
+                            line.setBatchCode(workorder.getBatchCode());
+                            itemConsumeLineMapper.insert(line);
+
+                            quantityToConsume= BigDecimal.ZERO;
+                        }else if(theStock.getQuantityOnhand().compareTo(BigDecimal.ZERO)==1){
+                            //当前记录的库存量大于0 并且小于需要扣减的量，只从当前库存记录上扣减在库量，并更新剩余需要扣减的量
+                            ItemConsumeLineDO line = new ItemConsumeLineDO();
+                            line.setMaterialStockId(theStock.getId());
+                            line.setRecordId(itemConsume.getId());
+                            line.setItemId(bom.getItemId());
+                            line.setItemCode(bom.getItemCode());
+                            line.setItemName(bom.getItemName());
+                            line.setSpecification(bom.getSpecification());
+                            line.setUnitOfMeasure(bom.getUnitOfMeasure());
+                            line.setQuantityConsume(theStock.getQuantityOnhand());
+                            line.setBatchCode(workorder.getBatchCode());
+                            itemConsumeLineMapper.insert(line);
+                            quantityToConsume = quantityToConsume.subtract(theStock.getQuantityOnhand());
+                        } else {
+                            //查出的库存量为负，不做处理
+                        }
+
+                        if(quantityToConsume.compareTo(BigDecimal.ZERO)==0){
+                            //量已经扣减完，则退出
+                            break;
+                        }
+                    }
+
+                    //循环完成后还有剩余未扣除的数量，直接在库中新增一条为负的记录（后期手工核销）
+                    if(quantityToConsume.compareTo(BigDecimal.ZERO)==1){
+                        ItemConsumeLineDO line = new ItemConsumeLineDO();
+                        line.setRecordId(itemConsume.getId());
+                        line.setItemId(bom.getItemId());
+                        line.setItemCode(bom.getItemCode());
+                        line.setItemName(bom.getItemName());
+                        line.setSpecification(bom.getSpecification());
+                        line.setUnitOfMeasure(bom.getUnitOfMeasure());
+                        line.setQuantityConsume(quantityToConsume);
+                        line.setBatchCode(workorder.getBatchCode());
+                        itemConsumeLineMapper.insert(line);
+                    }
+
+                }else {
+                    //没有查到领出到线边库的物料，直接在库中新增一条为负的记录(后期可能需要手工核销)
+                    ItemConsumeLineDO line = new ItemConsumeLineDO();
+                    line.setRecordId(itemConsume.getId());
+                    line.setItemId(bom.getItemId());
+                    line.setItemCode(bom.getItemCode());
+                    line.setItemName(bom.getItemName());
+                    line.setSpecification(bom.getSpecification());
+                    line.setUnitOfMeasure(bom.getUnitOfMeasure());
+                    line.setQuantityConsume(BigDecimal.valueOf(bom.getQuantity()).multiply(BigDecimal.valueOf(feedback.getQuantityFeedback())));
+                    line.setBatchCode(workorder.getBatchCode());
+                    itemConsumeLineMapper.insert(line);
+                }
+            }
+        }else {
+            return  null; //如果本道工序没有配置BOM物料，则直接返回空
+        }
+
+        return itemConsume;
+    }
+
+    @Override
+    public List<ItemConsumeTxBean> getTxBeans(Long recordId) {
+        return itemConsumeMapper.getTxBeans(recordId);
+    }
+}

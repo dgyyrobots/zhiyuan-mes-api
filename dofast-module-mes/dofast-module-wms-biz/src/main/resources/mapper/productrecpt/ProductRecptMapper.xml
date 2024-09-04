@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.wms.dal.mysql.productrecpt.ProductRecptMapper">
+
+    <resultMap id="ProductRecptTxBeanResult" type="com.dofast.module.wms.dal.dataobject.productproduce.ProductProductTxBean">
+        <result property="itemId" column="item_id"></result>
+        <result property="itemCode" column="item_code"></result>
+        <result property="itemName" column="item_name"></result>
+        <result property="specification" column="specification"></result>
+        <result property="unitOfMeasure" column="unit_of_measure"></result>
+        <result property="batchCode" column="batch_code"></result>
+        <result property="warehouseId" column="warehouse_id"></result>
+        <result property="warehouseCode" column="warehouse_code"></result>
+        <result property="warehouseName" column="warehouse_name"></result>
+        <result property="locationId" column="location_id"></result>
+        <result property="locationCode" column="location_code"></result>
+        <result property="locationName" column="location_name"></result>
+        <result property="areaId" column="area_id"></result>
+        <result property="areaCode" column="area_code"></result>
+        <result property="areaName" column="area_name"></result>
+        <result property="workorderId" column="workorder_id"></result>
+        <result property="workorderCode" column="workorder_code"></result>
+        <result property="sourceDocType" column="source_doc_type"></result>
+        <result property="sourceDocId" column="source_doc_id"></result>
+        <result property="sourceDocCode" column="source_doc_code"></result>
+        <result property="sourceDocLineId" column="source_doc_line_id"></result>
+        <result property="transactionQuantity" column="transaction_quantity"></result>
+        <result property="expireDate" column="expire_date"></result>
+        <result property="creator"    column="creator"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updater"    column="updater"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+
+    <select id="getTxBean" parameterType="Long" resultMap="ProductRecptTxBeanResult">
+        SELECT irl.`item_id`,irl.`item_code`,irl.`item_name`,irl.`specification`,irl.`unit_of_measure`,irl.`batch_code`,
+               irl.`warehouse_id`,irl.`warehouse_code`,irl.`warehouse_name`,irl.`location_id`,irl.`location_code`,irl.`location_name`,irl.`area_id`,irl.`area_code`,irl.`area_name`,
+               ir.workorder_id,ir.workorder_code,ir.workorder_name,
+               'PR' AS source_doc_type,ir.`id` AS source_doc_id,ir.`recpt_code` AS source_doc_code,irl.`id` AS source_doc_line_id,
+               irl.`quantity_recived` AS transaction_quantity,ir.recpt_date, irl.`expire_date`,
+               ir.`creator`,ir.`create_time`,ir.`updater`,ir.`update_time`
+        FROM wms_product_recpt ir
+                 LEFT JOIN wms_product_recpt_line irl
+                           ON ir.`id` = irl.`recpt_id`
+        WHERE ir.`id` = #{recptId}
+    </select>
+</mapper>

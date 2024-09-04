@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>dofast</artifactId>
+        <groupId>vip.huizhizao</groupId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dofast-module-mes</artifactId>
+    <packaging>pom</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>
+        kutangguo-mes
+    </description>
+    <modules>
+        <module>dofast-module-mes-api</module>
+        <module>dofast-module-mes-biz</module>
+        <module>dofast-module-cmms-api</module>
+        <module>dofast-module-cmms-biz</module>
+        <module>dofast-module-wms-api</module>
+        <module>dofast-module-wms-biz</module>
+        <module>dofast-module-pro-api</module>
+        <module>dofast-module-pro-biz</module>
+        <module>dofast-module-qms-biz</module>
+        <module>dofast-module-qms-api</module>
+        <module>dofast-module-cal-biz</module>
+        <module>dofast-module-cal-api</module>
+        <module>dofast-module-tm-biz</module>
+        <module>dofast-module-tm-api</module>
+    </modules>
+
+</project>

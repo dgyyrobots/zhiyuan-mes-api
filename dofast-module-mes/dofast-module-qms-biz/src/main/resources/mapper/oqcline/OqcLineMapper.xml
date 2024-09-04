@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.qms.dal.mysql.oqcline.OqcLineMapper">
+
+    <update id="updateCrMajMinQuantity" parameterType="com.dofast.module.qms.dal.dataobject.oqcline.OqcLineDO">
+        UPDATE qms_oqc_line a
+            INNER JOIN (
+            SELECT SUM(CASE WHEN defect_level = 'CR' THEN defect_quantity ELSE 0 END ) AS cr_quantity,
+            SUM(CASE WHEN defect_level = 'MAJ' THEN defect_quantity ELSE 0 END) AS maj_quantity,
+            SUM(CASE WHEN defect_level = 'MIN' THEN defect_quantity ELSE 0 END) AS min_quantity,
+            qid.`qc_id` as 'oqc_id',
+            qid.`line_id`
+            FROM qms_defect_record qid
+            WHERE qid.qc_id = #{oqcId}
+            AND qid.line_id = #{lineId}
+            AND qid.qc_type = 'OQC'
+            GROUP BY qid.qc_id,qid.line_id
+            )b
+        ON a.oqc_id = b.oqc_id AND a.id = b.line_id
+            SET a.cr_quantity=b.cr_quantity,a.maj_quantity=b.maj_quantity,a.min_quantity=b.min_quantity
+        WHERE a.oqc_id = #{oqcId}
+          AND a.id = #{lineId}
+    </update>
+</mapper>

@@ -1,0 +1,2 @@
+com.dofast.framework.quartz.config.DofastQuartzAutoConfiguration
+com.dofast.framework.quartz.config.DofastAsyncAutoConfiguration

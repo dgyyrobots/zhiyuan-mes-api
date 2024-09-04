@@ -1,0 +1,21 @@
+{
+  "subPackages": [
+    {
+      "root": "pages/biz/${table.moduleName}",
+      "pages": [
+        {
+          "path": "${classNameVar}/index",
+          "style": {
+            "navigationBarTitleText": "${table.classComment}"
+          }
+        },
+        {
+          "path": "${classNameVar}/edit",
+          "style": {
+            "navigationBarTitleText": "${table.classComment}"
+          }
+        }
+      ]
+    }
+  ]
+}

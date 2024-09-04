@@ -1,0 +1,21 @@
+#set ($baseURL = "/${table.moduleName}/${simpleClassName_strikeCase}")
+#set ($baseApiName = "${table.moduleName}_${simpleClassName_underlineCase}")
+#set ($baseUViewU = "$u")
+{
+    '${baseApiName}': {
+        // 创建${table.classComment}
+        create: (params = {}) => vm.${baseUViewU}.postJson(config.adminPath + '${baseURL}/create', params),
+        // 更新${table.classComment}
+        update: (params = {}) => vm.${baseUViewU}.putJson(config.adminPath + '${baseURL}/update', params),
+        // 删除${table.classComment}
+        'delete': (id='') => vm.${baseUViewU}.delete(config.adminPath + '${baseURL}/delete?id=' + id),
+        // 获得${table.classComment}
+        get: (id='') => vm.${baseUViewU}.get(config.adminPath + '${baseURL}/get?id=' + id),
+        // 分页${table.classComment}
+        page: (params = {}) => vm.${baseUViewU}.get(config.adminPath + '${baseURL}/page', params),
+        // 列表${table.classComment}
+        list: (ids = []) => vm.${baseUViewU}.get(config.adminPath + '${baseURL}/list?ids=' + ids),
+        // 导出Excel${table.classComment}
+        'export': (params = {}) => vm.${baseUViewU}.download.get(config.adminPath + '${baseURL}/export-excel', params),
+    }
+}

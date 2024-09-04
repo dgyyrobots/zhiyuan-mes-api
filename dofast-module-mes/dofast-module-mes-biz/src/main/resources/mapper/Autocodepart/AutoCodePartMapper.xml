@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.mes.dal.mysql.Autocodepart.AutoCodePartMapper">
+
+    <resultMap type="com.dofast.module.mes.dal.dataobject.Autocodepart.AutoCodePartDO" id="SysAutoCodePartResult">
+        <id     property="id"     column="id"     />
+        <result property="ruleId"     column="rule_id"   />
+        <result property="partIndex"    column="part_index"   />
+        <result property="partType"   column="part_type"   />
+        <result property="partCode" column="part_code"   />
+        <result property="partName"     column="part_name"  />
+        <result property="partLength"    column="part_length" />
+        <result property="dateFormat"    column="date_format" />
+        <result property="inputCharacter"    column="input_character" />
+        <result property="fixCharacter"    column="fix_character" />
+        <result property="seriaStartNo"    column="seria_start_no" />
+        <result property="seriaStep"    column="seria_step" />
+        <result property="seriaNowNo"    column="seria_now_no" />
+        <result property="cycleFlag"    column="cycle_flag" />
+        <result property="cycleMethod"    column="cycle_method" />
+        <result property="remark"   column="remark"   />
+        <result property="creator"   column="creator"   />
+        <result property="createTime" column="create_time" />
+        <result property="updater"   column="updater"   />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+    <sql id="selectSysAutoCodePartVo">
+        select d.id,d.rule_id,d.part_index,d.part_type,d.part_code, d.part_name,
+         d.part_length, d.date_format,d.input_character,d.fix_character,d.seria_start_no,
+         d.seria_step,d.seria_now_no,d.cycle_flag,d.cycle_method,d.remark,d.creator,
+         d.create_time,d.updater,d.update_time
+        from mes_common_auto_code_part d
+    </sql>
+
+    <select id="checkPartUnique" parameterType="com.dofast.module.mes.controller.admin.Autocodepart.vo.AutoCodePartBaseVO" resultMap="SysAutoCodePartResult">
+        <include refid="selectSysAutoCodePartVo"/>
+        where rule_id = #{ruleId}
+        and (part_code = #{partCode} or part_name = #{partName} or part_index = #{partIndex})
+    </select>
+</mapper>

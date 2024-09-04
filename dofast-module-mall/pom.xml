@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>dofast</artifactId>
+        <groupId>vip.huizhizao</groupId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dofast-module-mall</artifactId>
+    <packaging>pom</packaging>
+
+    <name>${project.artifactId}</name>
+
+    <description>
+        商城大模块，由 product 商品、promotion 营销、trade 交易、statistics 统计等组成
+    </description>
+    <modules>
+        <module>dofast-module-promotion-api</module>
+        <module>dofast-module-promotion-biz</module>
+        <module>dofast-module-product-api</module>
+        <module>dofast-module-product-biz</module>
+        <module>dofast-module-statistics-biz</module>
+        <module>dofast-module-statistics-api</module>
+        <module>dofast-module-trade-api</module>
+        <module>dofast-module-trade-biz</module>
+    </modules>
+
+</project>

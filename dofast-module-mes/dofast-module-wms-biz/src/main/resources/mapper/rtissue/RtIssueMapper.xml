@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.wms.dal.mysql.rtissue.RtIssueMapper">
+
+    <resultMap type="com.dofast.module.wms.dal.dataobject.rtissue.RtIssueTxBean"  id="RtIssueTxBeanResult">
+        <result property="materialStockId" column="material_stock_id"></result>
+        <result property="itemId" column="item_id"></result>
+        <result property="itemCode" column="item_code"></result>
+        <result property="itemName" column="item_name"></result>
+        <result property="specification" column="specification"></result>
+        <result property="unitOfMeasure" column="unit_of_measure"></result>
+        <result property="batchCode" column="batch_code"></result>
+        <result property="warehouseId" column="warehouse_id"></result>
+        <result property="warehouseCode" column="warehouse_code"></result>
+        <result property="warehouseName" column="warehouse_name"></result>
+        <result property="locationId" column="location_id"></result>
+        <result property="locationCode" column="location_code"></result>
+        <result property="locationName" column="location_name"></result>
+        <result property="areaId" column="area_id"></result>
+        <result property="areaCode" column="area_code"></result>
+        <result property="areaName" column="area_name"></result>
+        <result property="sourceDocType" column="source_doc_type"></result>
+        <result property="sourceDocId" column="source_doc_id"></result>
+        <result property="sourceDocCode" column="source_doc_code"></result>
+        <result property="sourceDocLineId" column="source_doc_line_id"></result>
+        <result property="transactionQuantity" column="transaction_quantity"></result>
+        <result property="recptDate" column="recpt_date"></result>
+    </resultMap>
+
+    <select id="getTxBeans" parameterType="Long" resultMap="RtIssueTxBeanResult">
+        SELECT irl.material_stock_id,
+               irl.`item_id`,
+               irl.`item_code`,
+               irl.`item_name`,
+               irl.`specification`,
+               irl.`unit_of_measure`,
+               irl.`batch_code`,
+               irl.`warehouse_id`,irl.`warehouse_code`,irl.`warehouse_name`,
+               irl.`location_id`,irl.`location_code`,irl.`location_name`,
+               irl.`area_id`,irl.`area_code`,irl.`area_name`,
+               ms.vendor_id as vendorId,
+               ms.vendor_code as vendorCode,
+               ms.vendor_name as vendorName,
+               ms.vendor_nick as vendorNick,
+               'RTISSUE' AS source_doc_type,ir.`id` AS source_doc_id,
+               ir.`rt_code` AS source_doc_code,
+               irl.`id` AS source_doc_line_id,
+               irl.quantity_rt AS transaction_quantity,
+               ir.rt_date as recptDate
+        FROM wms_rt_issue ir
+                 LEFT JOIN wms_rt_issue_line irl
+                           ON ir.id = irl.rt_id
+                 left join wms_material_stock ms
+                           on irl.material_stock_id = ms.id
+        WHERE ir.id = #{rtId}
+    </select>
+</mapper>

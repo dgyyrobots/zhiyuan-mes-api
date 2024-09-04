@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.cmms.dal.mysql.dvcheckmachinery.DvCheckMachineryMapper">
+    <resultMap type="com.dofast.module.cmms.dal.dataobject.dvcheckmachinery.DvCheckMachineryDO" id="DvCheckMachineryResult">
+        <result property="id"    column="id"    />
+        <result property="planId"    column="plan_id"    />
+        <result property="machineryId"    column="machinery_id"    />
+        <result property="machineryCode"    column="machinery_code"    />
+        <result property="machineryName"    column="machinery_name"    />
+        <result property="machineryBrand"    column="machinery_brand"    />
+        <result property="machinerySpec"    column="machinery_spec"    />
+        <result property="remark"    column="remark"    />
+        <result property="attr1"    column="attr1"    />
+        <result property="attr2"    column="attr2"    />
+        <result property="attr3"    column="attr3"    />
+        <result property="attr4"    column="attr4"    />
+        <result property="creator"    column="creator"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updater"    column="updater"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <select id="checkMachineryUnique" parameterType="com.dofast.module.cmms.controller.admin.dvcheckmachinery.vo.DvCheckMachineryBaseVO" resultMap="DvCheckMachineryResult">
+        select id, cm.plan_id, machinery_id, machinery_code, machinery_name, machinery_brand, machinery_spec, cm.remark, cm.attr1, cm.attr2, cm.attr3, cm.attr4, cm.creator, cm.create_time, cm.updater, cm.update_time
+        from cmms_dv_check_machinery cm
+                 left join cmms_dv_check_plan cp
+                           on cm.plan_id = cp.id
+        where cm.machinery_id = #{machineryId} and cp.plan_type = (
+            select plan_type
+            from dv_check_plan
+            where id = #{planId}
+        )  limit 1
+    </select>
+</mapper>

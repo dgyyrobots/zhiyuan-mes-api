@@ -1,0 +1,88 @@
+package com.dofast.module.pro.enums;
+
+import com.dofast.framework.common.exception.ErrorCode;
+
+public interface ErrorCodeConstants {
+    ErrorCode WORKORDER_BOM_NOT_EXISTS = new ErrorCode(710001, "生产工单BOM组成不存在");
+    ErrorCode WORKORDER_NOT_EXISTS = new ErrorCode(710002, "生产工单不存在");
+    ErrorCode WORKORDER_CODE_EXISTS = new ErrorCode(710003, "生产工单编号已存在");
+    ErrorCode WORKORDER_NOT_DELETED = new ErrorCode(710004, "只能删除草稿状态单据");
+    ErrorCode WORKORDER_NUMBER_MORE = new ErrorCode(710005, "工单生产数量超出生产计划");
+
+
+    ErrorCode CESS_CONTENT_NOT_EXISTS = new ErrorCode(711001, "生产工序内容不存在");
+    ErrorCode CESS_NOT_EXISTS = new ErrorCode(711002, "工序不存在");
+
+    ErrorCode CESS_CODE_EXISTS = new ErrorCode(711002, "工序编码已存在");
+    ErrorCode CESS_NAME_EXISTS = new ErrorCode(711003, "工序名称已存在");
+
+    ErrorCode ROUTE_PRODUCT_BOM_NOT_EXISTS = new ErrorCode(712001, "产品制程物料BOM不存在");
+    ErrorCode ROUTE_PRODUCT_BOM_HAS_IN_ROUTE = new ErrorCode(712002, "当前BOM物料在此工序已经配置过");
+    ErrorCode ROUTE_PRODUCT_NOT_EXISTS = new ErrorCode(712003 , "产品制程不存在");
+    ErrorCode ROUTE_PRODUCT_HAS_IN_ROUTE = new ErrorCode(712004 , "此产品已配置了工艺路线");
+    ErrorCode ROUTE_PROCESS_NOT_EXISTS = new ErrorCode(712005, "工艺组成不存在");
+    ErrorCode ROUTE_PRODUCT_NOT_EXISTS_PROCESS = new ErrorCode(712006, "当前产品未配置工艺路线");
+    ErrorCode FEEDBACK_NOT_EXISTS = new ErrorCode(712007, "生产报工记录不存在");
+    ErrorCode ROUTE_NOT_EXISTS = new ErrorCode(712009,"工艺路线不存在");
+    ErrorCode ROUTE_CODE_EXISTS = new ErrorCode(712010, "工艺路线不存在");
+    ErrorCode ROUTE_NOT_REPEAT = new ErrorCode(712011, "不能重复添加工序");
+    ErrorCode ROUTE_PROCESS_HAS_KEY= new ErrorCode(712012, "当前工艺路线已经指定过关键工序");
+    ErrorCode ROUTE_CODE_EXITS= new ErrorCode(712013, "工艺路线编号已存在");
+
+    ErrorCode TASK_ISSUE_NOT_EXISTS = new ErrorCode(713001, "生产任务投料不存在");
+    ErrorCode TASK_NOT_EXISTS = new ErrorCode(713002, "生产任务不存在");
+    ErrorCode TASK_NUM_MORE_THAN_0 = new ErrorCode(713003, "排产数量必须大于0");
+    ErrorCode TASK_NUM_MORE = new ErrorCode(713004, "工单生产数量超出生产任务");
+    ErrorCode TASK_HAS_FINISHED = new ErrorCode(713005, "生产任务已经完成");
+
+    ErrorCode TRANS_CONSUME_NOT_EXISTS = new ErrorCode(714001, "物料消耗记录不存在");
+    ErrorCode TRANS_ORDER_NOT_EXISTS = new ErrorCode(714002, "流转单不存在");
+    ErrorCode MD_WORKSTATION_NOT_EXISTS = new ErrorCode(416001, "工作站不存在");
+
+    // === 上下工记录 715001 ===
+    ErrorCode WORKRECORD_NOT_EXISTS = new ErrorCode(715001, "上下工记录不存在");
+
+    ErrorCode FEEDBACK_NEED_SAVE_FIRST = new ErrorCode(716001, "请先保存单据");
+    ErrorCode FEEDBACK_NUM_IS_ZERO = new ErrorCode(716002, "报工数量必须大于0");
+    ErrorCode QUENTITYP_RODUCED_IS_MORE = new ErrorCode(716003, "无法重复报工，已超出下发生产数量");
+    ErrorCode FEEDBACK_IS_REPEAT = new ErrorCode(716004, "请勿重复报工");
+    ErrorCode FEEDBACK_NOT_ACQUIRE = new ErrorCode(716005, "当前订单不存在工单任务,请确认身份");
+    ErrorCode FEEDBACK_NOT_APPROVED = new ErrorCode(715003, "报工未通过");
+    ErrorCode WORKORDER_NOT_EXIST = new ErrorCode(716003, "一键报工的工单不存在");
+
+
+    ErrorCode TASK_UPDATE_COUNT=new ErrorCode(717001,"更新生产任务的生产数量失败");
+
+    ErrorCode WORKORER_UPDATE_COUNT=new ErrorCode(717002,"更新工单的生产数量失败");
+
+    ErrorCode GET_WORKORER_HEAD=new ErrorCode(717003,"生成单据头信息失败");
+    ErrorCode GET_WORKORER_ROW=new ErrorCode(717004,"生成单据行信息失败");
+
+    ErrorCode UPDATE_INFO=new ErrorCode(717005,"更新物料的信息失败");
+
+    ErrorCode UODATE_COME=new ErrorCode(717006,"更新物料入库单失败");
+
+    ErrorCode STOCK_COUNT_UPDATE=new ErrorCode(717007,"更新库存失败");
+
+    ErrorCode STACK_UPDATE_LOG=new ErrorCode(717008,"库存记录添加失败");
+
+    ErrorCode PROUDT_PRODUCT_LOG=new ErrorCode(717009,"更新产品产出记录失败");
+
+    ErrorCode PRODUCT_PEODUCT_ROW=new ErrorCode(717010,"产品产出记录表行添加失败");
+
+    ErrorCode UPDATE_PROUDTC_STATUS=new ErrorCode(717011,"更新报工单的状态失败");
+
+    ErrorCode COME_WORDORER=new ErrorCode(717012,"添加销售出库单失败");
+
+    ErrorCode ADD_ROW=new ErrorCode(717013,"添加产品销售出库行失败");
+
+    ErrorCode WORKORDER_IS_NOT=new ErrorCode(717014,"生产工单不存在");
+
+    ErrorCode WORKORDER_BIG_COUNT=new ErrorCode(717015,"当前工单排产超出计划数量");
+
+    ErrorCode TASK_IS_EXITS=new ErrorCode(717016,"当前用户没有任务");
+
+    ErrorCode ADD_FEEDBACK_FAIL=new ErrorCode(717017,"报工记录创建失败");
+
+    ErrorCode NOW_AFTER_MAXTIME=new ErrorCode(717017,"当前创建时间不能超过23.59.59");
+}

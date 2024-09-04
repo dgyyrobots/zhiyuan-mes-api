@@ -1,0 +1,215 @@
+#set ($baseURL = "/${table.moduleName}/${simpleClassName_strikeCase}")
+#set ($baseApiName = "${table.moduleName}_${simpleClassName_underlineCase}")
+#set ($baseUViewU = "$u")
+#set ($baseRefs = "$refs")
+<template>
+	<view class="wrap">
+		<view class="search">
+			<u-search v-model="keywords" @custom="search" @search="search"></u-search>
+		</view>
+		<scroll-view class="scroll-list" scroll-y="true" @scrolltolower="loadMore">
+			<u-card :title="item.id + ''" :sub-title="${baseUViewU}.timeFormat(item.createTime, 'yyyy-mm-dd hh:MM')"
+				v-for="(item, index) in list" :key="item.id">
+				<u-description class="" slot="body" :data="item">
+			#foreach($column in $columns)
+			  #if ($column.listOperationResult)
+				#set ($dictType=$column.dictType)
+				#set ($javaField = $column.javaField)
+				#set ($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+				#set ($comment=$column.columnComment)
+				#if ($column.javaType == "LocalDateTime")## 时间类型
+					<u-description-line title="${comment}" field="${javaField}" type="datetime" type-value="yyyy-mm-dd hh:MM:ss"/>
+				#elseif ($column.javaType == "LocalDate")## 时间类型
+					<u-description-line title="${comment}" field="${javaField}" type="date" type-value="yyyy-mm-dd"/>
+				#elseif("" != $column.dictType)## 数据字典
+					<u-description-line title="${comment}" field="${javaField}" type="dict" type-value="$dictType.toUpperCase()"/>
+				#else
+					<u-description-line title="${comment}" field="${javaField}" />
+				#end
+			  #end
+			#end
+				</u-description>
+				<view class="u-text-center u-flex" slot="foot">
+					<view @click="option.handler(item, i)" class="u-flex-1" :style="option.style" :key="i"
+						v-if="hasPermission(option.permission)" v-for="option,i in options">
+						<u-icon :name="option.icon" />
+						<text>{{option.text}}</text>
+					</view>
+				</view>
+			</u-card>
+			<view class="loadmore" @click="loadMore">
+				<u-loadmore :status="loadStatus"></u-loadmore>
+			</view>
+		</scroll-view>
+		<view class="btn-plus export" @click="toExport()" v-if="hasPermission('${permissionPrefix}:export')">
+			<u-icon name="download-circle-fill" size="90" color="#3d87ff" custom-prefix="custom-icon" ></u-icon>
+		</view>
+		<view class="btn-plus" @click="gotoDetail()" v-if="hasPermission('${permissionPrefix}:create')">
+			<u-icon name="plus-circle-fill" size="90" color="#3d87ff"></u-icon>
+		</view>
+	</view>
+</template>
+<script>
+	/**
+	 * Copyright (c) 2013-Now http://aidex.vip All rights reserved.
+	 */
+	let exportHandler
+	export default {
+		data() {
+			return {
+				keywords: '',
+				query: {
+					pageNo: 1,
+					pageSize: 20
+				},
+				list: [],
+				count: 0,
+				loadStatus: 'loadmore',
+				options: [{
+						icon: 'eye',
+						text: '查看',
+						permission: '${permissionPrefix}:query',
+						style: {
+							color: '#666'
+						},
+						handler: (item) => this.gotoDetail(item, false)
+					},
+					{
+						icon: 'edit-pen',
+						text: '编辑',
+						permission: '${permissionPrefix}:update',
+						style: {
+							color: '#4094ff'
+						},
+						handler: (item) => this.gotoDetail(item, true)
+					},
+					{
+						icon: 'trash',
+						text: '删除',
+						permission: '${permissionPrefix}:delete',
+						style: {
+							color: '#dd524d'
+						},
+						handler: (item, i) => this.tryToDelete(item, i)
+					},
+				],
+				exportSure: 0
+			};
+		},
+		onLoad() {
+		},
+		onShow() {
+			this.query.pageNo = 1;
+			this.list = [];
+			this.loadList();
+		},
+		methods: {
+			loadMore() {
+				setTimeout(() => {
+					this.query.pageNo += 1;
+					this.loadList();
+				}, 100);
+			},
+			loadList() {
+				this.loadStatus = "loading";
+				this.${baseUViewU}.api.${baseApiName}.page(this.query).then(res => {
+					if (!res.data.list || res.data.list.length == 0) {
+						this.loadStatus = "nomore";
+						return;
+					}
+					this.list = this.list.concat(res.data.list);
+					this.count = res.data.total;
+					this.loadStatus = "loadmore";
+				}).catch(()=> {
+					this.loadStatus = "loadmore";
+				});
+			},
+			tryToDelete(item, i) {
+				uni.showModal({
+					title: '提示',
+					content: '确认要删除该数据吗？',
+					showCancel: true,
+					success: ({
+						confirm
+					}) => {
+						if (confirm) {
+							this.${baseUViewU}.api.${baseApiName}.delete(item.id).then(res => {
+								this.${baseUViewU}.toast(res.message || '删除成功');
+								if (res.code == 0) {
+									this.list.splice(i, 1);
+								}
+							});
+						}
+					}
+				});
+			},
+			search(value) {
+				this.list = [];
+				this.query.pageNo = 1;
+				this.query.fastSearchKeyword = value;
+				this.loadList();
+			},
+			gotoDetail(item, editable = false) {
+				let url = "edit"
+				if (item) {
+					url += "?id=" + item.id + "&editable=" + (editable ? 1 : 0)
+				}
+				uni.navigateTo({
+					url
+				});
+			},
+			toExport() {
+				if (exportHandler) {
+					clearTimeout(exportHandler)
+					exportHandler = null;
+				}
+				switch (this.exportSure) {
+					case 0:
+						this.exportSure = 1;
+						exportHandler = setTimeout(() => {
+							exportHandler = null;
+							this.exportSure = 0;
+						}, 3000)
+						return
+					case 1:
+						this.exportSure = 2;
+						const pageSize = this.list.length > this.query.pageSize ? this.list.length : this.query.pageSize;
+						this.${baseUViewU}.api.hr_commissionrule.export({
+								...this.query,
+								pageSize,
+								pageNo: 1
+							})
+							.finally(() => {
+								this.exportSure = 0
+							})
+						return;
+					default:
+						this.${baseUViewU}.toast('数据导出中...')
+						return
+				}
+			}
+		}
+	};
+</script>
+<style lang="scss">
+	page {
+		background-color: #f5f5f5;
+	}
+
+	.btn-plus {
+		position: absolute;
+		bottom: 50rpx;
+		right: 50rpx;
+		z-index: 1;
+		opacity: 0.6;
+
+		&.export {
+			bottom: 150rpx;
+			opacity: 0.1;
+		}
+	}
+
+	.btn-plus:hover {
+		opacity: 1;
+	}
+</style>

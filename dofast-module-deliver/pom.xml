@@ -1,0 +1,15 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>vip.huizhizao</groupId>
+        <artifactId>dofast</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <artifactId>dofast-module-deliver</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>dofast-module-deliver-api</module>
+        <module>dofast-module-deliver-biz</module>
+    </modules>
+</project>

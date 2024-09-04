@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>vip.huizhizao</groupId>
+        <artifactId>dofast</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dofast-server</artifactId>
+    <packaging>jar</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>
+        后端 Server 的主项目，通过引入需要 dofast-module-xxx 的依赖，
+        从而实现提供 RESTful API 给 dofast-ui-admin、dofast-ui-user 等前端项目。
+        本质上来说，它就是个空壳（容器）！
+    </description>
+    <url>https://github.com/YunaiV/ruoyi-vue-pro</url>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-iot-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-member-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-channel-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!--物流-->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-deliver-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-deliver-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>vip.huizhizao</groupId>-->
+<!--            <artifactId>dofast-module-erp-biz</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-hr-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>vip.huizhizao</groupId>-->
+<!--            <artifactId>dofast-module-fico-biz</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-system-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-infra-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-biz-error-code</artifactId>
+        </dependency>
+
+        <!-- 数据报表 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-report-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- 工作流 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-bpm-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- 支付服务 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-pay-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!--售后服务-->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-moudle-sales-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+
+
+        <!-- 微信公众号模块。默认注释，保证编译速度 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-mp-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- 商城相关模块。默认注释，保证编译速度 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-promotion-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-product-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-trade-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-statistics-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- 采购 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-purchase-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- mes -->
+        <!-- 主数据 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-mes-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>    
+        <!-- 设备管理 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-cmms-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- 仓储管理 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-wms-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+		<!-- 质量管理 -->
+		<dependency>
+			<groupId>vip.huizhizao</groupId>
+			<artifactId>dofast-module-qms-biz</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<!-- 工装夹具管理 -->
+		<dependency>
+			<groupId>vip.huizhizao</groupId>
+			<artifactId>dofast-module-tm-biz</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<!-- 排班管理 -->
+		<dependency>
+			<groupId>vip.huizhizao</groupId>
+			<artifactId>dofast-module-cal-biz</artifactId>
+			<version>${revision}</version>
+		</dependency>
+        <!-- 生产管理 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-pro-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <!-- 财务 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-finance-biz</artifactId>
+            <version>${revision}</version>	
+        </dependency>
+        <!-- wiki -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-wiki-biz</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+	    <!-- spring boot 配置所需依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-banner</artifactId>
+        </dependency>
+
+        <!-- 服务保障相关 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-protection</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- 设置构建的 jar 包名 -->
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <!-- 打包 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.7.11</version> <!-- 如果 spring.boot.version 版本修改，则这里也要跟着修改 -->
+                <configuration>
+                    <fork>true</fork>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal> <!-- 将引入的 jar 打入其中 -->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

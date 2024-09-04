@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>vip.huizhizao</groupId>
+        <artifactId>dofast-module-member</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>dofast-module-member-biz</artifactId>
+    <packaging>jar</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>
+        member 模块，我们放会员业务。
+        例如说：会员中心等等
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-member-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-system-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-infra-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- 业务组件 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-biz-operatelog</artifactId>
+
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-biz-tenant</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-biz-weixin</artifactId>
+
+        </dependency>
+
+        <!-- Web 相关 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-security</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- DB 相关 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-mybatis</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-redis</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- 消息队列相关 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-mq</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- Test 测试相关 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-test</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 工具类相关 -->
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-excel</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-biz-ip</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+
+    </dependencies>
+
+</project>

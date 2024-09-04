@@ -1,0 +1,2 @@
+com.dofast.framework.security.config.DofastSecurityAutoConfiguration
+com.dofast.framework.security.config.DofastWebSecurityConfigurerAdapter

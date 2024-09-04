@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.qms.dal.mysql.template.TemplateMapper">
+
+    <resultMap type="com.dofast.module.qms.dal.dataobject.template.TemplateDO" id="QcTemplateResult">
+        <result property="id"    column="id"    />
+        <result property="templateCode"    column="template_code"    />
+        <result property="templateName"    column="template_name"    />
+        <result property="qcTypes"    column="qc_types"    />
+        <result property="enableFlag"    column="enable_flag"    />
+        <result property="remark"    column="remark"    />
+        <result property="attr1"    column="attr1"    />
+        <result property="attr2"    column="attr2"    />
+        <result property="attr3"    column="attr3"    />
+        <result property="attr4"    column="attr4"    />
+        <result property="creator"    column="creator"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updater"    column="updater"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <select id="selectQcTemplateByProductAndQcType" parameterType="com.dofast.module.qms.controller.admin.template.vo.TemplateBaseVO" resultMap="QcTemplateResult">
+        select t.id, template_code, template_name, qc_types, enable_flag, t.remark
+        from qms_template t
+        left join qms_template_product tl on t.id = tl.template_id
+        where t.qc_types like concat('%',#{qcTypes},'%') and tl.item_id = #{itemId}
+        limit 1;
+    </select>
+
+    <select id="findTemplateByProductIdAndQcType" parameterType="com.dofast.module.qms.controller.admin.template.vo.TemplateBaseVO" resultMap="QcTemplateResult">
+        select t.*
+        from  qms_template t
+        left join qms_template_product p  on t.id = p.template_id
+        where p.item_id = #{itemId}
+          and t.qc_types like concat('%',#{qcType},'%')
+        limit 1
+    </select>
+</mapper>

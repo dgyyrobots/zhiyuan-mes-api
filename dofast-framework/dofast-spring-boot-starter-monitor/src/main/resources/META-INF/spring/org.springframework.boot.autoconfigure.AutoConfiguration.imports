@@ -1,0 +1,2 @@
+com.dofast.framework.tracer.config.DofastTracerAutoConfiguration
+com.dofast.framework.tracer.config.DofastMetricsAutoConfiguration

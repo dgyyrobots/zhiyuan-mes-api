@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.wms.dal.mysql.warehouse.WarehouseMapper">
+
+    <resultMap type="com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO" id="WmWarehouseResult">
+        <id property="id"    column="warehouse_id"   />
+        <result property="warehouseCode"    column="warehouse_code"    />
+        <result property="warehouseName"    column="warehouse_name"    />
+        <result property="location"    column="location"    />
+        <result property="area"    column="area"    />
+        <result property="charge"    column="charge"    />
+        <result property="remark"    column="remark"    />
+        <result property="attr1"    column="attr1"    />
+        <result property="attr2"    column="attr2"    />
+        <result property="attr3"    column="attr3"    />
+        <result property="attr4"    column="attr4"    />
+        <result property="creator"    column="creator"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updater"    column="updater"    />
+        <result property="updateTime"    column="update_time"    />
+        <collection  property="children"   javaType="java.util.List"  resultMap="WmStorageLocationResult" />
+    </resultMap>
+
+    <resultMap type="com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO" id="WmStorageLocationResult">
+        <id property="id"    column="location_id"    />
+        <result property="locationCode"    column="location_code"    />
+        <result property="locationName"    column="location_name"    />
+        <result property="warehouseId"    column="warehouse_id"    />
+        <result property="area"    column="area"    />
+        <result property="areaFlag"    column="area_flag"    />
+        <collection  property="children"   javaType="java.util.List"  resultMap="WmStorageAreaResult" />
+    </resultMap>
+
+    <resultMap type="com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO" id="WmStorageAreaResult">
+        <id property="id"    column="area_id"    />
+        <result property="areaCode"    column="area_code"    />
+        <result property="areaName"    column="area_name"    />
+        <result property="locationId"    column="location_id"    />
+        <result property="area"    column="area"    />
+        <result property="maxLoa"    column="max_loa"    />
+        <result property="positionX"    column="position_x"    />
+        <result property="positionY"    column="position_y"    />
+        <result property="positionZ"    column="position_z"    />
+    </resultMap>
+
+
+    <select id="getTreeList" resultMap="WmWarehouseResult">
+        SELECT w.id AS warehouse_id, w.warehouse_code, w.warehouse_name, w.location, w.area, w.charge, w.remark, w.attr1, w.attr2, w.attr3, w.attr4, w.creator, w.create_time, w.updater, w.update_time,
+               l.id AS location_id, l.location_code, l.location_name, l.area_flag,
+               a.id AS area_id, a.area_code, a.area_name, a.max_loa, a.position_x, a.position_y, a.position_z
+        FROM wms_warehouse w
+                 LEFT JOIN wms_storage_location l ON w.id = l.warehouse_id AND l.deleted = 0
+                 LEFT JOIN wms_storage_area a ON l.id = a.location_id AND a.enable_flag = 'Y' AND a.deleted = 0
+        WHERE w.deleted = 0;
+    </select>
+</mapper>
