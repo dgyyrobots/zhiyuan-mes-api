@@ -68,4 +68,10 @@ public interface MdUnitMeasureService {
     List<MdUnitMeasureDO> getMdUnitMeasureList(MdUnitMeasureExportReqVO exportReqVO);
     List<MdUnitMeasureDO> getMdUnitMeasureList(MdUnitMeasureListVO exportReqVO);
 
+    /**
+     * 从ERP数据库中获取单位的基础数据
+     * @return
+     */
+    String initUnit();
+
 }

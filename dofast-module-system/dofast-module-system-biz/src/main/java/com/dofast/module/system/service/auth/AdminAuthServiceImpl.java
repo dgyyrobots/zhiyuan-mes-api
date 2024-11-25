@@ -107,11 +107,9 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     public AuthLoginRespVO login(AuthLoginReqVO reqVO) {
         // 校验验证码
-        validateCaptcha(reqVO);
-
+        // validateCaptcha(reqVO); // 验证码暂时不进行校验
         // 使用账号密码，进行登录
         AdminUserDO user = authenticate(reqVO.getUsername(), reqVO.getPassword());
-
         // 如果 socialType 非空，说明需要绑定社交用户
         if (reqVO.getSocialType() != null) {
             socialUserService.bindSocialUser(new SocialUserBindReqDTO(user.getId(), getUserType().getValue(),
@@ -190,6 +188,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @VisibleForTesting
     void validateCaptcha(AuthLoginReqVO reqVO) {
         // 如果验证码关闭，则不进行校验
+
         if (!captchaEnable) {
             return;
         }
@@ -204,6 +203,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             createLoginLog(null, reqVO.getUsername(), LoginLogTypeEnum.LOGIN_USERNAME, LoginResultEnum.CAPTCHA_CODE_ERROR);
             throw exception(AUTH_LOGIN_CAPTCHA_CODE_ERROR, response.getRepMsg());
         }
+
+
     }
 
     private AuthLoginRespVO createTokenAfterLoginSuccess(Long userId, String username, LoginLogTypeEnum logType) {

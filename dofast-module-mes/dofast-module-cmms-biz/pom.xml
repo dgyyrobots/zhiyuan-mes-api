@@ -55,6 +55,10 @@
             <groupId>vip.huizhizao</groupId>
             <artifactId>dofast-spring-boot-starter-excel</artifactId>
         </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-spring-boot-starter-job</artifactId>
+        </dependency>
     </dependencies>
 
 

@@ -1,6 +1,10 @@
 package com.dofast.module.pro.controller.admin.route;
 
 import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.pro.controller.admin.routeproduct.vo.RouteProductExportReqVO;
+import com.dofast.module.pro.controller.admin.routeproduct.vo.RouteProductRespVO;
+import com.dofast.module.pro.convert.routeproduct.RouteProductConvert;
+import com.dofast.module.pro.dal.dataobject.routeproduct.RouteProductDO;
 import com.dofast.module.pro.enums.ErrorCodeConstants;
 import com.dofast.module.pro.service.routeprocess.RouteProcessService;
 import com.dofast.module.pro.service.routeproduct.RouteProductService;
@@ -54,9 +58,16 @@ public class RouteController {
     @Operation(summary = "创建工艺路线")
     @PreAuthorize("@ss.hasPermission('pro:route:create')")
     public CommonResult<Long> createRoute(@Valid @RequestBody RouteCreateReqVO createReqVO) {
-        if(Constant.NOT_UNIQUE.equals(routeService.checkRouteCodeUnique(createReqVO))){
+        /**
+         * 修改时间节点: 2024-10-08 14:42:51
+         * ERP中物料料号对应多个工艺路线
+         * 允许多个工艺路线绑定同一个物料料号
+         * 工艺编码规则: 物料料号-版本号, 例: 10001-V1
+         * 工单信息页面追加下拉框, 管控工艺版本号
+          */
+        /*if(Constant.NOT_UNIQUE.equals(routeService.checkRouteCodeUnique(createReqVO))){
             return error(ErrorCodeConstants.ROUTE_CODE_EXITS);
-        }
+        }*/
         return success(routeService.createRoute(createReqVO));
     }
 
@@ -120,5 +131,28 @@ public class RouteController {
         List<RouteExcelVO> datas = RouteConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "工艺路线.xls", "数据", RouteExcelVO.class, datas);
     }
+
+    @GetMapping("/initRouteCodeByItemCode")
+    @Operation(summary = "获得产品所有工艺编码")
+    @PreAuthorize("@ss.hasPermission('pro:route:initRouteCodeByItemCode')")
+    public CommonResult<List<Map<String, Object>>> initRouteCodeByItemCode(@RequestParam("itemCode") String itemCode) {
+        RouteExportReqVO exportReqVO = new RouteExportReqVO();
+        exportReqVO.setProductCode(itemCode);
+        List<RouteDO> routeProductList = routeService.getRouteList(exportReqVO);
+        if(routeProductList.isEmpty()){
+            return success();
+        }
+        List<Map<String, Object>> routeCode =  new ArrayList<>();
+        for (int i = 0; i < routeProductList.size(); i++) {
+            Map<String, Object> map = new HashMap<>();
+            String uniRouteCode = routeProductList.get(i).getRouteCode();
+            String uniCode = uniRouteCode.substring(uniRouteCode.indexOf("-") + 1);
+            map.put("value", uniCode);
+            map.put("label", uniCode);
+            routeCode.add(map);
+        }
+        return success(routeCode);
+    }
+
 
 }

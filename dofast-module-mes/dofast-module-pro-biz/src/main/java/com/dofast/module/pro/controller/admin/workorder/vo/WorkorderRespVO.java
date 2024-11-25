@@ -19,4 +19,5 @@ public class WorkorderRespVO extends WorkorderBaseVO {
     @Schema(description = "已产生工单")
     private Integer generated;
 
+
 }

@@ -7,6 +7,7 @@ import com.dofast.framework.common.util.bean.BeanUtils;
 import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.wms.controller.admin.transaction.vo.TransactionUpdateReqVO;
 import com.dofast.module.wms.convert.transaction.TransactionConvert;
+import com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedTxBean;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueTxBean;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeTxBean;
 import com.dofast.module.wms.dal.dataobject.itemrecpt.ItemRecptTxBean;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -69,6 +71,33 @@ public class StorageCoreServiceImpl implements StorageCoreService{
             transactionService.processTransaction(updateReqVO);
         }
     }
+
+    /**
+     * 减少物料入库单
+     * 用于入库单拆分后, 减少原入库单数量
+     * @param lines
+     */
+    @Override
+    public void  processReduceItemRecpt(List<ItemRecptTxBean> lines){
+        String transactionType = Constant.TRANSACTION_TYPE_ITEM_RECPT;
+        if(CollUtil.isEmpty(lines)){
+            throw exception(ITEM_RECPT_NOT_EXISTS);
+        }
+        for (int i =0;i<lines.size();i++){
+            ItemRecptTxBean line = lines.get(i);
+            TransactionDO transaction = new TransactionDO();
+            transaction.setTransactionType(transactionType);
+            BeanUtils.copyBeanProp(transaction,line);
+            transaction.setItemId(line.getId());
+            transaction.setId(null);
+            transaction.setTransactionFlag(-1); //库存减少
+            transaction.setTransactionDate(LocalDateTime.now());
+            TransactionUpdateReqVO updateReqVO = TransactionConvert.INSTANCE.convert01(transaction);
+            transactionService.updateTransaction(updateReqVO);
+        }
+    }
+
+
 
     @Override
     public void processRtVendor(List<RtVendorTxBean> lines) {
@@ -140,6 +169,87 @@ public class StorageCoreServiceImpl implements StorageCoreService{
             transactionService.processTransaction(transaction_in);
         }
     }
+
+    @Override
+    public void processAllocated(List<AllocatedTxBean> lines) {
+        if(CollUtil.isEmpty(lines)){
+            throw exception(ErrorCodeConstants.ALLOCATED_HEADER_NEED_PROCESS_LINE);
+        }
+        String transactionType_out = Constant.TRANSACTION_TYPE_ITEM_ALLOCATED_OUT;
+        String transactionType_in = Constant.TRANSACTION_TYPE_ITEM_ALLOCATED_IN;
+        for(int i=0;i<lines.size();i++){
+            AllocatedTxBean line = lines.get(i);
+            //这里先构造一条原库存减少的事务
+            TransactionUpdateReqVO transaction_out = new TransactionUpdateReqVO();
+            BeanUtils.copyBeanProp(transaction_out, line);
+            transaction_out.setTransactionType(transactionType_out);
+            transaction_out.setTransactionFlag(-1);//库存减少
+            transaction_out.setTransactionDate(LocalDateTime.now());
+            transaction_out.setTransactionQuantity(line.getTransactionQuantity());
+
+            // 配置调拨出库的仓库、库区、库位
+            transaction_out.setWarehouseId(line.getWarehouseId());
+            transaction_out.setWarehouseCode(line.getWarehouseCode());
+            transaction_out.setWarehouseName(line.getWarehouseName());
+            transaction_out.setLocationId(line.getLocationId());
+            transaction_out.setLocationCode(line.getLocationCode());
+            transaction_out.setLocationName(line.getLocationName());
+            transaction_out.setAreaId(line.getAreaId());
+            transaction_out.setAreaCode(line.getAreaCode());
+            transaction_out.setAreaName(line.getAreaName());
+            transaction_out.setBatchCode(line.getBatchCode());
+            transactionService.processTransaction(transaction_out);
+
+            //再构造一条目的库存增加的事务
+            TransactionUpdateReqVO transaction_in = new TransactionUpdateReqVO();
+            BeanUtils.copyBeanProp(transaction_in, line);
+            transaction_in.setTransactionType(transactionType_in);
+            transaction_in.setTransactionFlag(1);//库存增加
+            transaction_in.setTransactionQuantity(line.getTransactionQuantity());
+            //由于是新增的库存记录所以需要将查询出来的库存记录ID置为空
+            transaction_in.setMaterialStockId(null);
+
+            //使用出库事务的供应商初始化入库事务的供应商
+            transaction_in.setVendorId(transaction_out.getVendorId());
+            transaction_in.setVendorCode(transaction_out.getVendorCode());
+            transaction_in.setVendorName(transaction_out.getVendorName());
+            transaction_in.setVendorNick(transaction_out.getVendorNick());
+            transaction_in.setBatchCode(line.getBatchCode());
+            //这里使用系统默认生成的线边库初始化对应的入库仓库、库区、库位
+//            WarehouseDO warehouse = warehouseService.selectWmWarehouseByWarehouseCode(Constant.VIRTUAL_WH);
+//            transaction_in.setWarehouseId(warehouse.getId());
+//            transaction_in.setWarehouseCode(warehouse.getWarehouseCode());
+//            transaction_in.setWarehouseName(warehouse.getWarehouseName());
+//            StorageLocationDO location = storageLocationService.selectWmStorageLocationByLocationCode(Constant.VIRTUAL_WS);
+//            transaction_in.setLocationId(location.getId());
+//            transaction_in.setLocationCode(location.getLocationCode());
+//            transaction_in.setLocationName(location.getLocationName());
+//            StorageAreaDO area = storageAreaService.selectWmStorageAreaByAreaCode(Constant.VIRTUAL_WA);
+//            transaction_in.setAreaId(area.getId());
+//            transaction_in.setAreaCode(area.getAreaCode());
+//            transaction_in.setAreaName(area.getAreaName());
+
+            // 设定入库线边仓为本行的仓库, 库区, 库位
+            transaction_in.setWarehouseId(line.getInWarehouseId());
+            transaction_in.setWarehouseCode(line.getInWarehouseCode());
+            transaction_in.setWarehouseName(line.getInWarehouseName());
+            transaction_in.setLocationId(line.getInLocationId());
+            transaction_in.setLocationCode(line.getInLocationCode());
+            transaction_in.setLocationName(line.getInLocationName());
+            transaction_in.setAreaId(line.getInAreaId());
+            transaction_in.setAreaCode(line.getInAreaCode());
+            transaction_in.setAreaName(line.getInAreaName());
+
+            //设置入库相关联的出库事务ID
+            transaction_in.setRelatedTransactionId(transaction_out.getId());
+            transactionService.processTransaction(transaction_in);
+
+        }
+    }
+
+
+
+
 
     @Override
     public void processRtIssue(List<RtIssueTxBean> lines) {
@@ -329,6 +439,8 @@ public class StorageCoreServiceImpl implements StorageCoreService{
 
     /**
      * 库存消耗
+     * 物料消耗信息来源于生产领料绑定的上料详情
+     * 直接移除即可
      *
      */
     public void processItemConsume(List<ItemConsumeTxBean> lines){
@@ -341,7 +453,8 @@ public class StorageCoreServiceImpl implements StorageCoreService{
             TransactionDO transaction = new TransactionDO();
             transaction.setTransactionType(transactionType);
             BeanUtils.copyBeanProp(transaction,line);
-            transaction.setTransactionFlag(-1); //库存减少
+            BigDecimal quantity = line.getTransactionQuantity().negate();
+            transaction.setTransactionFlag( quantity.intValue()); //库存减少
             transaction.setStorageCheckFlag(false);//库存可以为负
             transaction.setTransactionDate(LocalDateTime.now());
 

@@ -10,6 +10,5 @@ import javax.validation.constraints.*;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class StorageLocationCreateReqVO extends StorageLocationBaseVO {
-    @Schema(description = "库区ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "18526")
-    private Long id;
+
 }

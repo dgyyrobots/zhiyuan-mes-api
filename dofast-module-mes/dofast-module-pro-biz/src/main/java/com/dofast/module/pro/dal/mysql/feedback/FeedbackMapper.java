@@ -55,6 +55,7 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
                 .eqIfPresent(FeedbackDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(FeedbackDO::getReportFee, reqVO.getReportFee())
                 .eqIfPresent(FeedbackDO::getPayFee, reqVO.getPayFee())
+                .eqIfPresent(FeedbackDO::getBatchCode, reqVO.getBatchCode())
                 .betweenIfPresent(FeedbackDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(FeedbackDO::getId));
     }
@@ -97,6 +98,7 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
                 .eqIfPresent(FeedbackDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(FeedbackDO::getReportFee, reqVO.getReportFee())
                 .eqIfPresent(FeedbackDO::getPayFee, reqVO.getPayFee())
+                .eqIfPresent(FeedbackDO::getBatchCode, reqVO.getBatchCode())
                 .betweenIfPresent(FeedbackDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(FeedbackDO::getId));
     }

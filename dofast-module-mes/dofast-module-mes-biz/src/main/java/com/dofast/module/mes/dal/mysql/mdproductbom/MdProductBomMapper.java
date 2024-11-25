@@ -16,7 +16,7 @@ import com.dofast.module.mes.controller.admin.mdproductbom.vo.*;
  */
 @Mapper
 public interface MdProductBomMapper extends BaseMapperX<MdProductBomDO> {
-    default List<MdProductBomDO> selectList(MdProductBomListVO reqVO){
+    default List<MdProductBomDO> selectList(MdProductBomListVO reqVO) {
         return selectList(new LambdaQueryWrapperX<MdProductBomDO>()
                 .eqIfPresent(MdProductBomDO::getItemId, reqVO.getItemId())
                 .eqIfPresent(MdProductBomDO::getBomItemId, reqVO.getBomItemId())
@@ -33,8 +33,12 @@ public interface MdProductBomMapper extends BaseMapperX<MdProductBomDO> {
                 .eqIfPresent(MdProductBomDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(MdProductBomDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(MdProductBomDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(MdProductBomDO::getQuantity, reqVO.getQuantity())
+                .eqIfPresent(MdProductBomDO::getInverted, reqVO.getInverted())
+                .eqIfPresent(MdProductBomDO::getSequence, reqVO.getSequence())
                 .orderByDesc(MdProductBomDO::getId));
     }
+
     default PageResult<MdProductBomDO> selectPage(MdProductBomPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<MdProductBomDO>()
                 .eqIfPresent(MdProductBomDO::getItemId, reqVO.getItemId())
@@ -44,7 +48,6 @@ public interface MdProductBomMapper extends BaseMapperX<MdProductBomDO> {
                 .eqIfPresent(MdProductBomDO::getBomItemSpec, reqVO.getBomItemSpec())
                 .eqIfPresent(MdProductBomDO::getUnitOfMeasure, reqVO.getUnitOfMeasure())
                 .eqIfPresent(MdProductBomDO::getItemOrProduct, reqVO.getItemOrProduct())
-                .eqIfPresent(MdProductBomDO::getQuantity, reqVO.getQuantity())
                 .eqIfPresent(MdProductBomDO::getEnableFlag, reqVO.getEnableFlag())
                 .eqIfPresent(MdProductBomDO::getRemark, reqVO.getRemark())
                 .eqIfPresent(MdProductBomDO::getAttr1, reqVO.getAttr1())
@@ -52,6 +55,9 @@ public interface MdProductBomMapper extends BaseMapperX<MdProductBomDO> {
                 .eqIfPresent(MdProductBomDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(MdProductBomDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(MdProductBomDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(MdProductBomDO::getQuantity, reqVO.getQuantity())
+                .eqIfPresent(MdProductBomDO::getInverted, reqVO.getInverted())
+                .eqIfPresent(MdProductBomDO::getSequence, reqVO.getSequence())
                 .orderByDesc(MdProductBomDO::getId));
     }
 
@@ -64,7 +70,6 @@ public interface MdProductBomMapper extends BaseMapperX<MdProductBomDO> {
                 .eqIfPresent(MdProductBomDO::getBomItemSpec, reqVO.getBomItemSpec())
                 .eqIfPresent(MdProductBomDO::getUnitOfMeasure, reqVO.getUnitOfMeasure())
                 .eqIfPresent(MdProductBomDO::getItemOrProduct, reqVO.getItemOrProduct())
-                .eqIfPresent(MdProductBomDO::getQuantity, reqVO.getQuantity())
                 .eqIfPresent(MdProductBomDO::getEnableFlag, reqVO.getEnableFlag())
                 .eqIfPresent(MdProductBomDO::getRemark, reqVO.getRemark())
                 .eqIfPresent(MdProductBomDO::getAttr1, reqVO.getAttr1())
@@ -72,6 +77,9 @@ public interface MdProductBomMapper extends BaseMapperX<MdProductBomDO> {
                 .eqIfPresent(MdProductBomDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(MdProductBomDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(MdProductBomDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(MdProductBomDO::getQuantity, reqVO.getQuantity())
+                .eqIfPresent(MdProductBomDO::getInverted, reqVO.getInverted())
+                .eqIfPresent(MdProductBomDO::getSequence, reqVO.getSequence())
                 .orderByDesc(MdProductBomDO::getId));
     }
 

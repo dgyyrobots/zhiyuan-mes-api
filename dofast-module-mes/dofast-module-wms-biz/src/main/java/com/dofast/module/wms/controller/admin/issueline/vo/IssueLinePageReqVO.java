@@ -90,4 +90,7 @@ public class IssueLinePageReqVO extends PageParam {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "领料状态(Y/N)", example = "1")
+    private String status;
+
 }

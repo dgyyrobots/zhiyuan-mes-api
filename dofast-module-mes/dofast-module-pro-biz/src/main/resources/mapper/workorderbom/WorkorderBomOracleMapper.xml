@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.pro.dal.oracle.workorderbom.WorkorderBomOracleMapper">
+
+    <!--
+        一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
+        无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
+     -->
+
+    <select id="initWorkorderBomInfo" resultType="java.util.HashMap">
+        SELECT DISTINCT
+            sfbadocno AS WORKORDER_NO,
+            SFBA006 AS ITEM_CODE,
+            IMAAL003 AS ITEM_NAME,
+            IMAAL004 AS ITEM_SPEC,
+            sfba014 AS UNIT_OF_MEASURE,
+            sfba023 AS QUANTITY,
+            sfbaseq as SEQUENCE
+        FROM
+            DSDATA.SFBA_T A
+                LEFT JOIN DSDATA.IMAA_T B ON A.SFBA006 = B.IMAA001
+                AND SFBAENT = IMAAENT
+                LEFT JOIN DSDATA.IMAAL_T C ON A.SFBA006 = C.IMAAl001
+                AND SFBAENT = IMAALENT
+        WHERE
+            A.SFBAENT = 100
+          AND A.SFBASITE = 'AM01'
+          AND IMAAL002 = 'zh_CN'
+    </select>
+
+    <select id="initChangeWorkorderBomInfo" parameterType="java.lang.String" resultType="java.util.HashMap">
+        <!--SELECT
+            distinct
+            sfkgdocno AS WORKORDER_NO,
+            SFKG006 AS ITEM_CODE,
+            IMAAL003 AS ITEM_NAME,
+            IMAAL004 AS ITEM_SPEC,
+            sfkg014 AS UNIT_OF_MEASURE,
+            SFKG016 AS QUANTITY
+        FROM
+            DSDATA.SFKG_T A
+                LEFT JOIN DSDATA.IMAA_T B ON A.SFKG006 = B.IMAA001
+                AND SFKGENT = IMAAENT
+                LEFT JOIN DSDATA.IMAAL_T C ON A.SFKG006 = C.IMAAl001
+                AND SFKGENT = IMAALENT
+        WHERE
+            A.SFKGENT = 100
+          AND A.SFKGSITE = 'AM01'
+          AND IMAAL002 = 'zh_CN'-->
+
+        SELECT DISTINCT
+            sfbadocno AS WORKORDER_NO,
+            SFBA006 AS ITEM_CODE,
+            IMAAL003 AS ITEM_NAME,
+            IMAAL004 AS ITEM_SPEC,
+            sfba014 AS UNIT_OF_MEASURE,
+            sfba023 AS QUANTITY,
+            sfbaseq as SEQUENCE
+        FROM
+            DSDATA.SFBA_T A
+                LEFT JOIN DSDATA.IMAA_T B ON A.SFBA006 = B.IMAA001
+                AND SFBAENT = IMAAENT
+                LEFT JOIN DSDATA.IMAAL_T C ON A.SFBA006 = C.IMAAl001
+                AND SFBAENT = IMAALENT
+        WHERE
+            A.SFBAENT = 100
+          AND A.SFBASITE = 'AM01'
+          AND IMAAL002 = 'zh_CN'
+          AND sfbadocno = #{workorderNo}
+    </select>
+
+
+</mapper>

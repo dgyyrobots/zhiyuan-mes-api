@@ -113,5 +113,8 @@ public class MaterialStockBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "入库状态(Y/N)", example = "2")
+    private String recptStatus;
+
     public Long getId(){return null;}
 }

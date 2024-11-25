@@ -26,8 +26,8 @@ public interface MaterialStockMapper extends BaseMapperX<MaterialStockDO> {
                 .eqIfPresent(MaterialStockDO::getLocationId,baseVO.getLocationId())
                 .eqIfPresent(MaterialStockDO::getAreaId,baseVO.getAreaId())
                 .eqIfPresent(MaterialStockDO::getVendorId,baseVO.getVendorId())
-                .eqIfPresent(MaterialStockDO::getWorkorderId,baseVO.getWorkorderId())
-                .eqIfPresent(MaterialStockDO::getWorkorderCode,baseVO.getWorkorderCode())
+                //.eqIfPresent(MaterialStockDO::getWorkorderId,baseVO.getWorkorderId())
+                //.eqIfPresent(MaterialStockDO::getWorkorderCode,baseVO.getWorkorderCode())
 
         );
     }
@@ -63,6 +63,7 @@ public interface MaterialStockMapper extends BaseMapperX<MaterialStockDO> {
                 .eqIfPresent(MaterialStockDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(MaterialStockDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(MaterialStockDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(MaterialStockDO::getRecptStatus, reqVO.getRecptStatus())
                 .betweenIfPresent(MaterialStockDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(MaterialStockDO::getId));
     }
@@ -98,6 +99,7 @@ public interface MaterialStockMapper extends BaseMapperX<MaterialStockDO> {
                 .eqIfPresent(MaterialStockDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(MaterialStockDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(MaterialStockDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(MaterialStockDO::getRecptStatus, reqVO.getRecptStatus())
                 .betweenIfPresent(MaterialStockDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(MaterialStockDO::getId));
     }

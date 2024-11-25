@@ -138,4 +138,13 @@ public class TaskListVO {
     @Schema(description = "实际结束时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime actualEndTime;
+
+    @Schema(description = "母批次号")
+    private String parentBatchCode;
+
+    @Schema(description = "流水号")
+    private String serial;
+
+    @Schema(description = "报工状态")
+    private String feedbackStatus;
 }

@@ -1,9 +1,9 @@
 package com.dofast.module.cal.controller.admin.team.vo;
 
-import java.time.LocalDate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
+import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 
 import com.alibaba.excel.annotation.ExcelProperty;
@@ -45,5 +45,14 @@ public class TeamExcelVO {
 
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
+
+    @ExcelProperty("负责人Id")
+    private Long principalId;
+
+    @ExcelProperty("负责人名称")
+    private String principalName;
+
+    @ExcelProperty("班组人数")
+    private Long personCount;
 
 }

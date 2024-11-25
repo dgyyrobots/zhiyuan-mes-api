@@ -3,6 +3,8 @@ package com.dofast.module.qms.controller.admin.iqc;
 import cn.hutool.core.collection.CollUtil;
 import com.dofast.framework.security.core.LoginUser;
 import com.dofast.framework.security.core.util.SecurityFrameworkUtils;
+import com.dofast.module.mes.api.ItemApi.MdItemApi;
+import com.dofast.module.mes.api.ItemApi.dto.MdItemDTO;
 import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.qms.controller.admin.defectrecord.vo.DefectRecordBaseVO;
 import com.dofast.module.qms.controller.admin.iqcline.vo.IqcLineCreateReqVO;
@@ -66,6 +68,10 @@ public class IqcController {
     private DefectRecordService defectRecordService;
     @Resource
     private AdminUserApi adminUserApi;
+
+    @Resource
+    private MdItemApi mdItemApi;
+
     @PostMapping("/create")
     @Operation(summary = "创建来料检验单")
     @PreAuthorize("@ss.hasPermission('qms:iqc:create')")
@@ -73,17 +79,17 @@ public class IqcController {
         if(Constant.NOT_UNIQUE.equals(iqcService.checkIqcCodeUnique(createReqVO))){
             return error(ErrorCodeConstants.IQC_CODE_EXISTS);
         }
-
+        // 来料单基于采购单创建, 所以只能获取物料编码
+        MdItemDTO mdItemDTO = mdItemApi.getMdItemByCode(createReqVO.getItemCode());
         TemplateProductListVO param = new TemplateProductListVO();
-        param.setItemId(createReqVO.getItemId());
+        param.setItemId(mdItemDTO.getId());
         List<TemplateProductDO> templates = templateProductService.getTemplateProductList(param);
         if(CollUtil.isNotEmpty(templates)){
             createReqVO.setTemplateId(templates.get(0).getTemplateId());
         }else{
             return error(ErrorCodeConstants.IQC_PRODUCT_NOT_EXISTS);
         }
-
-
+        createReqVO.setItemId(mdItemDTO.getId());
         //设置检测人
         LoginUser user = SecurityFrameworkUtils.getLoginUser();
         AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(user.getId());

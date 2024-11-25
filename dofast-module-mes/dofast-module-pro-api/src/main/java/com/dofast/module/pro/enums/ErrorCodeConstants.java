@@ -49,6 +49,7 @@ public interface ErrorCodeConstants {
     ErrorCode FEEDBACK_NOT_ACQUIRE = new ErrorCode(716005, "当前订单不存在工单任务,请确认身份");
     ErrorCode FEEDBACK_NOT_APPROVED = new ErrorCode(715003, "报工未通过");
     ErrorCode WORKORDER_NOT_EXIST = new ErrorCode(716003, "一键报工的工单不存在");
+    ErrorCode FEEDBACK_TASK_NOT_EXISTS = new ErrorCode(716003, "当前报工单未选择任务单！");
 
 
     ErrorCode TASK_UPDATE_COUNT=new ErrorCode(717001,"更新生产任务的生产数量失败");
@@ -85,4 +86,10 @@ public interface ErrorCodeConstants {
     ErrorCode ADD_FEEDBACK_FAIL=new ErrorCode(717017,"报工记录创建失败");
 
     ErrorCode NOW_AFTER_MAXTIME=new ErrorCode(717017,"当前创建时间不能超过23.59.59");
+
+    ErrorCode ANDON_RECORD_NOT_EXISTS = new ErrorCode(717018, "安灯呼叫记录不存在");
+
+    ErrorCode FEEDBACK_MEMBER_NOT_EXISTS = new ErrorCode(717019, "报工班组人员不存在");
+
+
 }

@@ -2,7 +2,6 @@ package com.dofast.module.mes.dal.dataobject.mdproductbom;
 
 import lombok.*;
 import java.util.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
@@ -57,10 +56,6 @@ public class MdProductBomDO extends BaseDO {
      */
     private String itemOrProduct;
     /**
-     * 物料使用比例
-     */
-    private Double quantity;
-    /**
      * 是否启用
      */
     private String enableFlag;
@@ -84,5 +79,17 @@ public class MdProductBomDO extends BaseDO {
      * 预留字段4
      */
     private Integer attr4;
+    /**
+     * 物料使用比例
+     */
+    private Double quantity;
+    /**
+     * 倒扣料标识
+     */
+    private String inverted;
+    /**
+     * 项次
+     */
+    private Long sequence;
 
 }

@@ -58,6 +58,15 @@ public interface MdItemService {
     MdItemDO getMdItem(Long id);
 
     /**
+     * 获得物料产品
+     *
+     * @param itemCode 料号
+     * @return 物料产品
+     */
+    MdItemDO getMdItem(String itemCode);
+
+
+    /**
      * 获得物料产品列表
      *
      * @param ids 编号
@@ -86,4 +95,18 @@ public interface MdItemService {
      * @return
      */
     List<MdItemRequestVO> getMdItemRequest(Collection<Long> ids);
+
+    /**
+     * 根据物料料号获取物料信息
+     * @param code
+     * @return
+     */
+    MdItemDO getMdItemByItemCode(String code);
+
+    /**
+     * 从ERP获取物料信息
+     * @return
+     */
+    String initMdItemInfo();
+
 }

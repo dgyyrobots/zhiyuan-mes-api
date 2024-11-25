@@ -44,6 +44,7 @@ public interface StorageLocationMapper extends BaseMapperX<StorageLocationDO> {
                 .eqIfPresent(StorageLocationDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(StorageLocationDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(StorageLocationDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(StorageLocationDO::getProcessCode, reqVO.getProcessCode())
                 .orderByDesc(StorageLocationDO::getId));
     }
 
@@ -60,6 +61,7 @@ public interface StorageLocationMapper extends BaseMapperX<StorageLocationDO> {
                 .eqIfPresent(StorageLocationDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(StorageLocationDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(StorageLocationDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(StorageLocationDO::getProcessCode, reqVO.getProcessCode())
                 .orderByDesc(StorageLocationDO::getId));
     }
 

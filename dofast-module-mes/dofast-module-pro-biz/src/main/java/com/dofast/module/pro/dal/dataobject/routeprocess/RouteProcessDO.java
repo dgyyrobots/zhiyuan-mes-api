@@ -32,10 +32,6 @@ public class RouteProcessDO extends BaseDO {
      */
     private Long routeId;
     /**
-     * 工序ID
-     */
-    private Long processId;
-    /**
      * 工序编码
      */
     private String processCode;
@@ -47,10 +43,6 @@ public class RouteProcessDO extends BaseDO {
      * 序号
      */
     private Integer orderNum;
-    /**
-     * 工序ID
-     */
-    private Long nextProcessId;
     /**
      * 工序编码
      */
@@ -99,5 +91,17 @@ public class RouteProcessDO extends BaseDO {
      * 预留字段4
      */
     private Integer attr4;
+    /**
+     * 工序ID
+     */
+    private Long processId;
+    /**
+     * 工序ID
+     */
+    private Long nextProcessId;
+    /**
+     * 项次
+     */
+    private Long sequence;
 
 }

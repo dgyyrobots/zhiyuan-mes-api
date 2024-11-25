@@ -19,11 +19,11 @@ import com.dofast.module.pro.controller.admin.task.vo.*;
 @Mapper
 public interface TaskMapper extends BaseMapperX<TaskDO> {
 
-    default PageResult<TaskDO> selectPage(TaskPageReqVO reqVO,Collection<Long> workorderIds) {
+    default PageResult<TaskDO> selectPage(TaskPageReqVO reqVO, Collection<Long> workorderIds) {
         return selectPage(reqVO, new LambdaQueryWrapperX<TaskDO>()
                 .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
                 .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
-                .in(TaskDO::getWorkorderId,workorderIds)
+                .in(TaskDO::getWorkorderId, workorderIds)
                 .eqIfPresent(TaskDO::getWorkorderCode, reqVO.getWorkorderCode())
                 .likeIfPresent(TaskDO::getWorkorderName, reqVO.getWorkorderName())
                 .eqIfPresent(TaskDO::getWorkstationId, reqVO.getWorkstationId())
@@ -59,6 +59,9 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(TaskDO::getIsPrint, reqVO.getIsPrint())
                 .eqIfPresent(TaskDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
+                .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
+                .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -67,7 +70,7 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
         return selectPage(reqVO, new LambdaQueryWrapperX<TaskDO>()
                 .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
                 .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
-                .eqIfPresent(TaskDO::getWorkorderId,reqVO.getWorkorderId())
+                .eqIfPresent(TaskDO::getWorkorderId, reqVO.getWorkorderId())
                 .eqIfPresent(TaskDO::getWorkorderCode, reqVO.getWorkorderCode())
                 .likeIfPresent(TaskDO::getWorkorderName, reqVO.getWorkorderName())
                 .eqIfPresent(TaskDO::getWorkstationId, reqVO.getWorkstationId())
@@ -103,6 +106,9 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(TaskDO::getIsPrint, reqVO.getIsPrint())
                 .eqIfPresent(TaskDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
+                .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
+                .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -116,7 +122,7 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getWorkstationCode, reqVO.getWorkstationCode())
                 .likeIfPresent(TaskDO::getWorkstationName, reqVO.getWorkstationName())
 //                .eqIfPresent(TaskDO::getProcessId, reqVO.getProcessId())
-                .in(TaskDO::getWorkstationId,collect)
+                .in(TaskDO::getWorkstationId, collect)
                 .eqIfPresent(TaskDO::getProcessCode, reqVO.getProcessCode())
                 .likeIfPresent(TaskDO::getProcessName, reqVO.getProcessName())
                 .eqIfPresent(TaskDO::getItemId, reqVO.getItemId())
@@ -132,7 +138,7 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getClientId, reqVO.getClientId())
                 .eqIfPresent(TaskDO::getClientCode, reqVO.getClientCode())
                 .likeIfPresent(TaskDO::getClientName, reqVO.getClientName())
-                .eqIfPresent(TaskDO::getIsPrint,reqVO.getIsPrint())
+                .eqIfPresent(TaskDO::getIsPrint, reqVO.getIsPrint())
                 .eqIfPresent(TaskDO::getClientNick, reqVO.getClientNick())
                 .betweenIfPresent(TaskDO::getStartTime, reqVO.getStartTime())
                 .eqIfPresent(TaskDO::getDuration, reqVO.getDuration())
@@ -146,8 +152,11 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(TaskDO::getAttr4, reqVO.getAttr4())
                 .inIfPresent(TaskDO::getWorkstationId, reqVO.getWorkstationId())
-                .eqIfPresent(TaskDO::getStatus,reqVO.getStatus())
+                .eqIfPresent(TaskDO::getStatus, reqVO.getStatus())
                 .eqIfPresent(TaskDO::getIsPrint, reqVO.getIsPrint())
+                .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
+                .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
+                .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 /*.and(reqVO.getStatus()!=null,v->{
                     if ("1".equals(reqVO.getStatus())){
                         v.in(TaskDO::getStatus,"FINISHED");
@@ -211,11 +220,14 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(TaskDO::getIsPrint, reqVO.getIsPrint())
                 .eqIfPresent(TaskDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
+                .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
+                .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 .orderByDesc(TaskDO::getId));
     }
 
 
-    default List<TaskDO> selectList(TaskExportReqVO reqVO,  Collection<Long> workstationIds) {
+    default List<TaskDO> selectList(TaskExportReqVO reqVO, Collection<Long> workstationIds) {
         return selectList(new LambdaQueryWrapperX<TaskDO>()
                 .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
                 .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
@@ -256,6 +268,9 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getIsPrint, reqVO.getIsPrint())
                 .eqIfPresent(TaskDO::getCreateTime, reqVO.getCreateTime())
                 .inIfPresent(TaskDO::getWorkstationId, workstationIds)
+                .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
+                .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
+                .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -299,13 +314,16 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(TaskDO::getIsPrint, reqVO.getIsPrint())
                 .eqIfPresent(TaskDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
+                .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
+                .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 .orderByDesc(TaskDO::getId));
     }
 
-    default TaskDO getTask(Long id, Long processId){
+    default TaskDO getTask(Long id, Long processId) {
         return selectOne(new LambdaQueryWrapperX<TaskDO>()
-                .eqIfPresent(TaskDO::getId,id)
-                .eqIfPresent(TaskDO::getProcessId,processId));
+                .eqIfPresent(TaskDO::getId, id)
+                .eqIfPresent(TaskDO::getProcessId, processId));
     }
 
     /*default PageResult<TaskDO> selectByProcessId(TaskPageReqVO pageReqVO,List<Long> collect){
@@ -313,6 +331,56 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .in(TaskDO::getProcessId,collect));
     }*/
 
+    default List<TaskDO> getTaskByTeamCode(String teamCode) {
+        return selectList(new LambdaQueryWrapperX<TaskDO>()
+                .eqIfPresent(TaskDO::getAttr1, teamCode)
+                .orderByDesc(TaskDO::getId));
+    }
 
+    default PageResult<TaskDO> getTaskByTeamCode(TaskPageReqVO reqVO, String teamCode) {
+        return selectPage(reqVO, new LambdaQueryWrapperX<TaskDO>()
+                .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
+                .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
+                .eqIfPresent(TaskDO::getWorkorderId, reqVO.getWorkorderId())
+                .eqIfPresent(TaskDO::getWorkorderCode, reqVO.getWorkorderCode())
+                .likeIfPresent(TaskDO::getWorkorderName, reqVO.getWorkorderName())
+                .eqIfPresent(TaskDO::getWorkstationId, reqVO.getWorkstationId())
+                .eqIfPresent(TaskDO::getWorkstationCode, reqVO.getWorkstationCode())
+                .likeIfPresent(TaskDO::getWorkstationName, reqVO.getWorkstationName())
+                .eqIfPresent(TaskDO::getProcessId, reqVO.getProcessId())
+                .eqIfPresent(TaskDO::getProcessCode, reqVO.getProcessCode())
+                .likeIfPresent(TaskDO::getProcessName, reqVO.getProcessName())
+                .eqIfPresent(TaskDO::getItemId, reqVO.getItemId())
+                .eqIfPresent(TaskDO::getItemCode, reqVO.getItemCode())
+                .likeIfPresent(TaskDO::getItemName, reqVO.getItemName())
+                .eqIfPresent(TaskDO::getSpecification, reqVO.getSpecification())
+                .eqIfPresent(TaskDO::getUnitOfMeasure, reqVO.getUnitOfMeasure())
+                .eqIfPresent(TaskDO::getQuantity, reqVO.getQuantity())
+                .eqIfPresent(TaskDO::getQuantityProduced, reqVO.getQuantityProduced())
+                .eqIfPresent(TaskDO::getQuantityQuanlify, reqVO.getQuantityQuanlify())
+                .eqIfPresent(TaskDO::getQuantityUnquanlify, reqVO.getQuantityUnquanlify())
+                .eqIfPresent(TaskDO::getQuantityChanged, reqVO.getQuantityChanged())
+                .eqIfPresent(TaskDO::getClientId, reqVO.getClientId())
+                .eqIfPresent(TaskDO::getClientCode, reqVO.getClientCode())
+                .likeIfPresent(TaskDO::getClientName, reqVO.getClientName())
+                .eqIfPresent(TaskDO::getClientNick, reqVO.getClientNick())
+                .eqIfPresent(TaskDO::getStartTime, reqVO.getStartTime())
+                .eqIfPresent(TaskDO::getDuration, reqVO.getDuration())
+                .eqIfPresent(TaskDO::getEndTime, reqVO.getEndTime())
+                .eqIfPresent(TaskDO::getColorCode, reqVO.getColorCode())
+                .eqIfPresent(TaskDO::getRequestDate, reqVO.getRequestDate())
+                .eqIfPresent(TaskDO::getStatus, reqVO.getStatus())
+                .eqIfPresent(TaskDO::getRemark, reqVO.getRemark())
+                .eqIfPresent(TaskDO::getAttr1, teamCode)
+                .eqIfPresent(TaskDO::getAttr2, reqVO.getAttr2())
+                .eqIfPresent(TaskDO::getAttr3, reqVO.getAttr3())
+                .eqIfPresent(TaskDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(TaskDO::getIsPrint, reqVO.getIsPrint())
+                .eqIfPresent(TaskDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
+                .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
+                .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
+                .orderByDesc(TaskDO::getId));
+    }
 
 }

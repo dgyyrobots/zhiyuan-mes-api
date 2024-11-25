@@ -68,6 +68,14 @@ public interface StorageLocationService {
     StorageLocationDO getStorageLocation(Long id);
 
     /**
+     * 获得库区
+     *
+     * @param processCode 工序编号
+     * @return 库区
+     */
+    StorageLocationDO getStorageLocation(String processCode);
+
+    /**
      * 获得库区列表
      *
      * @param ids 编号

@@ -65,6 +65,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderDO getOrder(String poNo) {
+        return purchaseOrderMapper.selectOne(OrderDO::getPoNo, poNo);
+    }
+
+
+    @Override
     public List<OrderDO> getOrderList(Collection<Integer> ids) {
         return purchaseOrderMapper.selectBatchIds(ids);
     }

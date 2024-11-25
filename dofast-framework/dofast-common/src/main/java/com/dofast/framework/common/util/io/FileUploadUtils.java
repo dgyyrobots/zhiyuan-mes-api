@@ -47,7 +47,7 @@ public class FileUploadUtils {
     /**
      * Minio默认上传的地址
      */
-    private static String bucketName = MinioConfig.getBucketName();
+    private static String bucketName = "ammes";
 
     public static String getBucketName()
     {
@@ -170,7 +170,8 @@ public class FileUploadUtils {
         {
             String fileName = extractFilename(file);
             MinioUtil minioUtil = new MinioUtil();
-            String pathFileName = minioUtil.uploadFile(bucketName, fileName, file);
+            // String pathFileName = minioUtil.uploadFile(bucketName, fileName, file);
+            String pathFileName = "";
             return pathFileName;
         }
         catch (Exception e)

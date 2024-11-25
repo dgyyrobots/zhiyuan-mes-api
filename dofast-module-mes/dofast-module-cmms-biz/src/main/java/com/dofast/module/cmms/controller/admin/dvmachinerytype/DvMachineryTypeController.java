@@ -102,7 +102,9 @@ public class DvMachineryTypeController {
     @PreAuthorize("@ss.hasPermission('cmms:dv-machinery-type:query')")
     public CommonResult<List<DvMachineryTypeRespVO>> getDvMachineryTypeList(@RequestParam(name = "ids", required = false) Collection<Long> ids) {
         List<DvMachineryTypeDO> list = dvMachineryTypeService.getDvMachineryTypeList(ids);
-        return success(DvMachineryTypeConvert.INSTANCE.convertList(list));
+        System.out.println(list);
+        List<DvMachineryTypeRespVO> result = DvMachineryTypeConvert.INSTANCE.convertList(list);
+        return success(result);
     }
 
     @GetMapping("/list-all-simple")

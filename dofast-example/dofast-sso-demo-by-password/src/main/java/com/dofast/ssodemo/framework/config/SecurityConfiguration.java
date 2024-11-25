@@ -36,6 +36,8 @@ public class SecurityConfiguration {
                 .antMatchers("/auth/login-by-code").permitAll()
                 .antMatchers("/auth/refresh-token").permitAll()
                 .antMatchers("/auth/logout").permitAll()
+                // 3. 人脸识别相关接口, 允许匿名访问
+                .antMatchers("/user/profile/get-face-image/*").permitAll()
                 // last. 兜底规则，必须认证
                 .and().authorizeRequests()
                 .anyRequest().authenticated();

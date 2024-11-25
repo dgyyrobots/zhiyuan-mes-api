@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @ToString(callSuper = true)
 public class MdProductBomRespVO extends MdProductBomBaseVO {
 
-    @Schema(description = "流水号", requiredMode = Schema.RequiredMode.REQUIRED, example = "16552")
+    @Schema(description = "流水号", requiredMode = Schema.RequiredMode.REQUIRED, example = "29402")
     private Long id;
 
     @Schema(description = "创建时间")

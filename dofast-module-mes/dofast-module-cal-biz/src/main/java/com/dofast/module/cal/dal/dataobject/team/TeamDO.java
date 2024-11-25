@@ -60,4 +60,17 @@ public class TeamDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * 负责人Id
+     */
+    private Long principalId;
+    /**
+     * 负责人名称
+     */
+    private String principalName;
+    /**
+     * 班组人数
+     */
+    private Long personCount;
+
 }

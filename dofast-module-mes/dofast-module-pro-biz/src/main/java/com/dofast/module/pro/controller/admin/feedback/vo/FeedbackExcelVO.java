@@ -131,4 +131,13 @@ public class FeedbackExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("批次号")
+    private String batchCode;
+
+    @ExcelProperty("ERP批次号")
+    private String erpBatchCode;
+
+    @ExcelProperty("班组编码")
+    private String teamCode;
+
 }

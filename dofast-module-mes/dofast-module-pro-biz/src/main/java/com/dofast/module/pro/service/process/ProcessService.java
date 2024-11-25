@@ -46,6 +46,14 @@ public interface ProcessService {
     ProcessDO getcess(Long id);
 
     /**
+     * 获得生产工序
+     * @param processCode
+     * @return
+     */
+    ProcessDO getcess(String processCode);
+
+
+    /**
      * 获得生产工序列表
      *
      * @param ids 编号

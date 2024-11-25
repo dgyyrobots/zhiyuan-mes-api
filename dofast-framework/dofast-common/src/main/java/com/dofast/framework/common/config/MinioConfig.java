@@ -1,76 +1,44 @@
 package com.dofast.framework.common.config;
 
 import io.minio.MinioClient;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import io.minio.Result;
+import io.minio.messages.Bucket;
+import io.minio.messages.Item;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriUtils;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
-/*@Configuration
-@ConfigurationProperties(prefix = "minio")*/
+@Configuration
+@Slf4j
 public class MinioConfig {
-    /**
-     * 服务地址
-     */
-    private static String url;
 
-    /**
-     * 用户名
-     */
-    private static String accessKey;
+    @Value("${minio.endpoint}")
+    private String endpoint;
 
-    /**
-     * 密码
-     */
-    private static String secretKey;
+    @Value("${minio.accessKey}")
+    private String accessKey;
 
-    /**
-     * 存储桶名称
-     */
-    private static String bucketName;
+    @Value("${minio.secretKey}")
+    private String secretKey;
 
-    public static String getUrl()
-    {
-        return url;
-    }
-
-    public void setUrl(String url)
-    {
-        MinioConfig.url = url;
-    }
-
-    public static String getAccessKey()
-    {
-        return accessKey;
-    }
-
-    public void setAccessKey(String accessKey)
-    {
-        MinioConfig.accessKey = accessKey;
-    }
-
-    public static String getSecretKey()
-    {
-        return secretKey;
-    }
-
-    public void setSecretKey(String secretKey)
-    {
-        MinioConfig.secretKey = secretKey;
-    }
-
-    public static String getBucketName()
-    {
-        return bucketName;
-    }
-
-    public void setBucketName(String bucketName)
-    {
-        MinioConfig.bucketName = bucketName;
-    }
+    @Value("${minio.bucketName}")
+    private String bucketName;
 
     @Bean
-    public MinioClient getMinioClient()
-    {
-        return MinioClient.builder().endpoint(url).credentials(accessKey, secretKey).build();
+    public MinioClient minioClient() {
+        log.info("endpoint={}  ,  accessKey={}  ,secretKey={}", endpoint, accessKey, secretKey);
+        return MinioClient.builder().credentials(accessKey, secretKey).endpoint(endpoint).build();
     }
 }

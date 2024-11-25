@@ -1,6 +1,5 @@
 package com.dofast.module.pro.controller.admin.task.vo;
 
-import cn.hutool.core.date.DateTime;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -67,19 +66,19 @@ public class TaskPageReqVO extends PageParam {
     private String unitOfMeasure;
 
     @Schema(description = "排产数量")
-    private Double quantity;
+    private BigDecimal quantity;
 
     @Schema(description = "已生产数量")
-    private Double quantityProduced;
+    private BigDecimal quantityProduced;
 
     @Schema(description = "合格品数量")
-    private Double quantityQuanlify;
+    private BigDecimal quantityQuanlify;
 
     @Schema(description = "不良品数量")
-    private Double quantityUnquanlify;
+    private BigDecimal quantityUnquanlify;
 
     @Schema(description = "调整数量")
-    private Double quantityChanged;
+    private BigDecimal quantityChanged;
 
     @Schema(description = "客户ID", example = "28858")
     private Long clientId;
@@ -131,7 +130,18 @@ public class TaskPageReqVO extends PageParam {
 
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime createTime;
+    private LocalDateTime[] createTime;
+
+    @Schema(description = "是否打印（0：未打印，1已打印）")
+    private String isPrint;
+
+    @Schema(description = "实际开始操作时间")
+    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    private LocalDateTime[] actualStartTime;
+
+    @Schema(description = "实际结束时间")
+    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    private LocalDateTime[] actualEndTime;
 
     @Schema(description = "是否已完工 （0：未完工 1：已完工）")
     private String isOver;
@@ -139,14 +149,13 @@ public class TaskPageReqVO extends PageParam {
     @Schema(description = "销售单编码")
     private String sourceCode;
 
-    @Schema(description = "实际开始操作时间")
-    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime actualStartTime;
+    @Schema(description = "母批次号")
+    private String parentBatchCode;
 
-    @Schema(description = "实际结束时间")
-    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime actualEndTime;
+    @Schema(description = "流水号")
+    private String serial;
 
-    @Schema(description = "是否打印工单")
-    private String isPrint;
+
+    @Schema(description = "报工状态")
+    private String feedbackStatus;
 }

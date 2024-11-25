@@ -1,16 +1,13 @@
 package com.dofast.module.purchase.controller.admin.order.vo;
 
-import java.time.LocalDate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.dofast.framework.excel.core.annotations.DictFormat;
-import com.dofast.framework.excel.core.convert.DictConvert;
-
 
 /**
  * 采购订单 Excel VO
@@ -19,11 +16,6 @@ import com.dofast.framework.excel.core.convert.DictConvert;
  */
 @Data
 public class OrderExcelVO {
-    @Schema(description = "流程实例的编号")
-    private String processInstanceId;
-
-    @ExcelProperty("供应商")
-    private Integer supplierId;
 
     @ExcelProperty("供应商联系人")
     private String supplierContact;
@@ -34,28 +26,37 @@ public class OrderExcelVO {
     @ExcelProperty("采购金额")
     private BigDecimal purchaseAmount;
 
-    @ExcelProperty("ID")
-    private Integer id;
-
     @ExcelProperty("采购单号")
     private String poNo;
-
-    @ExcelProperty(value = "付款类型", converter = DictConvert.class)
-    @DictFormat("purchase_invoice_pay_way") // TODO 代码优化：建议设置到对应的 XXXDictTypeConstants 枚举类中
-    private Integer paymentType;
-
-    @ExcelProperty(value = "退货状态", converter = DictConvert.class)
-    @DictFormat("infra_boolean_string") // TODO 代码优化：建议设置到对应的 XXXDictTypeConstants 枚举类中
-    private Integer returnGoods;
-
-    @ExcelProperty(value = "审核类型", converter = DictConvert.class)
-    @DictFormat("purchase_order_audit_status") // TODO 代码优化：建议设置到对应的 XXXDictTypeConstants 枚举类中
-    private Integer processType;
 
     @ExcelProperty("备注")
     private String remarks;
 
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
+
+    @ExcelProperty("资金账户id")
+    private Integer id;
+
+    @ExcelProperty("流程实例的编号")
+    private String processInstanceId;
+
+    @ExcelProperty("供应商id")
+    private Integer supplierId;
+
+    @ExcelProperty("付款类型(0应付账款1现金付款2预付款)")
+    private Integer paymentType;
+
+    @ExcelProperty("退货状态(0有1无)")
+    private Integer returnGoods;
+
+    @ExcelProperty("审核类型（0已审核，1未审核，3采购入库，3确认入库）")
+    private Integer processType;
+
+    @ExcelProperty("母批次号")
+    private String parentBatchCode;
+
+    @ExcelProperty("流水号")
+    private String serial;
 
 }

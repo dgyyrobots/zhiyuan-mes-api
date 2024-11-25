@@ -61,7 +61,11 @@ public class WorkorderBomBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "项次")
+    private Long sequence;
+
     public Long getId(){
         return null;
     }
+
 }

@@ -15,12 +15,15 @@ import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
 import com.dofast.module.pro.api.WorkorderApi.WorkorderApi;
 import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderDTO;
+import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
+import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeTxBean;
 import com.dofast.module.wms.dal.dataobject.itemconsumeline.ItemConsumeLineDO;
 import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
 import com.dofast.module.wms.dal.mysql.itemconsumeline.ItemConsumeLineMapper;
 import com.dofast.module.wms.dal.mysql.materialstock.MaterialStockMapper;
+import com.dofast.module.wms.service.feedline.FeedLineService;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -74,6 +77,9 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
     @Resource
     private MaterialStockMapper materialStockMapper;
 
+    @Resource
+    private FeedLineService feedLineService;
+
     @Override
     public Long createItemConsume(ItemConsumeCreateReqVO createReqVO) {
         // 插入
@@ -126,13 +132,19 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
         return itemConsumeMapper.selectList(exportReqVO);
     }
 
+    /**
+     * 物料消耗记录
+     * @param feedback
+     * @return
+     */
     @Override
     public ItemConsumeDO generateItemConsume(FeedbackDTO feedback) {
         WorkorderDTO workorder = workorderApi.getWorkorder(feedback.getWorkorderId());
         WorkStationDTO workstation = workStationApi.getWorkstation(feedback.getWorkstationId());
         ProcessDTO process = processApi.getcess(workstation.getProcessId());
         TaskDTO task = taskApi.getTask(feedback.getTaskId());
-        RouteDTO route = routeApi.getRoute(feedback.getItemId());
+        String routeCode =workorder.getProductCode() + "-" + workorder.getRouteCode();
+        RouteDTO route = routeApi.getRoute(feedback.getItemId(), routeCode);
 
         //生成消耗单头信息
         ItemConsumeDO itemConsume = new ItemConsumeDO();
@@ -158,7 +170,7 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
 
         //生成行信息
         //先获取当前生产的产品在此道工序中配置的物料BOM
-        RouteProductBomDTO param = new RouteProductBomDTO();
+       /* RouteProductBomDTO param = new RouteProductBomDTO();
         param.setProductId(feedback.getItemId());
         param.setRouteId(route.getId());
         List<RouteProductBomDTO> boms = routeProductBomApi.getList(param);
@@ -247,7 +259,36 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
             }
         }else {
             return  null; //如果本道工序没有配置BOM物料，则直接返回空
+        }*/
+        // 根据当前的任务编号， 找寻Bom上料详情的物料信息
+        FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
+        exportReqVO.setTaskCode(feedback.getTaskCode());
+        List<FeedLineDO> feedLines = feedLineService.getFeedLineList(exportReqVO);
+        if(CollectionUtil.isEmpty(feedLines)){
+            return null; //如果没有找到Bom上料详情，则直接返回空
         }
+        List<ItemConsumeLineDO> lines = new ArrayList<>();
+        for (FeedLineDO feedLine: feedLines) {
+            // 根据当前上料记录创建物料消耗
+            ItemConsumeLineDO line = new ItemConsumeLineDO();
+            line.setRecordId(itemConsume.getId());
+            line.setItemId(feedLine.getItemId());
+            line.setItemCode(feedLine.getItemCode());
+            line.setItemName(feedLine.getItemName());
+            line.setSpecification(feedLine.getSpecification());
+            line.setUnitOfMeasure(feedLine.getUnitOfMeasure());
+            line.setQuantityConsume(BigDecimal.valueOf(feedLine.getQuantity()));
+            line.setBatchCode(workorder.getBatchCode());
+            line.setMaterialStockId(feedLine.getMaterialStockId());
+            line.setLocationCode(feedLine.getLocationCode());
+            line.setLocationId(feedLine.getLocationId());
+            line.setLocationName(feedLine.getLocationName());
+            line.setAreaCode(feedLine.getAreaCode());
+            line.setAreaId(feedLine.getAreaId());
+            line.setAreaName(feedLine.getAreaName());
+            lines.add(line);
+        }
+        itemConsumeLineMapper.insertBatch(lines);
 
         return itemConsume;
     }

@@ -128,4 +128,13 @@ public class FeedbackPageReqVO extends PageParam {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "批次号")
+    private String batchCode;
+
+    @Schema(description = "ERP批次号")
+    private String erpBatchCode;
+
+    @Schema(description = "班组编号")
+    private String teamCode;
+
 }

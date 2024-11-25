@@ -36,14 +36,14 @@ public class PrintLogController {
 
     @PostMapping("/create")
     @Operation(summary = "创建打印日志")
-    @PreAuthorize("@ss.hasPermission('report:print-log:create')")
+    //@PreAuthorize("@ss.hasPermission('report:print-log:create')")
     public CommonResult<Long> createPrintLog(@Valid @RequestBody PrintLogCreateReqVO createReqVO) {
         return success(printLogService.createPrintLog(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新打印日志")
-    @PreAuthorize("@ss.hasPermission('report:print-log:update')")
+    //@PreAuthorize("@ss.hasPermission('report:print-log:update')")
     public CommonResult<Boolean> updatePrintLog(@Valid @RequestBody PrintLogUpdateReqVO updateReqVO) {
         printLogService.updatePrintLog(updateReqVO);
         return success(true);
@@ -60,7 +60,7 @@ public class PrintLogController {
 
     @GetMapping("/get")
     @Operation(summary = "获得打印日志")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    //@Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('report:print-log:query')")
     public CommonResult<PrintLogRespVO> getPrintLog(@RequestParam("id") Long id) {
         PrintLogDO printLog = printLogService.getPrintLog(id);

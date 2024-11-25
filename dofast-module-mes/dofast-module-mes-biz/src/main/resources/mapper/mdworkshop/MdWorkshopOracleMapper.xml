@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.mes.dal.oracle.mdworkshop.MdWorkshopOracleMapper">
+
+    <!--
+        一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
+        无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
+     -->
+    <!-- 编写查询语句 -->
+    <select id="initWorkShop" resultType="java.util.HashMap">
+        -- 获取所有车间信息
+        -- 生成的ID后续要丢给工作站信息做绑定
+        select distinct a.OOEF001 AS WORKSHOPCODE , B.OOEFL003 AS WORKSHOPNAME , a.OOEFSTUS AS DELETED from DSDATA.OOEF_T a
+            left join DSDATA.OOEFL_T b on a.OOEF001 = B.OOEFL001
+            where b.ooefl002 = 'zh_CN' and b.OOEFL003 LIKE '%澳美-生产车间%' AND a.ooefent = 100 and a.OOEFSTUS = 'Y'
+    </select>
+
+
+</mapper>

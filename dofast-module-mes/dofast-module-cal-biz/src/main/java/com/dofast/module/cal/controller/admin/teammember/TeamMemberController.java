@@ -1,5 +1,7 @@
 package com.dofast.module.cal.controller.admin.teammember;
 
+import com.dofast.module.cal.dal.dataobject.team.TeamDO;
+import com.dofast.module.cal.service.team.TeamService;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +39,8 @@ public class TeamMemberController {
     @Resource
     private TeamMemberService teamMemberService;
 
+    @Resource
+    private TeamService teamSerice;
     @PostMapping("/create")
     @Operation(summary = "创建班组成员")
     @PreAuthorize("@ss.hasPermission('cal:team-member:create')")
@@ -68,6 +72,16 @@ public class TeamMemberController {
     public CommonResult<TeamMemberRespVO> getTeamMember(@RequestParam("id") Long id) {
         TeamMemberDO teamMember = teamMemberService.getTeamMember(id);
         return success(TeamMemberConvert.INSTANCE.convert(teamMember));
+    }
+
+    @GetMapping("/getByTeamCode")
+    @Operation(summary = "获得班组成员")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('cal:team-member:query')")
+    public CommonResult<List<TeamMemberDO>> getTeamMemberByTeamCode(@RequestParam("teamCode") String teamCode) {
+        TeamDO team = teamSerice.getTeam(teamCode);
+        List<TeamMemberDO> teamMember = teamMemberService.getTeamMemberByTeamId(team.getId());
+        return success(teamMember);
     }
 
     @GetMapping("/list")

@@ -56,11 +56,16 @@ public class Constant {
     public static final String ORDER_STATUS_APPROVING="APPROVING";
     public static final String ORDER_STATUS_APPROVED="APPROVED";
     public static final String ORDER_STATUS_FINISHED="FINISHED";
+
     /**
      * 库存事务类型
      */
     public static final String TRANSACTION_TYPE_ITEM_RECPT = "ITEM_RECPT"; //原材料接收入库
     public static final String TRANSACTION_TYPE_ITEM_RTV = "ITEM_RTV"; //原材料退回供应商
+
+    public static final String TRANSACTION_TYPE_ITEM_ALLOCATED_OUT = "ITEM_ALLOCATED_OUT"; //生产领用-出库事务
+    public static final String TRANSACTION_TYPE_ITEM_ALLOCATED_IN = "ITEM_ALLOCATED_IN"; //生产领用-入库事务
+
     public static final String TRANSACTION_TYPE_ITEM_ISSUE_OUT = "ITEM_ISSUE_OUT"; //生产领用-出库事务
     public static final String TRANSACTION_TYPE_ITEM_ISSUE_IN = "ITEM_ISSUE_IN"; //生产领用-入库事务
 
@@ -78,6 +83,7 @@ public class Constant {
 
     public static final String TRANSACTION_TYPE_PRODUCT_ISSUE = "PRODUCT_SALSE"; //销售出库
     public static final String TRANSACTION_TYPE_PRODUCT_RS = "PRODUCT_RT"; //销售退货
+
 
     /**
      * 默认线边库对应的仓库、库区、库位编码
@@ -106,4 +112,13 @@ public class Constant {
     public static final String TRANSFER_CODE ="TRANSFER_CODE"; //移库
     public static final String STOCKTAKING_CODE ="STOCKTAKING_CODE"; //盘库单
     public static final String FEEDBACK_CODE ="FEEDBACK_CODE"; //报工单
+
+    /**
+     * 仓库编码
+     */
+    public static final String WAREHOUSE_CODE = "WH166";
+    public static final String LINE_EDGE_CODE = "WH165";
+
+
+
 }

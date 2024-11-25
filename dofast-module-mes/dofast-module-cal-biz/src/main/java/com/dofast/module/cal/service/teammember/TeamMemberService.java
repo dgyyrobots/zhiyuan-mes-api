@@ -44,6 +44,15 @@ public interface TeamMemberService {
     TeamMemberDO getTeamMember(Long id);
 
     /**
+     * 获得班组成员
+     *
+     * @param id 编号
+     * @return 班组成员
+     */
+    List<TeamMemberDO> getTeamMemberByTeamId(Long id);
+
+
+    /**
      * 获得班组成员列表
      *
      * @param ids 编号

@@ -15,6 +15,12 @@ import com.dofast.module.mes.dal.mysql.mdproductbom.MdProductBomMapper;
 import static com.dofast.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.dofast.module.mes.enums.ErrorCodeConstants.*;
 
+
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ListUtil;
+
+
 /**
  * 产品BOM关系 Service 实现类
  *
@@ -71,6 +77,11 @@ public class MdProductBomServiceImpl implements MdProductBomService {
 
     @Override
     public List<MdProductBomDO> getMdProductBomList(Collection<Long> ids) {
+
+        if (CollUtil.isEmpty(ids)) {
+            return ListUtil.empty();
+        }
+
         return mdProductBomMapper.selectBatchIds(ids);
     }
 

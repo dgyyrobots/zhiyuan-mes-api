@@ -15,4 +15,17 @@ public class TeamUpdateReqVO extends TeamBaseVO {
     @NotNull(message = "班组ID不能为空")
     private Long id;
 
+    /**
+     * 负责人Id
+     */
+    private Long principalId;
+    /**
+     * 负责人名称
+     */
+    private String principalName;
+    /**
+     * 班组人数
+     */
+    private Long personCount;
+
 }

@@ -1,5 +1,6 @@
 package com.dofast.module.pro.dal.dataobject.feedback;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -172,4 +173,19 @@ public class FeedbackDO extends BaseDO {
      * 实付价格
      */
     private Double payFee;
+
+    /**
+     * 批次号
+     */
+    private String batchCode;
+
+    /**
+     * ERP批次号
+     */
+    private String erpBatchCode;
+
+    /**
+     * 班组编号
+     */
+    private String teamCode;
 }

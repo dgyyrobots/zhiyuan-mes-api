@@ -68,4 +68,5 @@ public interface IssueLineService {
      */
     List<IssueLineDO> getIssueLineList(IssueLineExportReqVO exportReqVO);
 
+    List<IssueLineDO> getIssueLineByHeaderId(Long headerId);
 }

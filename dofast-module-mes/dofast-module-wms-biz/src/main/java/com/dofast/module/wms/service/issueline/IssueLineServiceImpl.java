@@ -89,4 +89,9 @@ public class IssueLineServiceImpl implements IssueLineService {
         return issueLineMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public List<IssueLineDO> getIssueLineByHeaderId(Long headerId){
+        return issueLineMapper.selectList(IssueLineDO::getIssueId, headerId);
+    }
+
 }

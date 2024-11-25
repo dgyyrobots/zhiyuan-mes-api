@@ -67,6 +67,12 @@ public class FeedbackServiceImpl implements FeedbackService {
             throw exception(MD_WORKSTATION_NOT_EXISTS);
         }
         FeedbackDO feedback = FeedbackConvert.INSTANCE.convert(createReqVO);
+        // 获取本次任务单数量， 作为报工的衡量依据
+        TaskDO task =  taskService.getTask(createReqVO.getTaskId());
+        if(task==null){
+            throw exception(FEEDBACK_TASK_NOT_EXISTS);
+        }
+        feedback.setQuantity( task.getQuantity());
         feedbackMapper.insert(feedback);
         // 返回
         return feedback.getId();

@@ -24,7 +24,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
         return selectPage(reqVO, new LambdaQueryWrapperX<WorkorderDO>()
                 .eqIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderCode())
                 .likeIfPresent(WorkorderDO::getWorkorderName, reqVO.getWorkorderName())
-                .eqIfPresent(WorkorderDO::getOrderSource, reqVO.getOrderSource())
+                //.eqIfPresent(WorkorderDO::getOrderSource, reqVO.getOrderSource())
                 .eqIfPresent(WorkorderDO::getSourceCode, reqVO.getSourceCode())
                 .eqIfPresent(WorkorderDO::getProductId, reqVO.getProductId())
                 .eqIfPresent(WorkorderDO::getProductCode, reqVO.getProductCode())
@@ -52,6 +52,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
                 .betweenIfPresent(WorkorderDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(WorkorderDO::getAdjuncts, reqVO.getAdjuncts())
                 .eqIfPresent(WorkorderDO::getMixinOrderId, reqVO.getMixinOrderId())
+                .notInIfPresent(WorkorderDO::getOrderSource, Collections.singleton("4"))
                 .orderByAsc(WorkorderDO::getRequestDate)
                 .orderByDesc(WorkorderDO::getProductSpc));
     }
@@ -131,7 +132,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
         return selectCount(new LambdaQueryWrapperX<WorkorderDO>()
                 .eqIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderCode())
                 .likeIfPresent(WorkorderDO::getWorkorderName, reqVO.getWorkorderName())
-                .eqIfPresent(WorkorderDO::getOrderSource, reqVO.getOrderSource())
+                //.eqIfPresent(WorkorderDO::getOrderSource, reqVO.getOrderSource())
                 .eqIfPresent(WorkorderDO::getSourceCode, reqVO.getSourceCode())
                 .eqIfPresent(WorkorderDO::getProductId, reqVO.getProductId())
                 .eqIfPresent(WorkorderDO::getProductCode, reqVO.getProductCode())
@@ -158,7 +159,9 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
                 .eqIfPresent(WorkorderDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(WorkorderDO::getAdjuncts, reqVO.getAdjuncts())
                 .eqIfPresent(WorkorderDO::getIsOut, reqVO.getIsOut())
-                .eqIfPresent(WorkorderDO::getMixinOrderId, reqVO.getMixinOrderId()));
+                .eqIfPresent(WorkorderDO::getMixinOrderId, reqVO.getMixinOrderId())
+                .notInIfPresent(WorkorderDO::getOrderSource, Collections.singleton("4")));
+
     }
 
 }

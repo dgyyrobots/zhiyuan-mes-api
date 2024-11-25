@@ -1,6 +1,5 @@
 package com.dofast.module.pro.controller.admin.task.vo;
 
-import cn.hutool.core.date.DateTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
@@ -9,6 +8,8 @@ import java.math.BigDecimal;
 import java.math.BigDecimal;
 import java.math.BigDecimal;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -76,19 +77,19 @@ public class TaskBaseVO {
 
     @Schema(description = "排产数量", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "排产数量不能为空")
-    private Double quantity;
+    private BigDecimal quantity;
 
     @Schema(description = "已生产数量")
-    private Double quantityProduced;
+    private BigDecimal quantityProduced;
 
     @Schema(description = "合格品数量")
-    private Double quantityQuanlify;
+    private BigDecimal quantityQuanlify;
 
     @Schema(description = "不良品数量")
-    private Double quantityUnquanlify;
+    private BigDecimal quantityUnquanlify;
 
     @Schema(description = "调整数量")
-    private Double quantityChanged;
+    private BigDecimal quantityChanged;
 
     @Schema(description = "客户ID", example = "28858")
     private Long clientId;
@@ -123,9 +124,6 @@ public class TaskBaseVO {
     @Schema(description = "生产状态", example = "1")
     private String status;
 
-    @Schema(description = "是否打印（0：未打印，1已打印）")
-    private String isPrint;
-
     @Schema(description = "备注", example = "你猜")
     private String remark;
 
@@ -141,6 +139,9 @@ public class TaskBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "是否打印（0：未打印，1已打印）")
+    private String isPrint;
+
     @Schema(description = "实际开始操作时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime actualStartTime;
@@ -149,5 +150,13 @@ public class TaskBaseVO {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime actualEndTime;
 
-    public Long getId(){return null;}
+    @Schema(description = "母批次号")
+    private String parentBatchCode;
+
+    @Schema(description = "流水号")
+    private String serial;
+
+    @Schema(description = "报工状态")
+    private String feedbackStatus;
+
 }

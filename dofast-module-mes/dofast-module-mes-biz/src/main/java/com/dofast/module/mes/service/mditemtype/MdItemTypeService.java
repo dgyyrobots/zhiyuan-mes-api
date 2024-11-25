@@ -50,6 +50,8 @@ public interface MdItemTypeService {
      */
     MdItemTypeDO getMdItemType(Long id);
 
+    MdItemTypeDO getMdItemType(String itemTypeCode);
+
     /**
      * 获得物料产品分类列表
      *

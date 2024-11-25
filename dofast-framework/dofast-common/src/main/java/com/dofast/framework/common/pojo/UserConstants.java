@@ -196,9 +196,14 @@ public class UserConstants
     /**
      * 默认线边库对应的仓库、库区、库位编码
      */
-    public static  final String VIRTUAL_WH =/*"XBK_VIRTUAL"*/"WH161";
-    public static  final String VIRTUAL_WS =/*"XBKKQ_VIRTUAL"*/"L054";
-    public static  final String VIRTUAL_WA =/*"XBKKW_VIRTUAL"*/"A0040";
+    //public static  final String VIRTUAL_WH =/*"XBK_VIRTUAL"*/"WH161";
+    //public static  final String VIRTUAL_WS =/*"XBKKQ_VIRTUAL"*/"L054";
+    //public static  final String VIRTUAL_WA =/*"XBKKW_VIRTUAL"*/"A0040";
+
+    public static  final String VIRTUAL_WH ="XBK_VIRTUAL";
+    public static  final String VIRTUAL_WS ="XBKKQ_VIRTUAL";
+    public static  final String VIRTUAL_WA ="XBKKW_VIRTUAL";
+
 
     /**
      * 条码格式

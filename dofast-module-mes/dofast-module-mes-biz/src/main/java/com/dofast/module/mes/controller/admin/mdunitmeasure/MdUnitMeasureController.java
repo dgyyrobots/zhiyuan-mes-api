@@ -47,7 +47,7 @@ public class MdUnitMeasureController {
     }
 
     @GetMapping("/selectall")
-    @PreAuthorize("@ss.hasPermission('mes:md-item-type:query')")
+    @PreAuthorize("@ss.hasPermission('mes:md-unit-measure:query')")
     @Operation(summary = "获得列表select-all")
     public CommonResult selectAll(){
         MdUnitMeasureListVO mdUnitMeasure = new MdUnitMeasureListVO();

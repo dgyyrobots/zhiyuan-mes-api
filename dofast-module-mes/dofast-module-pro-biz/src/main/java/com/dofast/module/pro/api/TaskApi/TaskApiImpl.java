@@ -2,6 +2,7 @@ package com.dofast.module.pro.api.TaskApi;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
+import com.dofast.module.pro.controller.admin.task.vo.TaskUpdateReqVO;
 import com.dofast.module.pro.dal.dataobject.task.TaskDO;
 import com.dofast.module.pro.service.task.TaskService;
 import org.springframework.stereotype.Service;
@@ -19,4 +20,11 @@ public class TaskApiImpl implements TaskApi{
         TaskDTO taskDTO = BeanUtil.toBean(taskDO, TaskDTO.class);
         return taskDTO;
     }
+
+    @Override
+    public  void updateTask(TaskDTO taskDTO){
+        TaskUpdateReqVO reqVO = BeanUtil.toBean(taskDTO, TaskUpdateReqVO.class);
+        taskService.updateTask(reqVO);
+    }
+
 }

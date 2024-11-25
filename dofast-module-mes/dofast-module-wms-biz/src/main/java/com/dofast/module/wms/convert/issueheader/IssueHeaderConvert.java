@@ -24,7 +24,11 @@ public interface IssueHeaderConvert {
     IssueHeaderDO convert(IssueHeaderUpdateReqVO bean);
 
     IssueHeaderRespVO convert(IssueHeaderDO bean);
+
+
     IssueHeaderUpdateReqVO convert01(IssueHeaderDO bean);
+
+    IssueHeaderCreateReqVO convert02(IssueHeaderDO bean);
 
     List<IssueHeaderRespVO> convertList(List<IssueHeaderDO> list);
 

@@ -10,6 +10,5 @@ import javax.validation.constraints.*;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class TaskCreateReqVO extends TaskBaseVO {
-    @Schema(description = "任务ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "20491")
-    private Long id;
+
 }

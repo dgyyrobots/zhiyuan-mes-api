@@ -97,4 +97,9 @@ public class IssueHeaderServiceImpl implements IssueHeaderService {
         return issueHeaderMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public List<Map<String, Object>> initBomByWorkOrder(String workOrderNo){
+        return issueHeaderMapper.initBomByWorkOrder(workOrderNo);
+    }
+
 }

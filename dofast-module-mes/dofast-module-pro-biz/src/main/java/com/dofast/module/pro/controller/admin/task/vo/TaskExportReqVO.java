@@ -1,7 +1,5 @@
 package com.dofast.module.pro.controller.admin.task.vo;
 
-import cn.hutool.core.date.DateTime;
-import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -66,19 +64,19 @@ public class TaskExportReqVO {
     private String unitOfMeasure;
 
     @Schema(description = "排产数量")
-    private Double quantity;
+    private BigDecimal quantity;
 
     @Schema(description = "已生产数量")
-    private Double quantityProduced;
+    private BigDecimal quantityProduced;
 
     @Schema(description = "合格品数量")
-    private Double quantityQuanlify;
+    private BigDecimal quantityQuanlify;
 
     @Schema(description = "不良品数量")
-    private Double quantityUnquanlify;
+    private BigDecimal quantityUnquanlify;
 
     @Schema(description = "调整数量")
-    private Double quantityChanged;
+    private BigDecimal quantityChanged;
 
     @Schema(description = "客户ID", example = "28858")
     private Long clientId;
@@ -94,27 +92,24 @@ public class TaskExportReqVO {
 
     @Schema(description = "开始生产时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime startTime;
+    private LocalDateTime[] startTime;
 
     @Schema(description = "生产时长")
     private Integer duration;
 
     @Schema(description = "完成生产时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime endTime;
+    private LocalDateTime[] endTime;
 
     @Schema(description = "甘特图显示颜色")
     private String colorCode;
 
     @Schema(description = "需求日期")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime requestDate;
+    private LocalDateTime[] requestDate;
 
     @Schema(description = "生产状态", example = "1")
     private String status;
-
-    @Schema(description = "是否打印（0：未打印，1已打印）")
-    private String isPrint;
 
     @Schema(description = "备注", example = "你猜")
     private String remark;
@@ -133,14 +128,25 @@ public class TaskExportReqVO {
 
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime createTime;
+    private LocalDateTime[] createTime;
+
+    @Schema(description = "是否打印（0：未打印，1已打印）")
+    private String isPrint;
 
     @Schema(description = "实际开始操作时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime actualStartTime;
+    private LocalDateTime[] actualStartTime;
 
     @Schema(description = "实际结束时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime actualEndTime;
+    private LocalDateTime[] actualEndTime;
 
+    @Schema(description = "母批次号")
+    private String parentBatchCode;
+
+    @Schema(description = "流水号")
+    private String serial;
+
+    @Schema(description = "报工状态")
+    private String feedbackStatus;
 }

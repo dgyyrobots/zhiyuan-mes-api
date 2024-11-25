@@ -145,4 +145,9 @@ public class IssueHeaderDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * 虚拟字段-bom列表
+     */
+    //private List<Map<String, Object>> bomList;
+
 }

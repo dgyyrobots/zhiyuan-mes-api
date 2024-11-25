@@ -19,7 +19,6 @@
             <version>${revision}</version>
         </dependency>
 
-
         <dependency>
             <groupId>vip.huizhizao</groupId>
             <artifactId>dofast-module-qms-api</artifactId>
@@ -48,6 +47,12 @@
         <dependency>
             <groupId>vip.huizhizao</groupId>
             <artifactId>dofast-module-trade-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-cal-biz</artifactId>
             <version>${revision}</version>
         </dependency>
 

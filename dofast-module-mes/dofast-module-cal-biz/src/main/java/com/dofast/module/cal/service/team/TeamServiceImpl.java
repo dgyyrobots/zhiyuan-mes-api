@@ -65,6 +65,11 @@ public class TeamServiceImpl implements TeamService {
     }
 
     @Override
+    public  TeamDO getTeam(String teamCode){
+        return teamMapper.selectOne(TeamDO::getTeamCode, teamCode);
+    }
+
+    @Override
     public List<TeamDO> getTeamList(Collection<Long> ids) {
         if (ids != null) {
             return teamMapper.selectBatchIds(ids);

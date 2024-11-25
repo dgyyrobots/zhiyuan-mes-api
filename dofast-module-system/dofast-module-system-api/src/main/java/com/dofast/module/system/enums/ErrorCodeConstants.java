@@ -197,9 +197,11 @@ public interface ErrorCodeConstants {
     
     // === 表单历史 1025004000 ===
     ErrorCode FORM_RECORD_NOT_EXISTS = new ErrorCode(1025004000, "表单历史不存在");
-
-
 	ErrorCode PHONENNUMBER_IS_EXIST = new ErrorCode(716004, "手机号已存在，无法创建");
+
+
+	ErrorCode USERS_FACE_NOT_EXISTS = new ErrorCode(716005, "用户人脸识别数据不存在!");
+
 
 
 }

@@ -12,4 +12,10 @@ import javax.validation.constraints.*;
 public class FeedbackCreateReqVO extends FeedbackBaseVO {
     @Schema(description = "报工ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "20491")
     private Long id;
+
+    @Schema(description = "任务ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "20491")
+    private Long taskId;
+
+    @Schema(description = "报工班组成员列表")
+    private List<Map<String, Object>> feedbackMemberList;
 }

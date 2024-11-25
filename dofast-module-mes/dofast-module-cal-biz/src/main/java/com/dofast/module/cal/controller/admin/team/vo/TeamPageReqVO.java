@@ -1,6 +1,5 @@
 package com.dofast.module.cal.controller.admin.team.vo;
 
-import java.time.LocalDate;
 import lombok.*;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -43,5 +42,14 @@ public class TeamPageReqVO extends PageParam {
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
+
+    @Schema(description = "负责人Id", example = "216")
+    private Long principalId;
+
+    @Schema(description = "负责人名称", example = "张三")
+    private String principalName;
+
+    @Schema(description = "班组人数", example = "32463")
+    private Long personCount;
 
 }

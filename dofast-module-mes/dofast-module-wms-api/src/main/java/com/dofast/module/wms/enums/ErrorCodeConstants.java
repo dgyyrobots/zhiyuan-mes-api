@@ -74,7 +74,7 @@ public interface ErrorCodeConstants {
     ErrorCode ISSUE_HEADER_NOT_DELETED = new ErrorCode(621004, "只能删除草稿状态的单据");
     ErrorCode ISSUE_HEADER_NEED_LINE = new ErrorCode(621004, "请指定领出的物资");
     ErrorCode ISSUE_HEADER_NEED_PROCESS_LINE = new ErrorCode(621005, "没有需要处理的领料单行");
-
+    ErrorCode ALLOCATED_HEADER_NEED_PROCESS_LINE = new ErrorCode(621006, "没有需要处理的调拨单行");
     ErrorCode RT_ISSUE_LINE_NOT_EXISTS = new ErrorCode(622001, "生产退料单行不存在");
     ErrorCode RT_ISSUE_NOT_EXISTS = new ErrorCode(622002, "生产退料单头不存在");
     ErrorCode RT_ISSUE_CODE_EXISTS = new ErrorCode(622003, "退料单编号已存在");
@@ -108,5 +108,12 @@ public interface ErrorCodeConstants {
     ErrorCode ITEM_CONSUME_LINE_NOT_EXISTS = new ErrorCode(628001, "物料消耗记录行不存在");
 
     ErrorCode STORAGECORE_IS_NOT_EXITS=new ErrorCode(717012,"未找到仓库");
+
+    ErrorCode ALLOCATED_HEADER_NOT_EXISTS = new ErrorCode(629001, "调拨单头不存在");
+    ErrorCode ALLOCATED_LINE_NOT_EXISTS = new ErrorCode(629002, "调拨单身不存在");
+    ErrorCode ALLOCATED_LINE_STATUS_ERROR = new ErrorCode(629003, "仅允许选择已调拨的单据信息!");
+
+
+    ErrorCode FEED_LINE_NOT_EXISTS = new ErrorCode(630004, "上料详情不存在");
 
 }

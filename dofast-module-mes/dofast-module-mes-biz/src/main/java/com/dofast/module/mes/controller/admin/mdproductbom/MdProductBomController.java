@@ -1,6 +1,5 @@
 package com.dofast.module.mes.controller.admin.mdproductbom;
 
-import com.dofast.module.mes.enums.ErrorCodeConstants;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -17,8 +16,6 @@ import java.io.IOException;
 
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.pojo.CommonResult;
-
-import static com.dofast.framework.common.pojo.CommonResult.error;
 import static com.dofast.framework.common.pojo.CommonResult.success;
 
 import com.dofast.framework.excel.core.util.ExcelUtils;
@@ -44,9 +41,6 @@ public class MdProductBomController {
     @Operation(summary = "创建产品BOM关系")
     @PreAuthorize("@ss.hasPermission('mes:md-product-bom:create')")
     public CommonResult<Long> createMdProductBom(@Valid @RequestBody MdProductBomCreateReqVO createReqVO) {
-        if(createReqVO.getBomItemId() == createReqVO.getItemId()){
-            return  error(ErrorCodeConstants.MD_PRODUCT_BOM_NOT_BE_SELF);
-        }
         return success(mdProductBomService.createMdProductBom(createReqVO));
     }
 

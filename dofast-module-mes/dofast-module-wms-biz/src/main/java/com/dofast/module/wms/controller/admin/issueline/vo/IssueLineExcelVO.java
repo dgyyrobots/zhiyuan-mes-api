@@ -92,4 +92,7 @@ public class IssueLineExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("领料状态(Y/N)")
+    private String status;
+
 }

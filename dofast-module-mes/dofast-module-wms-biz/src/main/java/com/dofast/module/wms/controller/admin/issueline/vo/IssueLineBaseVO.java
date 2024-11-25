@@ -86,4 +86,7 @@ public class IssueLineBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "领料状态(Y/N)", example = "1")
+    private String status;
+
 }

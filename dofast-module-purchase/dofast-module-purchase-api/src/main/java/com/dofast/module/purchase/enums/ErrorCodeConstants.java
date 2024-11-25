@@ -18,5 +18,7 @@ public interface ErrorCodeConstants {
     // === 采购退货 1030004000 ===
     ErrorCode REFUND_NOT_EXISTS = new ErrorCode(1030004000, "采购退货不存在");
 
+    ErrorCode GOODS_NOT_WAREHOUSE = new ErrorCode(1030005000, "采购商品未入库");
 
+    ErrorCode MATERIAL_NOT_WAREHOUSE = new ErrorCode(1030006000, "当前物料未入库");
 }

@@ -11,7 +11,7 @@ import javax.validation.constraints.*;
 @ToString(callSuper = true)
 public class MdProductBomUpdateReqVO extends MdProductBomBaseVO {
 
-    @Schema(description = "流水号", requiredMode = Schema.RequiredMode.REQUIRED, example = "16552")
+    @Schema(description = "流水号", requiredMode = Schema.RequiredMode.REQUIRED, example = "29402")
     @NotNull(message = "流水号不能为空")
     private Long id;
 

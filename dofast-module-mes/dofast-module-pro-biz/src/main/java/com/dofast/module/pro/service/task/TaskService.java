@@ -42,6 +42,10 @@ public interface TaskService {
      * @return 生产任务
      */
     TaskDO getTask(Long id);
+
+    TaskDO getTask(String taskCode);
+
+
     /**
      * 获得我的生产任务
      *
@@ -106,4 +110,13 @@ public interface TaskService {
 
 
     Boolean updatePrintById(Long id);
+
+    /**
+     * 获得生产任务
+     *
+     * @param teamCode 班组编号
+     * @return 生产任务
+     */
+    List<TaskDO> getTaskByTeamCode(String teamCode);
+
 }

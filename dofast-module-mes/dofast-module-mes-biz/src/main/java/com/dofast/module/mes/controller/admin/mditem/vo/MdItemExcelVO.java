@@ -106,4 +106,8 @@ public class MdItemExcelVO {
     @ExcelProperty("入库日期")
     private LocalDateTime recptDate;
 
+    @ExcelProperty("附件信息")
+    private String adjuncts;
+
+
 }

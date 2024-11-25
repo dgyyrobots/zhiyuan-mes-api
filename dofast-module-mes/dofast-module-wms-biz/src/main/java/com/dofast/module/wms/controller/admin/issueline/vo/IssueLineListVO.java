@@ -1,6 +1,7 @@
 package com.dofast.module.wms.controller.admin.issueline.vo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -57,4 +58,7 @@ public class IssueLineListVO {
     private Integer attr4;
 
     private LocalDateTime createTime;
+
+    private String status;
+
 }

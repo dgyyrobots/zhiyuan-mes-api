@@ -20,6 +20,7 @@ public interface   ErrorCodeConstants {
 
 
     ErrorCode MD_UNIT_MEASURE_NOT_EXISTS = new ErrorCode(412001, "单位不存在");
+    ErrorCode MD_UNIT_CONVERSE_NOT_EXISTS = new ErrorCode(412002, "单位换算不存在");
 
     ErrorCode MD_CLIENT_NOT_EXISTS = new ErrorCode(413001, "客户不存在");
     ErrorCode MD_CLIENT_NAME_NOT_UNIQUE = new ErrorCode(413002, "客户名称已存在");
@@ -59,4 +60,8 @@ public interface   ErrorCodeConstants {
     ErrorCode FREEZE_INFO_NOT_EXISTS = new ErrorCode(420002, "产品冻结信息不存在");
 
     ErrorCode DEFECTIVE_INFO_NOT_EXISTS = new ErrorCode(420003, "不良品信息管理不存在");
+
+    ErrorCode INTERFACE_LOG_NOT_EXISTS = new ErrorCode(430001, "接口操作日志不存在");
+
+
 }

@@ -22,9 +22,16 @@ public class RouteApiImpl implements RouteApi{
     private RouteProductMapper routeProductMapper;
 
     @Override
-    public RouteDTO getRoute(Long id) {
-        RouteProductDO routeProductDO = routeProductMapper.checkItemUnique(new RouteProductBaseVO().setItemId(id));
-        RouteDO routeDO = routeMapper.selectById(routeProductDO.getRouteId());
+    public RouteDTO getRoute(Long id, String routeCode) {
+//        RouteProductDO routeProductDO = routeProductMapper.checkItemUnique(new RouteProductBaseVO().setItemId(id));
+        // 基于工艺编码获取工艺信息
+        System.out.println("id:" + id + " routeCode:" + routeCode);
+        RouteDO routeDO = routeMapper.selectOne(RouteDO::getRouteCode, routeCode);
+        System.out.println("routeDO:" + routeDO);
+        System.out.println("routeDO.getId():" + routeDO.getId());
+        RouteProductDO routeProductDO = routeProductMapper.selectOne(RouteProductDO::getItemId, id ,RouteProductDO::getRouteId, routeDO.getId());
+        System.out.println("routeProductDO:" + routeProductDO);
+        //RouteDO routeDO = routeMapper.selectById(routeProductDO.getRouteId());
         RouteDTO routeDTO = BeanUtil.toBean(routeDO, RouteDTO.class);
         return routeDTO;
     }

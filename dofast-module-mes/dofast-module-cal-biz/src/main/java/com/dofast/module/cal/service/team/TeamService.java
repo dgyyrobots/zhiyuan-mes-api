@@ -44,6 +44,15 @@ public interface TeamService {
     TeamDO getTeam(Long id);
 
     /**
+     * 获得班组
+     *
+     * @param teamCode 编号
+     * @return 班组
+     */
+    TeamDO getTeam(String teamCode);
+
+
+    /**
      * 获得班组列表
      *
      * @param ids 编号

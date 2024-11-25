@@ -80,5 +80,9 @@ public class WorkorderBomDO extends BaseDO {
      * 预留字段4
      */
     private Integer attr4;
+    /**
+     * 项次
+     */
+    private Long sequence;
 
 }

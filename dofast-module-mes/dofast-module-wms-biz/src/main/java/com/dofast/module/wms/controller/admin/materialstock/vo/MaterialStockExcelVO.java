@@ -113,4 +113,6 @@ public class MaterialStockExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("入库状态(Y/N)")
+    private String recptStatus;
 }

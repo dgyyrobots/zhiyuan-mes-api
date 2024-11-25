@@ -44,6 +44,15 @@ public interface OrderService {
     OrderDO getOrder(Integer id);
 
     /**
+     * 获得采购订单
+     *
+     * @param poNo 编号
+     * @return 采购订单
+     */
+    OrderDO getOrder(String poNo);
+
+
+    /**
      * 获得采购订单列表
      *
      * @param ids 编号

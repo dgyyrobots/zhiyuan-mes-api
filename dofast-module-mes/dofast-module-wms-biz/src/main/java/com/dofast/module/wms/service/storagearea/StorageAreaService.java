@@ -55,6 +55,9 @@ public interface StorageAreaService {
      */
     StorageAreaDO getStorageArea(Long id);
 
+    StorageAreaDO getStorageArea(String areaCode);
+
+
     /**
      * 获得库位列表
      *
@@ -85,4 +88,12 @@ public interface StorageAreaService {
      * @return
      */
     public int deleteByLocationId(Long locationId);
+
+    /**
+     * 根据库区查询所有库位信息
+     * @param locationId
+     * @return
+     */
+    List<StorageAreaDO> getStorageAreaByLocationId(Long locationId);
+
 }

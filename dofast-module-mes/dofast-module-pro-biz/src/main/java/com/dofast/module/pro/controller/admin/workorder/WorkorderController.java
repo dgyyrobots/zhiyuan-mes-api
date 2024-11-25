@@ -61,6 +61,12 @@ public class WorkorderController {
     @Resource
     private ProductBomApi productBomApi;
 
+    @Resource
+    private TaskService taskService;
+
+    @Resource
+    private PrintLogApi printLogApi;
+
     @PostMapping("/create")
     @Operation(summary = "创建生产工单")
     @PreAuthorize("@ss.hasPermission('pro:workorder:create')")
@@ -114,7 +120,10 @@ public class WorkorderController {
     @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
     public CommonResult<WorkorderRespVO> getWorkorder(@RequestParam("id") Long id) {
         WorkorderDO workorder = workorderService.getWorkorder(id);
-        return success(WorkorderConvert.INSTANCE.convert(workorder));
+        System.out.println(workorder.getRouteCode());
+        WorkorderRespVO workorderRespVO = WorkorderConvert.INSTANCE.convert(workorder);
+        workorderRespVO.setRouteCode(workorder.getRouteCode());
+        return success(workorderRespVO);
     }
 
     @GetMapping("/list")
@@ -146,11 +155,7 @@ public class WorkorderController {
     }*/
 
 
-    @Resource
-    private TaskService taskService;
 
-    @Resource
-    private PrintLogApi printLogApi;
     @GetMapping("/page")
     @Operation(summary = "获得生产工单分页")
     @PreAuthorize("@ss.hasPermission('pro:workorder:query')")

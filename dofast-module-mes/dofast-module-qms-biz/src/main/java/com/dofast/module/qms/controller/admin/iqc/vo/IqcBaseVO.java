@@ -53,7 +53,6 @@ public class IqcBaseVO {
     private String vendorBatch;
 
     @Schema(description = "产品物料ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "22383")
-    @NotNull(message = "产品物料ID不能为空")
     private Long itemId;
 
     @Schema(description = "产品物料编码")

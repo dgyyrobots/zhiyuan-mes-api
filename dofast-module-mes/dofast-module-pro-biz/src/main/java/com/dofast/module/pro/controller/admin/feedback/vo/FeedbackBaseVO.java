@@ -133,4 +133,14 @@ public class FeedbackBaseVO {
 
     @Schema(description = "实付价格", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Double payFee;
+
+    @Schema(description = "批次号")
+    private String batchCode;
+
+    @Schema(description = "ERP批次号")
+    private String erpBatchCode;
+
+    @Schema(description = "班组编码")
+    private String teamCode;
+
 }

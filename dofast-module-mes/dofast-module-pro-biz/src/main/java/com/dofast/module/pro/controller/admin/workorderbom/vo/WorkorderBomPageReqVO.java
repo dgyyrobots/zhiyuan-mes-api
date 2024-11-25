@@ -39,7 +39,7 @@ public class WorkorderBomPageReqVO extends PageParam {
     private String itemOrProduct;
 
     @Schema(description = "预计使用量")
-    private BigDecimal quantity;
+    private Double quantity;
 
     @Schema(description = "备注", example = "随便")
     private String remark;
@@ -59,5 +59,8 @@ public class WorkorderBomPageReqVO extends PageParam {
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
+
+    @Schema(description = "项次")
+    private Long sequence;
 
 }

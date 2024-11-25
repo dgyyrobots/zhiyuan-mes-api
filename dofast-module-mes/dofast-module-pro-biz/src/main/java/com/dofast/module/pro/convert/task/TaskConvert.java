@@ -28,6 +28,8 @@ public interface TaskConvert {
 
     TaskRespVO convert(TaskDO bean);
 
+    TaskUpdateReqVO convert01(TaskDO bean);
+
     @Mappings({
             @Mapping(source = "id", target = "taskId")
     })

@@ -23,7 +23,6 @@ public interface GoodsMapper extends BaseMapperX<GoodsDO> {
                 .eqIfPresent(GoodsDO::getGoodsNumber, reqVO.getGoodsNumber())
                 .likeIfPresent(GoodsDO::getGoodsName, reqVO.getGoodsName())
                 .eqIfPresent(GoodsDO::getGoodsSpecs, reqVO.getGoodsSpecs())
-                .eqIfPresent(GoodsDO::getCompany, reqVO.getCompany())
                 .eqIfPresent(GoodsDO::getMonovalent, reqVO.getMonovalent())
                 .eqIfPresent(GoodsDO::getQuantity, reqVO.getQuantity())
                 .eqIfPresent(GoodsDO::getTaxes, reqVO.getTaxes())
@@ -31,6 +30,14 @@ public interface GoodsMapper extends BaseMapperX<GoodsDO> {
                 .likeIfPresent(GoodsDO::getCategoryName, reqVO.getCategoryName())
                 .likeIfPresent(GoodsDO::getBrandName, reqVO.getBrandName())
                 .betweenIfPresent(GoodsDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(GoodsDO::getCompany, reqVO.getCompany())
+                .eqIfPresent(GoodsDO::getPoNo, reqVO.getPoNo())
+                .eqIfPresent(GoodsDO::getReceiveNum, reqVO.getReceiveNum())
+                .eqIfPresent(GoodsDO::getUnitOfMeasure, reqVO.getUnitOfMeasure())
+                .eqIfPresent(GoodsDO::getStatus, reqVO.getStatus())
+                .betweenIfPresent(GoodsDO::getReceiveTime, reqVO.getReceiveTime())
+                .eqIfPresent(GoodsDO::getBatchCode, reqVO.getBatchCode())
+                .eqIfPresent(GoodsDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .orderByDesc(GoodsDO::getId));
     }
 
@@ -40,7 +47,6 @@ public interface GoodsMapper extends BaseMapperX<GoodsDO> {
                 .eqIfPresent(GoodsDO::getGoodsNumber, reqVO.getGoodsNumber())
                 .likeIfPresent(GoodsDO::getGoodsName, reqVO.getGoodsName())
                 .eqIfPresent(GoodsDO::getGoodsSpecs, reqVO.getGoodsSpecs())
-                .eqIfPresent(GoodsDO::getCompany, reqVO.getCompany())
                 .eqIfPresent(GoodsDO::getMonovalent, reqVO.getMonovalent())
                 .eqIfPresent(GoodsDO::getQuantity, reqVO.getQuantity())
                 .eqIfPresent(GoodsDO::getTaxes, reqVO.getTaxes())
@@ -48,6 +54,14 @@ public interface GoodsMapper extends BaseMapperX<GoodsDO> {
                 .likeIfPresent(GoodsDO::getCategoryName, reqVO.getCategoryName())
                 .likeIfPresent(GoodsDO::getBrandName, reqVO.getBrandName())
                 .betweenIfPresent(GoodsDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(GoodsDO::getCompany, reqVO.getCompany())
+                .eqIfPresent(GoodsDO::getPoNo, reqVO.getPoNo())
+                .eqIfPresent(GoodsDO::getReceiveNum, reqVO.getReceiveNum())
+                .eqIfPresent(GoodsDO::getUnitOfMeasure, reqVO.getUnitOfMeasure())
+                .eqIfPresent(GoodsDO::getStatus, reqVO.getStatus())
+                .betweenIfPresent(GoodsDO::getReceiveTime, reqVO.getReceiveTime())
+                .eqIfPresent(GoodsDO::getBatchCode, reqVO.getBatchCode())
+                .eqIfPresent(GoodsDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .orderByDesc(GoodsDO::getId));
     }
 

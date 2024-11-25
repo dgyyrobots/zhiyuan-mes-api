@@ -1,5 +1,7 @@
 package com.dofast.module.cal.service.teammember;
 
+import com.dofast.module.cal.dal.dataobject.team.TeamDO;
+import com.dofast.module.cal.dal.mysql.team.TeamMapper;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -27,11 +29,19 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     @Resource
     private TeamMemberMapper teamMemberMapper;
 
+    @Resource
+    private TeamMapper teamMapper;
+
     @Override
     public Long createTeamMember(TeamMemberCreateReqVO createReqVO) {
         // 插入
         TeamMemberDO teamMember = TeamMemberConvert.INSTANCE.convert(createReqVO);
         teamMemberMapper.insert(teamMember);
+        // 追加成员人数到班组表
+        Long count = teamMemberMapper.selectCount(TeamMemberDO::getTeamId, teamMember.getTeamId());
+        TeamDO teamDO = teamMapper.selectOne(TeamDO::getId, teamMember.getTeamId());
+        teamDO.setPersonCount(count);;
+        teamMapper.updateById(teamDO);
         // 返回
         return teamMember.getId();
     }
@@ -62,6 +72,11 @@ public class TeamMemberServiceImpl implements TeamMemberService {
     @Override
     public TeamMemberDO getTeamMember(Long id) {
         return teamMemberMapper.selectById(id);
+    }
+
+    @Override
+    public List<TeamMemberDO> getTeamMemberByTeamId(Long id){
+        return teamMemberMapper.selectList(TeamMemberDO::getTeamId, id);
     }
 
     @Override

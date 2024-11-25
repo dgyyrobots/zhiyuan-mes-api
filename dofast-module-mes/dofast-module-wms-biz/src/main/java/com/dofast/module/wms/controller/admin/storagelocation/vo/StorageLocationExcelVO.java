@@ -2,8 +2,6 @@ package com.dofast.module.wms.controller.admin.storagelocation.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-
-import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -31,7 +29,7 @@ public class StorageLocationExcelVO {
     private Long warehouseId;
 
     @ExcelProperty("面积")
-    private BigDecimal area;
+    private Object area;
 
     @ExcelProperty("是否开启库位管理")
     private String areaFlag;
@@ -53,5 +51,8 @@ public class StorageLocationExcelVO {
 
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
+
+    @ExcelProperty("工序编码")
+    private String processCode;
 
 }

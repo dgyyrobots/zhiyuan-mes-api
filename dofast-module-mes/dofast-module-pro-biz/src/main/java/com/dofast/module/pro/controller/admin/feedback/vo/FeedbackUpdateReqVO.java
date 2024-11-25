@@ -15,4 +15,7 @@ public class FeedbackUpdateReqVO extends FeedbackBaseVO {
     @NotNull(message = "记录ID不能为空")
     private Long id;
 
+    @Schema(description = "报工班组成员列表")
+    private List<Map<String, Object>> feedbackMemberList;
+
 }

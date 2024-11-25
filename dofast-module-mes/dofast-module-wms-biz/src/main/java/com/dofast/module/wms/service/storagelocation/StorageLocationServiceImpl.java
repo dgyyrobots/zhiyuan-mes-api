@@ -97,6 +97,12 @@ public class StorageLocationServiceImpl implements StorageLocationService {
     }
 
     @Override
+    public  StorageLocationDO getStorageLocation(String processCode){
+        return storageLocationMapper.selectOne(StorageLocationDO::getProcessCode,processCode);
+    }
+
+
+    @Override
     public List<StorageLocationDO> getStorageLocationList(Collection<Long> ids) {
         return storageLocationMapper.selectBatchIds(ids);
     }

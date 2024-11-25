@@ -3,7 +3,6 @@ package com.dofast.module.mes.controller.admin.mdproductbom.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 
@@ -41,9 +40,6 @@ public class MdProductBomExcelVO {
     @ExcelProperty("产品物料标识")
     private String itemOrProduct;
 
-    @ExcelProperty("物料使用比例")
-    private Double quantity;
-
     @ExcelProperty("是否启用")
     private String enableFlag;
 
@@ -64,5 +60,14 @@ public class MdProductBomExcelVO {
 
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
+
+    @ExcelProperty("物料使用比例")
+    private Double quantity;
+
+    @ExcelProperty("倒扣料标识")
+    private String inverted;
+
+    @ExcelProperty("项次")
+    private Long sequence;
 
 }

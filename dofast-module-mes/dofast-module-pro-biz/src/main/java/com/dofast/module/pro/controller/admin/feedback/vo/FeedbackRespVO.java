@@ -1,8 +1,10 @@
 package com.dofast.module.pro.controller.admin.feedback.vo;
 
+import com.dofast.module.pro.dal.dataobject.feedbackmember.FeedbackMemberDO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Schema(description = "管理后台 - 生产报工记录 Response VO")
 @Data
@@ -15,5 +17,8 @@ public class FeedbackRespVO extends FeedbackBaseVO {
 
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
+
+    @Schema(description = "报工班组人员")
+    private List<FeedbackMemberDO> memberList;
 
 }

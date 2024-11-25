@@ -15,6 +15,12 @@ import com.dofast.module.purchase.dal.mysql.goods.GoodsMapper;
 import static com.dofast.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.dofast.module.purchase.enums.ErrorCodeConstants.*;
 
+
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ListUtil;
+
+
 /**
  * 采购商品明细 Service 实现类
  *
@@ -66,6 +72,11 @@ public class GoodsServiceImpl implements GoodsService {
 
     @Override
     public List<GoodsDO> getGoodsList(Collection<Integer> ids) {
+
+        if (CollUtil.isEmpty(ids)) {
+            return ListUtil.empty();
+        }
+
         return goodsMapper.selectBatchIds(ids);
     }
 

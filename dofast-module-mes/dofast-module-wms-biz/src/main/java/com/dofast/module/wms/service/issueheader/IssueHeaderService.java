@@ -70,4 +70,11 @@ public interface IssueHeaderService {
      */
     List<IssueHeaderDO> getIssueHeaderList(IssueHeaderExportReqVO exportReqVO);
 
+    /**
+     * 根据工单号获取BOM信息
+     * @param workOrderNo
+     * @return
+     */
+    List<Map<String, Object>> initBomByWorkOrder(String workOrderNo);
+
 }

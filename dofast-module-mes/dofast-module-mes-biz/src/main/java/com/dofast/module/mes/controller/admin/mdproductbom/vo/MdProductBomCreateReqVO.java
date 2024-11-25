@@ -10,7 +10,5 @@ import javax.validation.constraints.*;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class MdProductBomCreateReqVO extends MdProductBomBaseVO {
-    @Schema(description = "流水号", requiredMode = Schema.RequiredMode.REQUIRED, example = "16552")
-    private Long id;
 
 }

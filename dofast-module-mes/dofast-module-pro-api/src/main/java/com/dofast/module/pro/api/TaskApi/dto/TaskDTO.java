@@ -156,4 +156,14 @@ public class TaskDTO {
      */
     private Integer attr4;
 
+    /**
+     * 母批次号
+     */
+    private String parentBatchCode;
+
+    /**
+     * 流水号
+     */
+    private String serial;
+
 }

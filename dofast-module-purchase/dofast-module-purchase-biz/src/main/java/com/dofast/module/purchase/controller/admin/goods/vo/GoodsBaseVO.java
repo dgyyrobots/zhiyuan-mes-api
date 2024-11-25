@@ -1,11 +1,15 @@
 package com.dofast.module.purchase.controller.admin.goods.vo;
 
-import java.time.LocalDate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import javax.validation.constraints.*;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import static com.dofast.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
 
 /**
  * 采购商品明细 Base VO，提供给添加、修改、详细的子 VO 使用
@@ -26,9 +30,6 @@ public class GoodsBaseVO {
     @Schema(description = "商品规格")
     private String goodsSpecs;
 
-    @Schema(description = "商品单位")
-    private Integer company;
-
     @Schema(description = "采购单价")
     private Object monovalent;
 
@@ -46,5 +47,30 @@ public class GoodsBaseVO {
 
     @Schema(description = "品牌名称", example = "李四")
     private String brandName;
+
+    @Schema(description = "商品单位")
+    private String company;
+
+    @Schema(description = "采购订单号")
+    private String poNo;
+
+    @Schema(description = "入库数量")
+    private Integer receiveNum;
+
+    @Schema(description = "入库单位")
+    private String unitOfMeasure;
+
+    @Schema(description = "状态（0-未打印，1-已打印，2-已入库）", example = "2")
+    private Integer status;
+
+    @Schema(description = "收货时间")
+    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    private LocalDateTime receiveTime;
+
+    @Schema(description = "批次")
+    private String batchCode;
+
+    @Schema(description = "母批次")
+    private String parentBatchCode;
 
 }

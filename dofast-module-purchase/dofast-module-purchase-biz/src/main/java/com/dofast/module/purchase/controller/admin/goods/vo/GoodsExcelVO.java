@@ -1,9 +1,10 @@
 package com.dofast.module.purchase.controller.admin.goods.vo;
 
-import java.time.LocalDate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 
 import com.alibaba.excel.annotation.ExcelProperty;
@@ -31,9 +32,6 @@ public class GoodsExcelVO {
     @ExcelProperty("商品规格")
     private String goodsSpecs;
 
-    @ExcelProperty("商品单位")
-    private Integer company;
-
     @ExcelProperty("采购单价")
     private Object monovalent;
 
@@ -54,5 +52,29 @@ public class GoodsExcelVO {
 
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
+
+    @ExcelProperty("商品单位")
+    private String company;
+
+    @ExcelProperty("采购订单号")
+    private String poNo;
+
+    @ExcelProperty("入库数量")
+    private Integer receiveNum;
+
+    @ExcelProperty("入库单位")
+    private String unitOfMeasure;
+
+    @ExcelProperty("状态（0-未打印，1-已打印，2-已入库）")
+    private Integer status;
+
+    @ExcelProperty("收货时间")
+    private LocalDateTime receiveTime;
+
+    @ExcelProperty("批次")
+    private String batchCode;
+
+    @ExcelProperty("母批次")
+    private String parentBatchCode;
 
 }

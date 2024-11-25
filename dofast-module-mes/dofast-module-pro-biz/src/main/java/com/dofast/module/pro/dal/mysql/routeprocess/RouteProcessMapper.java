@@ -36,16 +36,14 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
     default PageResult<RouteProcessDO> selectPage(RouteProcessPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<RouteProcessDO>()
                 .eqIfPresent(RouteProcessDO::getRouteId, reqVO.getRouteId())
-                .eqIfPresent(RouteProcessDO::getProcessId, reqVO.getProcessId())
                 .eqIfPresent(RouteProcessDO::getProcessCode, reqVO.getProcessCode())
                 .likeIfPresent(RouteProcessDO::getProcessName, reqVO.getProcessName())
                 .eqIfPresent(RouteProcessDO::getOrderNum, reqVO.getOrderNum())
-                .eqIfPresent(RouteProcessDO::getNextProcessId, reqVO.getNextProcessId())
                 .eqIfPresent(RouteProcessDO::getNextProcessCode, reqVO.getNextProcessCode())
                 .likeIfPresent(RouteProcessDO::getNextProcessName, reqVO.getNextProcessName())
                 .eqIfPresent(RouteProcessDO::getLinkType, reqVO.getLinkType())
-                .eqIfPresent(RouteProcessDO::getDefaultPreTime, reqVO.getDefaultPreTime())
-                .eqIfPresent(RouteProcessDO::getDefaultSufTime, reqVO.getDefaultSufTime())
+                .betweenIfPresent(RouteProcessDO::getDefaultPreTime, reqVO.getDefaultPreTime())
+                .betweenIfPresent(RouteProcessDO::getDefaultSufTime, reqVO.getDefaultSufTime())
                 .eqIfPresent(RouteProcessDO::getColorCode, reqVO.getColorCode())
                 .eqIfPresent(RouteProcessDO::getKeyFlag, reqVO.getKeyFlag())
                 .eqIfPresent(RouteProcessDO::getRemark, reqVO.getRemark())
@@ -53,7 +51,10 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(RouteProcessDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(RouteProcessDO::getAttr4, reqVO.getAttr4())
-                .eqIfPresent(RouteProcessDO::getCreateTime, reqVO.getCreateTime())
+                .betweenIfPresent(RouteProcessDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(RouteProcessDO::getProcessId, reqVO.getProcessId())
+                .eqIfPresent(RouteProcessDO::getNextProcessId, reqVO.getNextProcessId())
+                .eqIfPresent(RouteProcessDO::getSequence, reqVO.getSequence())
                 .orderByDesc(RouteProcessDO::getId));
     }
     default List<RouteProcessDO> selectList(RouteProcessListVO reqVO) {
@@ -83,16 +84,14 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
     default List<RouteProcessDO> selectList(RouteProcessExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<RouteProcessDO>()
                 .eqIfPresent(RouteProcessDO::getRouteId, reqVO.getRouteId())
-                .eqIfPresent(RouteProcessDO::getProcessId, reqVO.getProcessId())
                 .eqIfPresent(RouteProcessDO::getProcessCode, reqVO.getProcessCode())
                 .likeIfPresent(RouteProcessDO::getProcessName, reqVO.getProcessName())
                 .eqIfPresent(RouteProcessDO::getOrderNum, reqVO.getOrderNum())
-                .eqIfPresent(RouteProcessDO::getNextProcessId, reqVO.getNextProcessId())
                 .eqIfPresent(RouteProcessDO::getNextProcessCode, reqVO.getNextProcessCode())
                 .likeIfPresent(RouteProcessDO::getNextProcessName, reqVO.getNextProcessName())
                 .eqIfPresent(RouteProcessDO::getLinkType, reqVO.getLinkType())
-                .eqIfPresent(RouteProcessDO::getDefaultPreTime, reqVO.getDefaultPreTime())
-                .eqIfPresent(RouteProcessDO::getDefaultSufTime, reqVO.getDefaultSufTime())
+                .betweenIfPresent(RouteProcessDO::getDefaultPreTime, reqVO.getDefaultPreTime())
+                .betweenIfPresent(RouteProcessDO::getDefaultSufTime, reqVO.getDefaultSufTime())
                 .eqIfPresent(RouteProcessDO::getColorCode, reqVO.getColorCode())
                 .eqIfPresent(RouteProcessDO::getKeyFlag, reqVO.getKeyFlag())
                 .eqIfPresent(RouteProcessDO::getRemark, reqVO.getRemark())
@@ -100,7 +99,10 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(RouteProcessDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(RouteProcessDO::getAttr4, reqVO.getAttr4())
-                .eqIfPresent(RouteProcessDO::getCreateTime, reqVO.getCreateTime())
+                .betweenIfPresent(RouteProcessDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(RouteProcessDO::getProcessId, reqVO.getProcessId())
+                .eqIfPresent(RouteProcessDO::getNextProcessId, reqVO.getNextProcessId())
+                .eqIfPresent(RouteProcessDO::getSequence, reqVO.getSequence())
                 .orderByDesc(RouteProcessDO::getId));
     }
 

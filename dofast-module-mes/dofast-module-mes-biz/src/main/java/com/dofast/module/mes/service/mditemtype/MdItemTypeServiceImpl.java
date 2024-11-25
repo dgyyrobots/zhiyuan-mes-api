@@ -191,6 +191,13 @@ public class MdItemTypeServiceImpl implements MdItemTypeService {
     }
 
     @Override
+    public MdItemTypeDO getMdItemType(String itemTypeCode){
+        return mdItemTypeMapper.selectOne(MdItemTypeDO::getItemTypeCode,itemTypeCode);
+    }
+
+
+
+    @Override
     public List<MdItemTypeDO> getMdItemTypeList(Collection<Long> ids) {
         return mdItemTypeMapper.selectBatchIds(ids);
     }

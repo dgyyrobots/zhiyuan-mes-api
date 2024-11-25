@@ -28,6 +28,12 @@ import com.dofast.module.pro.dal.mysql.routeprocess.RouteProcessMapper;
 import static com.dofast.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.dofast.module.pro.enums.ErrorCodeConstants.*;
 
+
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ListUtil;
+
+
 /**
  * 工艺组成 Service 实现类
  *
@@ -165,6 +171,11 @@ public class RouteProcessServiceImpl implements RouteProcessService {
 
     @Override
     public List<RouteProcessDO> getRouteProcessList(Collection<Long> ids) {
+
+        if (CollUtil.isEmpty(ids)) {
+            return ListUtil.empty();
+        }
+
         return routeProcessMapper.selectBatchIds(ids);
     }
 

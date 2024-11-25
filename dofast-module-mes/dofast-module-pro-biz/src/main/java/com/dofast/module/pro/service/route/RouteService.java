@@ -44,6 +44,15 @@ public interface RouteService {
     RouteDO getRoute(Long id);
 
     /**
+     * 获得工艺路线
+     *
+     * @param routeCode 工序编号
+     * @return 工艺路线
+     */
+    RouteDO getRoute(String routeCode);
+
+
+    /**
      * 获得工艺路线列表
      *
      * @param ids 编号
@@ -66,5 +75,12 @@ public interface RouteService {
      * @return 工艺路线列表
      */
     List<RouteDO> getRouteList(RouteExportReqVO exportReqVO);
+
+    /**
+     * 根据工艺路线编码获取工艺路线
+     * @param code
+     * @return
+     */
+    RouteDO getRouteByCode(String code);
 
 }

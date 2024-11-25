@@ -1,6 +1,5 @@
 package com.dofast.module.pro.controller.admin.task.vo;
 
-import cn.hutool.core.date.DateTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
@@ -9,6 +8,8 @@ import java.math.BigDecimal;
 import java.math.BigDecimal;
 import java.math.BigDecimal;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -77,19 +78,19 @@ public class TaskExcelVO {
     private String unitOfMeasure;
 
     @ExcelProperty("排产数量")
-    private Double quantity;
+    private BigDecimal quantity;
 
     @ExcelProperty("已生产数量")
-    private Double quantityProduced;
+    private BigDecimal quantityProduced;
 
     @ExcelProperty("合格品数量")
-    private Double quantityQuanlify;
+    private BigDecimal quantityQuanlify;
 
     @ExcelProperty("不良品数量")
-    private Double quantityUnquanlify;
+    private BigDecimal quantityUnquanlify;
 
     @ExcelProperty("调整数量")
-    private Double quantityChanged;
+    private BigDecimal quantityChanged;
 
     @ExcelProperty("客户ID")
     private Long clientId;
@@ -121,10 +122,6 @@ public class TaskExcelVO {
     @ExcelProperty("生产状态")
     private String status;
 
-    @Schema(description = "是否打印（0：未打印，1已打印）")
-    @ExcelProperty("是否打印（0：未打印，1已打印）")
-    private String isPrint;
-
     @ExcelProperty("备注")
     private String remark;
 
@@ -143,10 +140,22 @@ public class TaskExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("是否打印（0：未打印，1已打印）")
+    private String isPrint;
+
     @ExcelProperty("实际开始操作时间")
     private LocalDateTime actualStartTime;
 
     @ExcelProperty("实际结束时间")
     private LocalDateTime actualEndTime;
+
+    @ExcelProperty("母批次号")
+    private String parentBatchCode;
+
+    @ExcelProperty("流水号")
+    private String serial;
+
+    @ExcelProperty( "报工状态")
+    private String feedbackStatus;
 
 }

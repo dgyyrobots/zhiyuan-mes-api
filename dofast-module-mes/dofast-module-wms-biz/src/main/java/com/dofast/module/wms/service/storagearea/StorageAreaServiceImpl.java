@@ -75,6 +75,12 @@ public class StorageAreaServiceImpl implements StorageAreaService {
     }
 
     @Override
+    public StorageAreaDO getStorageArea(String areaCode){
+        return storageAreaMapper.selectWmStorageAreaByAreaCode(areaCode);
+    }
+
+
+    @Override
     public List<StorageAreaDO> getStorageAreaList(Collection<Long> ids) {
         return storageAreaMapper.selectBatchIds(ids);
     }
@@ -93,5 +99,16 @@ public class StorageAreaServiceImpl implements StorageAreaService {
     public int deleteByLocationId(Long locationId) {
         return storageAreaMapper.deleteByLocationId(locationId);
     }
+    /**
+     * 根据库区查询所有库位信息
+     * @param locationId
+     * @return
+     */
+    @Override
+    public List<StorageAreaDO> getStorageAreaByLocationId(Long locationId){
+        return storageAreaMapper.selectList(StorageAreaDO::getLocationId , locationId);
+    }
+
+
 
 }

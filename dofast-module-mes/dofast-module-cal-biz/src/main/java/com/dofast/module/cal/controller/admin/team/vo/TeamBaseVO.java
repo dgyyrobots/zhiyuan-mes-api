@@ -1,9 +1,9 @@
 package com.dofast.module.cal.controller.admin.team.vo;
 
-import java.time.LocalDate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
+import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import javax.validation.constraints.*;
 
@@ -39,5 +39,14 @@ public class TeamBaseVO {
 
     @Schema(description = "预留字段4")
     private Integer attr4;
+
+    @Schema(description = "负责人Id", example = "216")
+    private Long principalId;
+
+    @Schema(description = "负责人名称", example = "张三")
+    private String principalName;
+
+    @Schema(description = "班组人数", example = "32463")
+    private Long personCount;
 
 }

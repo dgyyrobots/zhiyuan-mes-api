@@ -77,6 +77,12 @@ public class RouteServiceImpl implements RouteService {
     }
 
     @Override
+    public RouteDO getRoute(String routeCode) {
+        return routeMapper.selectOne(RouteDO::getRouteCode, routeCode);
+    }
+
+
+    @Override
     public List<RouteDO> getRouteList(Collection<Long> ids) {
         return routeMapper.selectBatchIds(ids);
     }
@@ -90,5 +96,17 @@ public class RouteServiceImpl implements RouteService {
     public List<RouteDO> getRouteList(RouteExportReqVO exportReqVO) {
         return routeMapper.selectList(exportReqVO);
     }
+
+    /**
+     * 根据工艺路线编码获取工艺路线
+     * @param code
+     * @return
+     */
+    @Override
+    public  RouteDO getRouteByCode(String code){
+        return routeMapper.selectOne(RouteDO::getRouteCode, code);
+    }
+
+
 
 }

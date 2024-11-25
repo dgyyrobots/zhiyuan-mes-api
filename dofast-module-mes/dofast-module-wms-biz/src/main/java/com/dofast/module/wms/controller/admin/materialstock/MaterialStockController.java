@@ -116,6 +116,7 @@ public class MaterialStockController {
         return success(MaterialStockConvert.INSTANCE.convert(materialStock));
     }
 
+
     @GetMapping("/list")
     @Operation(summary = "获得库存记录列表")
     @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.wms.dal.oracle.warehouse.WarehouseOracleMapper">
+
+    <select id = "initLocationInfo" resultType="java.util.HashMap">
+        -- 查询仓库, 库区信息
+        -- A.inaaud001为Y视为线边仓, N视为仓库
+        SELECT DISTINCT
+            A.INAA001 AS LOCATION_CODE,
+            B.INAYL003 AS LOCATION_NAME,
+            A.inaaud001 AS IS_LINE_WAREHOUSE,
+            A.INAA008 AS LOCATION_DELETED
+        FROM
+            DSDATA.inaa_t a
+                LEFT JOIN DSDATA.INAYL_T B ON A.INAA001 = B.INAYL001
+        WHERE
+          B.INAYL002 = 'zh_CN'
+          AND A.INAAENT = 100
+          AND A.INAA008 = 'Y'
+          AND A.INAASITE = 'AM01'
+    </select>
+
+    <select id = "initAreaInfo" resultType="java.util.HashMap">
+        SELECT
+            A.INAB002 AS AREA_CODE,
+            A.INAB003 AS AREA_NAME,
+            B.INAA001 AS LOCATION_CODE,
+            A.INAB006 AS AREA_DELETED
+        FROM
+            DSDATA.INAB_T A
+                LEFT JOIN DSDATA.INAA_T B ON a.inab001 = b.inaa001
+                AND a.INABENT = b.inaaent
+                AND a.inabsite = b.inaasite
+        WHERE
+            A.INAB003 IS NOT NULL
+            AND A.INAB006 = 'Y'
+            AND A.INABENT = 100
+            AND A.INABSITE = 'AM01'
+    </select>
+
+</mapper>

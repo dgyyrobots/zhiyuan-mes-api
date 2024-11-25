@@ -27,8 +27,12 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
+
 import com.dofast.module.wms.controller.admin.productproduce.vo.*;
 import com.dofast.module.wms.dal.dataobject.productproduce.ProductProduceDO;
 import com.dofast.framework.common.pojo.PageResult;
@@ -140,9 +144,9 @@ public class ProductProduceServiceImpl implements ProductProduceService {
         WorkStationDTO workstation = workStationApi.getWorkstation(feedback.getWorkstationId());
         ProcessDTO process = processApi.getcess(workstation.getProcessId());
         TaskDTO task = taskApi.getTask(feedback.getTaskId());
-        MdItemDO itemDO = mdItemService.getMdItem(workorder.getProductId());
+        //MdItemDO itemDO = mdItemService.getMdItem(workorder.getProductId());
 
-        //生成单据头信息
+        //生成产成品单据头信息
         ProductProduceDO productProduce = new ProductProduceDO();
         productProduce.setWorkorderId(feedback.getWorkorderId());
         productProduce.setWorkorderCode(feedback.getWorkorderCode());
@@ -167,8 +171,7 @@ public class ProductProduceServiceImpl implements ProductProduceService {
         if (insert<=0){
             throw exception(STACK_UPDATE_LOG);
         }
-
-        //生成单据行信息; 以后如果是在生产过程中产生多种副产品可以在这里添加更多的行信息进行支持
+        //生成产成品单据行信息; 以后如果是在生产过程中产生多种副产品可以在这里添加更多的行信息进行支持
         ProductProduceLineDO line = new ProductProduceLineDO();
         line.setRecordId(productProduce.getId());
         line.setItemId(feedback.getItemId());
@@ -177,15 +180,40 @@ public class ProductProduceServiceImpl implements ProductProduceService {
         line.setSpecification(feedback.getSpecification());
         line.setUnitOfMeasure(feedback.getUnitOfMeasure());
         line.setQuantityProduce(feedback.getQuantityFeedback());
-        line.setBatchCode(workorder.getBatchCode());
+        // 产成品批次号规则, 任务单号+2位流水号
+        // 流水号在管控在任务单号内
+        // 校验流水号是否存在
+        if (task.getParentBatchCode() == null) {
+            // 若母批次号为空，生成母批次号
+            String serial = "01";
+            // 修改任务单表
+            task.setParentBatchCode(task.getTaskCode());
+            task.setSerial(serial);
+            taskApi.updateTask(task);
+            line.setBatchCode(task.getTaskCode() + "-" + serial);
+        } else {
+            line.setBatchCode(task.getParentBatchCode());
+            String serial = task.getSerial();
+            if (serial == null) {
+                serial = "01";
+            } else {
+                int serialInt = Integer.parseInt(serial);
+                serialInt++;
+                serial = String.format("%02d", serialInt);
+            }
+            line.setBatchCode(task.getTaskCode() + "-" + serial);
+            task.setSerial(serial);
+            taskApi.updateTask(task);
+        }
         line.setOrderSource(workorder.getOrderSource());
         int insert1 = productProduceLineMapper.insert(line);
         if (insert1<=0){
             throw exception(PRODUCT_PEODUCT_ROW);
         }
 
-        //更新物料信息
-        WarehouseDO warehouse = warehouseService.getWarehouse(workstation.getWarehouseId());
+        //不需要更新物料信息
+        // 在其他方法内将产成品追加之下一个制成的线边仓或主仓
+       /* WarehouseDO warehouse = warehouseService.getWarehouse(workstation.getWarehouseId());
         StorageLocationDO location = storageLocationService.getStorageLocation(workstation.getLocationId());
         StorageAreaDO area = storageAreaService.getStorageArea(workstation.getAreaId());
         itemDO.setWarehouseId(warehouse.getId());
@@ -199,7 +227,8 @@ public class ProductProduceServiceImpl implements ProductProduceService {
         itemDO.setAreaName(area.getAreaName());
         MdItemUpdateReqVO mdItemUpdateReqVO = BeanUtil.toBean(itemDO, MdItemUpdateReqVO.class);
         mdItemUpdateReqVO.setRecptDate(LocalDateTime.now());
-        mdItemService.updateMdItem(mdItemUpdateReqVO);
+        mdItemService.updateMdItem(mdItemUpdateReqVO);*/
+
         return productProduce;
     }
 

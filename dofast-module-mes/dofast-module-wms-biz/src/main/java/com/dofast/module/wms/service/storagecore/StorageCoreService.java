@@ -1,5 +1,6 @@
 package com.dofast.module.wms.service.storagecore;
 
+import com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedTxBean;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueTxBean;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeTxBean;
 import com.dofast.module.wms.dal.dataobject.itemrecpt.ItemRecptTxBean;
@@ -22,6 +23,15 @@ public interface StorageCoreService {
      */
     public void processItemRecpt(List<ItemRecptTxBean> lines);
 
+
+    /**
+     * 减少物料入库单
+     * 用于入库单拆分后, 减少原入库单数量
+     * @param lines
+     */
+    public void  processReduceItemRecpt(List<ItemRecptTxBean> lines);
+
+
     /**
      * 处理供应商退货单
      * @param lines
@@ -33,6 +43,13 @@ public interface StorageCoreService {
      * @param lines
      */
     public void processIssue(List<IssueTxBean> lines);
+
+    /**
+     * 处理调拨单
+     * @param lines
+     */
+    public void processAllocated(List<AllocatedTxBean> lines);
+
 
     /**
      * 处理生产退料

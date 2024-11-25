@@ -73,4 +73,10 @@ public class StorageLocationDO extends BaseDO {
 
     @TableField(exist = false)
     private List<StorageAreaDO> children;
+
+    /**
+     * 工序编码
+     */
+    private String processCode;
+
 }

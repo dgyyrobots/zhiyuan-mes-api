@@ -10,6 +10,5 @@ import javax.validation.constraints.*;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class WorkorderBomCreateReqVO extends WorkorderBomBaseVO {
-    @Schema(description = "行ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "29705")
-    private Long id;
+
 }

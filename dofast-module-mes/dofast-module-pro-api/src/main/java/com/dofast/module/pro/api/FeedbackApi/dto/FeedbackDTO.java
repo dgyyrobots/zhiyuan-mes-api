@@ -156,4 +156,13 @@ public class FeedbackDTO {
      * 实付价格
      */
     private Double payFee;
+    /**
+     *批次号
+     */
+    private String batchCode;
+    /**
+     * ERP批次号
+     */
+    private String erpBatchCode;
+
 }

@@ -22,9 +22,6 @@ public class RouteProcessExcelVO {
     @ExcelProperty("工艺路线ID")
     private Long routeId;
 
-    @ExcelProperty("工序ID")
-    private Long processId;
-
     @ExcelProperty("工序编码")
     private String processCode;
 
@@ -33,9 +30,6 @@ public class RouteProcessExcelVO {
 
     @ExcelProperty("序号")
     private Integer orderNum;
-
-    @ExcelProperty("工序ID")
-    private Long nextProcessId;
 
     @ExcelProperty("工序编码")
     private String nextProcessCode;
@@ -75,5 +69,14 @@ public class RouteProcessExcelVO {
 
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
+
+    @ExcelProperty("工序ID")
+    private Long processId;
+
+    @ExcelProperty("工序ID")
+    private Long nextProcessId;
+
+    @ExcelProperty("项次")
+    private Long sequence;
 
 }

@@ -195,4 +195,18 @@ public class TaskDO extends BaseDO {
      */
     private LocalDateTime actualEndTime;
 
+    /**
+     * 母批次号
+     */
+    private String parentBatchCode;
+    /**
+     * 流水号
+     */
+    private String serial;
+
+    /**
+     * 报工状态
+     */
+    private String feedbackStatus;
+
 }

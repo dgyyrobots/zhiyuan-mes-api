@@ -9,6 +9,7 @@ import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
+import com.dofast.module.wms.dal.mysql.issueline.IssueLineMapper;
 import com.dofast.module.wms.enums.ErrorCodeConstants;
 import com.dofast.module.wms.service.issueline.IssueLineService;
 import com.dofast.module.wms.service.storagearea.StorageAreaService;
@@ -17,7 +18,9 @@ import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import com.dofast.module.wms.service.warehouse.WarehouseService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
 import javax.annotation.Resource;
+
 import org.springframework.validation.annotation.Validated;
 import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,6 +42,7 @@ import static com.dofast.framework.common.pojo.CommonResult.success;
 import com.dofast.framework.excel.core.util.ExcelUtils;
 
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
+
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.*;
 
 import com.dofast.module.wms.controller.admin.issueheader.vo.*;
@@ -58,6 +62,10 @@ public class IssueHeaderController {
     private IssueLineService issueLineService;
 
     @Resource
+    private IssueLineMapper issuLineMapper;
+
+
+    @Resource
     private WarehouseService warehouseService;
 
     @Resource
@@ -73,22 +81,22 @@ public class IssueHeaderController {
     @Operation(summary = "创建生产领料单头")
     @PreAuthorize("@ss.hasPermission('wms:issue-header:create')")
     public CommonResult<Long> createIssueHeader(@Valid @RequestBody IssueHeaderCreateReqVO createReqVO) {
-        if(Constant.NOT_UNIQUE.equals(issueHeaderService.checkIssueCodeUnique(createReqVO))){
+        if (Constant.NOT_UNIQUE.equals(issueHeaderService.checkIssueCodeUnique(createReqVO))) {
             return error(ErrorCodeConstants.ISSUE_HEADER_CDOE_EXISTS);
         }
 
         //根据领料单头上的仓库、库区、库位ID设置对应的编号和名称
-        if(StrUtils.isNotNull(createReqVO.getWarehouseId())){
+        if (StrUtils.isNotNull(createReqVO.getWarehouseId())) {
             WarehouseDO warehouseDO = warehouseService.getWarehouse(createReqVO.getWarehouseId());
             createReqVO.setWarehouseCode(warehouseDO.getWarehouseCode());
             createReqVO.setWarehouseName(warehouseDO.getWarehouseName());
         }
-        if(StrUtils.isNotNull(createReqVO.getLocationId())){
+        if (StrUtils.isNotNull(createReqVO.getLocationId())) {
             StorageLocationDO storageLocationDO = storageLocationService.getStorageLocation(createReqVO.getLocationId());
             createReqVO.setLocationCode(storageLocationDO.getLocationCode());
             createReqVO.setLocationName(storageLocationDO.getLocationName());
         }
-        if(StrUtils.isNotNull(createReqVO.getAreaId())){
+        if (StrUtils.isNotNull(createReqVO.getAreaId())) {
             StorageAreaDO storageAreaDO = storageAreaService.getStorageArea(createReqVO.getAreaId());
             createReqVO.setAreaCode(storageAreaDO.getAreaCode());
             createReqVO.setAreaName(storageAreaDO.getAreaName());
@@ -101,20 +109,20 @@ public class IssueHeaderController {
     @Operation(summary = "更新生产领料单头")
     @PreAuthorize("@ss.hasPermission('wms:issue-header:update')")
     public CommonResult<Boolean> updateIssueHeader(@Valid @RequestBody IssueHeaderUpdateReqVO updateReqVO) {
-        if(Constant.NOT_UNIQUE.equals(issueHeaderService.checkIssueCodeUnique(updateReqVO))){
+        if (Constant.NOT_UNIQUE.equals(issueHeaderService.checkIssueCodeUnique(updateReqVO))) {
             return error(ErrorCodeConstants.ISSUE_HEADER_CDOE_EXISTS);
         }
-        if(StrUtils.isNotNull(updateReqVO.getWarehouseId())){
+        if (StrUtils.isNotNull(updateReqVO.getWarehouseId())) {
             WarehouseDO warehouse = warehouseService.getWarehouse(updateReqVO.getWarehouseId());
             updateReqVO.setWarehouseCode(warehouse.getWarehouseCode());
             updateReqVO.setWarehouseName(warehouse.getWarehouseName());
         }
-        if(StrUtils.isNotNull(updateReqVO.getLocationId())){
+        if (StrUtils.isNotNull(updateReqVO.getLocationId())) {
             StorageLocationDO location = storageLocationService.getStorageLocation(updateReqVO.getLocationId());
             updateReqVO.setLocationCode(location.getLocationCode());
             updateReqVO.setLocationName(location.getLocationName());
         }
-        if(StrUtils.isNotNull(updateReqVO.getAreaId())){
+        if (StrUtils.isNotNull(updateReqVO.getAreaId())) {
             StorageAreaDO area = storageAreaService.getStorageArea(updateReqVO.getAreaId());
             updateReqVO.setAreaCode(area.getAreaCode());
             updateReqVO.setAreaName(area.getAreaName());
@@ -125,18 +133,20 @@ public class IssueHeaderController {
 
     /**
      * 执行出库
+     *
      * @return
      */
     @PreAuthorize("@ss.hasPermission('wms:issue-header:update')")
     @Transactional
     @PutMapping("/{issueId}")
     @Operation(summary = "执行出库")
-    public CommonResult execute(@PathVariable Long issueId){
+    public CommonResult execute(@PathVariable Long issueId) {
         IssueHeaderDO header = issueHeaderService.getIssueHeader(issueId);
         IssueLineListVO param = new IssueLineListVO();
         param.setIssueId(issueId);
+        param.setStatus("N");
         List<IssueLineDO> lines = issueLineService.selectList(param);
-        if(CollUtil.isEmpty(lines)){
+        if (CollUtil.isEmpty(lines)) {
             return error(ErrorCodeConstants.ISSUE_HEADER_NEED_LINE);
         }
 
@@ -146,10 +156,15 @@ public class IssueHeaderController {
         storageCoreServicel.processIssue(beans);
 
         //更新单据状态
-        header.setStatus(Constant.ORDER_STATUS_FINISHED);
-
+        header.setStatus(Constant.ORDER_STATUS_CONFIRMED); // 先修改为已确认, 当报工后将领料单转为完成
         IssueHeaderUpdateReqVO updateReqVO = IssueHeaderConvert.INSTANCE.convert01(header);
         issueHeaderService.updateIssueHeader(updateReqVO);
+
+        // 将当前单身状态改为已领料
+        for (IssueLineDO line : lines) {
+            line.setStatus("Y"); // 已领料
+        }
+        issuLineMapper.updateBatch(lines);
         return success(true);
     }
 
@@ -159,7 +174,7 @@ public class IssueHeaderController {
     @PreAuthorize("@ss.hasPermission('wms:issue-header:delete')")
     public CommonResult<Boolean> deleteIssueHeader(@RequestParam("id") Long id) {
         IssueHeaderDO header = issueHeaderService.getIssueHeader(id);
-        if(!Constant.ORDER_STATUS_PREPARE.equals(header.getStatus())){
+        if (!Constant.ORDER_STATUS_PREPARE.equals(header.getStatus())) {
             return error(ErrorCodeConstants.ISSUE_HEADER_NOT_DELETED);
         }
         issueLineService.deleteByIssueHeaderId(id);
@@ -173,7 +188,13 @@ public class IssueHeaderController {
     @PreAuthorize("@ss.hasPermission('wms:issue-header:query')")
     public CommonResult<IssueHeaderRespVO> getIssueHeader(@RequestParam("id") Long id) {
         IssueHeaderDO issueHeader = issueHeaderService.getIssueHeader(id);
-        return success(IssueHeaderConvert.INSTANCE.convert(issueHeader));
+        // 基于当前工单信息带出工单BOM
+        // 工单BOM当前只允许在ERP修改, 故前端页面禁止变更
+        List<Map<String, Object>> bomList = issueHeaderService.initBomByWorkOrder(issueHeader.getWorkorderCode());
+        //issueHeader.setBomList(bomList);
+        IssueHeaderRespVO respVO = IssueHeaderConvert.INSTANCE.convert(issueHeader);
+        //respVO.setBomList(bomList);
+        return success(respVO);
     }
 
     @GetMapping("/list")
@@ -198,7 +219,7 @@ public class IssueHeaderController {
     @PreAuthorize("@ss.hasPermission('wms:issue-header:export')")
     @OperateLog(type = EXPORT)
     public void exportIssueHeaderExcel(@Valid IssueHeaderExportReqVO exportReqVO,
-              HttpServletResponse response) throws IOException {
+                                       HttpServletResponse response) throws IOException {
         List<IssueHeaderDO> list = issueHeaderService.getIssueHeaderList(exportReqVO);
         // 导出 Excel
         List<IssueHeaderExcelVO> datas = IssueHeaderConvert.INSTANCE.convertList02(list);

@@ -120,6 +120,9 @@ public class WorkorderBaseVO {
     @Schema(description = "是否外协", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Boolean isOut;
 
+    @Schema(description = "工序编码")
+    private String routeCode;
+
     public Long getId(){
         return null;
     }

@@ -18,10 +18,6 @@ public class RouteProcessBaseVO {
     @NotNull(message = "工艺路线ID不能为空")
     private Long routeId;
 
-    @Schema(description = "工序ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "7829")
-    @NotNull(message = "工序ID不能为空")
-    private Long processId;
-
     @Schema(description = "工序编码")
     private String processCode;
 
@@ -30,9 +26,6 @@ public class RouteProcessBaseVO {
 
     @Schema(description = "序号")
     private Integer orderNum;
-
-    @Schema(description = "工序ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "28184")
-    private Long nextProcessId;
 
     @Schema(description = "工序编码")
     private String nextProcessCode;
@@ -69,6 +62,15 @@ public class RouteProcessBaseVO {
 
     @Schema(description = "预留字段4")
     private Integer attr4;
+
+    @Schema(description = "工序ID", example = "29944")
+    private Long processId;
+
+    @Schema(description = "工序ID", example = "13497")
+    private Long nextProcessId;
+
+    @Schema(description = "项次")
+    private Long sequence;
 
     public Long getId(){return null;}
 }

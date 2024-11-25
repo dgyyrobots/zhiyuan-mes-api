@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.dofast.framework.common.pojo.PageResult;
 
+import com.dofast.module.pro.controller.admin.task.vo.TaskUpdateReqVO;
 import com.dofast.module.pro.controller.pad.protask.vo.ProTaskFeedbackReqVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

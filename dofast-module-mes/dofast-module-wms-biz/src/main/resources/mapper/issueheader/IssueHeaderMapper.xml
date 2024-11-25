@@ -48,4 +48,22 @@
                            ON ir.id = irl.`issue_id`
         WHERE ir.`id` = #{issueId}
     </select>
+
+
+    <select id="initBomByWorkOrder" parameterType="String" resultType="java.util.Map">
+        SELECT DISTINCT
+            b.item_id as itemId,
+            b.item_code as itemCode,
+            b.item_name as itemName,
+            b.item_spc as specification,
+            b.unit_of_measure as unitOfMeasure,
+            b.quantity,
+            b.sequence
+        FROM
+            pro_workorder a
+                LEFT JOIN pro_workorder_bom b ON a.id = b.workorder_id and a.tenant_id = b.tenant_id
+        WHERE
+            a.workorder_code = #{workorderCode}
+    </select>
+
 </mapper>

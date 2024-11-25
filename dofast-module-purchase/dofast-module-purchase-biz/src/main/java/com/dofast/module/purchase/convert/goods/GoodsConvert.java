@@ -25,6 +25,10 @@ public interface GoodsConvert {
 
     GoodsRespVO convert(GoodsDO bean);
 
+    GoodsCreateReqVO convert02(GoodsDO bean);
+
+    GoodsUpdateReqVO convert01(GoodsDO bean);
+
     List<GoodsRespVO> convertList(List<GoodsDO> list);
 
     PageResult<GoodsRespVO> convertPage(PageResult<GoodsDO> page);

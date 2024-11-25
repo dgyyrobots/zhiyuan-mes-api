@@ -28,7 +28,7 @@ public interface OrderConvert {
 
     OrderDO convert(OrderBpmCreateReqVO bpmCreateReqVO);
 
-
+    OrderUpdateReqVO convert01(OrderDO bean);
 
     OrderDO convert(OrderUpdateReqVO bean);
 

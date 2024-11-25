@@ -1,5 +1,6 @@
 package com.dofast.module.pro.controller.admin.feedback.vo;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.*;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -125,5 +126,14 @@ public class FeedbackExportReqVO {
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
+
+    @Schema(description = "批次号")
+    private String batchCode;
+
+    @Schema(description = "ERP批次号")
+    private String erpBatchCode;
+
+    @Schema(description = "班组编号")
+    private String teamCode;
 
 }

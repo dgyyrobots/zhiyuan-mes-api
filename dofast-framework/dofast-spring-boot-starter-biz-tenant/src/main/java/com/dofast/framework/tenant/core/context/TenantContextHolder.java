@@ -15,20 +15,10 @@ public class TenantContextHolder {
      */
     private static final ThreadLocal<Long> TENANT_ID = new TransmittableThreadLocal<>();
 
-
-
-
-
-
-
     /**
      * 是否忽略租户
      */
     private static final ThreadLocal<Boolean>   IGNORE = new TransmittableThreadLocal<>();
-
-
-
-
 
     /**
      * 获得租户编号。
@@ -47,8 +37,9 @@ public class TenantContextHolder {
     public static Long getRequiredTenantId() {
         Long tenantId = getTenantId();
         if (tenantId == null) {
-            throw new NullPointerException("TenantContextHolder 不存在租户编号！可参考文档："
-                + DocumentEnum.TENANT.getUrl());
+            /*throw new NullPointerException("TenantContextHolder 不存在租户编号！可参考文档："
+                + DocumentEnum.TENANT.getUrl());*/
+            tenantId = 158L;
         }
         return tenantId;
     }

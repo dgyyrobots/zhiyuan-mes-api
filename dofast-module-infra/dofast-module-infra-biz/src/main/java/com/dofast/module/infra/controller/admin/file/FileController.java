@@ -4,6 +4,7 @@ import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import com.dofast.framework.common.pojo.CommonResult;
 import com.dofast.framework.common.pojo.PageResult;
+import com.dofast.framework.common.util.io.FileUploadUtils;
 import com.dofast.framework.common.util.servlet.ServletUtils;
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
 import com.dofast.module.infra.controller.admin.file.vo.file.FilePageReqVO;
@@ -46,7 +47,9 @@ public class FileController {
     public CommonResult<String> uploadFile(FileUploadReqVO uploadReqVO) throws Exception {
         MultipartFile file = uploadReqVO.getFile();
         String path = uploadReqVO.getPath();
-        return success(fileService.createFile(file.getOriginalFilename(), path, IoUtil.readBytes(file.getInputStream())));
+        String fileAddr =  FileUploadUtils.upload(file); // 服务器上传 -> 局域网内保存
+        //fileService.createFile(file.getOriginalFilename(), path, IoUtil.readBytes(file.getInputStream()))
+        return success();
     }
 
     @DeleteMapping("/delete")

@@ -1,6 +1,7 @@
 package com.dofast.module.mes.controller.admin.mdproductbom.vo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -55,4 +56,11 @@ public class MdProductBomListVO {
 
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
+
+    @ExcelProperty("倒扣料标识")
+    private String inverted;
+
+    @ExcelProperty("项次")
+    private Long sequence;
+
 }

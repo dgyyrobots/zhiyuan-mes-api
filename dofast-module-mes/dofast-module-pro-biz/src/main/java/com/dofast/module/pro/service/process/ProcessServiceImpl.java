@@ -92,6 +92,12 @@ public class ProcessServiceImpl implements ProcessService {
     }
 
     @Override
+    public ProcessDO getcess(String processCode) {
+        return cessMapper.selectOne(ProcessDO::getProcessCode, processCode);
+    }
+
+
+    @Override
     public List<ProcessDO> getcessList(Collection<Long> ids) {
         return cessMapper.selectBatchIds(ids);
     }

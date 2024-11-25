@@ -96,7 +96,7 @@ public class TransactionServiceImpl implements TransactionService {
             MaterialStockDO st = materialStockMapper.selectById(transaction.getMaterialStockId());
             BeanUtils.copyProperties(st,stock);
         }else{
-            MdItemDTO item =mdItemApi.getMditemById(transaction.getItemId());
+            MdItemDTO item =mdItemApi.getMdItemByCode(transaction.getItemCode());
             stock.setItemTypeId(item.getItemTypeId());
             stock.setItemId(transaction.getItemId());
             stock.setItemCode(transaction.getItemCode());

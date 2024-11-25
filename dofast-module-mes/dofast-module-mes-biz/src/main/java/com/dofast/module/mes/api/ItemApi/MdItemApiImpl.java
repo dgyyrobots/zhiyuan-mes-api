@@ -19,4 +19,11 @@ public class MdItemApiImpl implements MdItemApi{
         MdItemDTO mdItemDTO = MdItemConvert.INSTANCE.convert01(mdItemDO);
         return mdItemDTO;
     }
+    @Override
+    public MdItemDTO getMdItemByCode(String itemCode){
+        MdItemDO mdItemDO = mdItemService.getMdItemByItemCode(itemCode);
+        MdItemDTO mdItemDTO = MdItemConvert.INSTANCE.convert01(mdItemDO);
+        return mdItemDTO;
+    }
+
 }

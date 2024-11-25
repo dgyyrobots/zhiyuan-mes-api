@@ -64,4 +64,9 @@ public class RouteDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * 产品编号
+     */
+    private String productCode;
+
 }

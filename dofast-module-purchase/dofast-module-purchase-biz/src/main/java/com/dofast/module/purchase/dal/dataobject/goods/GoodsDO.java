@@ -1,8 +1,9 @@
 package com.dofast.module.purchase.dal.dataobject.goods;
 
-import java.time.LocalDate;
 import lombok.*;
 import java.util.*;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
 import com.dofast.framework.mybatis.core.dataobject.BaseDO;
@@ -44,10 +45,6 @@ public class GoodsDO extends BaseDO {
      */
     private String goodsSpecs;
     /**
-     * 商品单位
-     */
-    private Integer company;
-    /**
      * 采购单价
      */
     private Object monovalent;
@@ -71,5 +68,37 @@ public class GoodsDO extends BaseDO {
      * 品牌名称
      */
     private String brandName;
+    /**
+     * 商品单位
+     */
+    private String company;
+    /**
+     * 采购订单号
+     */
+    private String poNo;
+    /**
+     * 入库数量
+     */
+    private Integer receiveNum;
+    /**
+     * 入库单位
+     */
+    private String unitOfMeasure;
+    /**
+     * 状态（0-未打印，1-已打印，2-已入库）
+     */
+    private Integer status;
+    /**
+     * 收货时间
+     */
+    private LocalDateTime receiveTime;
+    /**
+     * 批次
+     */
+    private String batchCode;
+    /**
+     * 母批次
+     */
+    private String parentBatchCode;
 
 }

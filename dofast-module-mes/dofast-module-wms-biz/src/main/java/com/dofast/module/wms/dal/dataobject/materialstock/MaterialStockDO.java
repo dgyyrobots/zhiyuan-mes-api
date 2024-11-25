@@ -148,4 +148,8 @@ public class MaterialStockDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * 入库单状态
+     */
+    private String recptStatus;
 }

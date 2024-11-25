@@ -3,6 +3,11 @@ package com.dofast.module.pro.service.task;
 import com.dofast.framework.common.exception.ErrorCode;
 import com.dofast.framework.common.util.date.LocalDateTimeUtils;
 import com.dofast.framework.web.core.util.WebFrameworkUtils;
+import com.dofast.module.cal.controller.admin.teammember.vo.TeamMemberExportReqVO;
+import com.dofast.module.cal.dal.dataobject.team.TeamDO;
+import com.dofast.module.cal.dal.dataobject.teammember.TeamMemberDO;
+import com.dofast.module.cal.service.team.TeamService;
+import com.dofast.module.cal.service.teammember.TeamMemberService;
 import com.dofast.module.mes.dal.dataobject.mdworkstation.MdWorkstationDO;
 import com.dofast.module.mes.dal.dataobject.mdworkstationworker.MdWorkstationWorkerDO;
 import com.dofast.module.mes.service.mdworkstation.MdWorkstationService;
@@ -16,7 +21,9 @@ import com.dofast.module.report.api.PrintLog.dto.PrintLogDTO;
 import com.dofast.module.system.api.user.AdminUserApi;
 import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
 import org.springframework.stereotype.Service;
+
 import javax.annotation.Resource;
+
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
@@ -32,6 +39,7 @@ import com.dofast.module.pro.convert.task.TaskConvert;
 import org.springframework.web.util.WebUtils;
 
 import static com.dofast.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static com.dofast.framework.common.pojo.CommonResult.success;
 import static com.dofast.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static com.dofast.module.pro.enums.ErrorCodeConstants.*;
 
@@ -53,6 +61,13 @@ public class TaskServiceImpl implements TaskService {
     @Resource
     private AdminUserApi adminUserApi;
 
+    @Resource
+    private TeamMemberService teamMemberService;
+
+    @Resource
+    private TeamService teamService;
+
+
     @Override
     public Long createTask(TaskCreateReqVO createReqVO) {
         // 插入
@@ -69,7 +84,7 @@ public class TaskServiceImpl implements TaskService {
         // 更新
         TaskDO updateObj = TaskConvert.INSTANCE.convert(updateReqVO);
         int i = taskMapper.updateById(updateObj);
-        if (i<=0){
+        if (i <= 0) {
             throw exception(TASK_UPDATE_COUNT);
         }
     }
@@ -93,6 +108,12 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.selectById(id);
     }
 
+    @Override
+    public TaskDO getTask(String taskCode){
+        return taskMapper.selectOne(TaskDO::getTaskCode, taskCode);
+    }
+
+
     @Resource
     private MdWorkstationService mdWorkstationService;
 
@@ -101,38 +122,32 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public PageResult<TaskDO> getMyTask(TaskPageReqVO pageReqVO) {
-        //获取当前用户信息
+// 获取当前用户信息
+//        AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
+//        List<MdWorkstationWorkerDO> list = workstationWorkerService.getMdWorkstationWorkerListByPostId(adminUserRespDTO.getPostIds());
+//        if (list.size()<=0){
+//            return new PageResult<TaskDO>().setList(null).setTotal(0L);
+//        }
+//        Collection<Long> workstationIds = list.stream()
+//                .map(MdWorkstationWorkerDO::getWorkstationId) // 提取每个MdWorkstationWorkerDO对象的workstationId属性值
+//                .distinct()
+//                .collect(Collectors.toList()); // 将workstationId属性值收集到一个List<Long>集合中
+//
+//        PageResult<TaskDO> pageResult = taskMapper.selectPageByIds(pageReqVO, workstationIds);
+//        pageResult.setList(pageResult.getList().stream().filter(v -> v.getStartTime().isBefore(LocalDateTime.MAX)).collect(Collectors.toList()));
+
+        // 2024-11-13改
         AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
-        List<MdWorkstationWorkerDO> list = workstationWorkerService.getMdWorkstationWorkerListByPostId(adminUserRespDTO.getPostIds());
-        if (list.size()<=0){
-            return new PageResult<TaskDO>().setList(null).setTotal(0L);
+        // 获取当前用户所在的班组
+        TeamMemberExportReqVO req = new TeamMemberExportReqVO();
+        req.setUserId(adminUserRespDTO.getId());
+        List<TeamMemberDO> memberDO = teamMemberService.getTeamMemberList(req);
+        if(memberDO.isEmpty()){
+            return null;
         }
-        Collection<Long> workstationIds = list.stream()
-                .map(MdWorkstationWorkerDO::getWorkstationId) // 提取每个MdWorkstationWorkerDO对象的workstationId属性值
-                .distinct()
-                .collect(Collectors.toList()); // 将workstationId属性值收集到一个List<Long>集合中
-        /*List<MdWorkstationDO> mdWorkstationListByworkstationIds = mdWorkstationService.getMdWorkstationListByworkstationIds(workstationIds);
-        List<Long> collect = mdWorkstationListByworkstationIds.stream()
-                .map(MdWorkstationDO::getProcessId)
-                .collect(Collectors.toList());*/
-
-
-        PageResult<TaskDO> pageResult = taskMapper.selectPageByIds(pageReqVO, workstationIds);
-        pageResult.setList(pageResult.getList().stream().filter(v -> v.getStartTime().isBefore(LocalDateTime.MAX)).collect(Collectors.toList()));
-        /*if (pageReqVO.getIsPrint()){
-            List<TaskDO> collect1 = pageResult.getList().stream().map(new Function<TaskDO, TaskDO>() {
-                @Override
-                public TaskDO apply(TaskDO m) {
-                    List<PrintLogDTO> printLogDTOS = printLogApi.selectAllByPrintLog(m.getTaskCode());
-                    if (printLogDTOS.size() <= 0) {
-                        return m;
-                    }
-                    return null;
-                }
-            }).collect(Collectors.toList());
-           collect1.removeAll(Collections.singleton(null));
-            pageResult.setList(collect1);
-        }*/
+        TeamDO team =  teamService.getTeam(memberDO.get(0).getTeamId());
+        // 根据班组编码查询派工信息
+        PageResult<TaskDO> pageResult  = taskMapper.getTaskByTeamCode(pageReqVO, team.getTeamCode());
         return pageResult;
     }
 
@@ -146,7 +161,7 @@ public class TaskServiceImpl implements TaskService {
                 .distinct()
                 .collect(Collectors.toList()); // 将workstationId属性值收集到一个List<Long>集合中
         List<TaskDO> taskDOS = taskMapper.selectList(taskExportReqVO, workstationIds);
-        List<TaskDO> result = taskDOS.stream().filter(t ->!"FINISHED".equals(t.getStatus())).collect(Collectors.toList());
+        List<TaskDO> result = taskDOS.stream().filter(t -> !"FINISHED".equals(t.getStatus())).collect(Collectors.toList());
         return result;
     }
 
@@ -157,15 +172,16 @@ public class TaskServiceImpl implements TaskService {
 
     @Resource
     private WorkorderService workorderService;
+
     @Override
     public PageResult<TaskDO> getTaskPage(TaskPageReqVO pageReqVO) {
         return taskMapper.selectPage(pageReqVO);
     }
 
-    public PageResult<TaskDO> getTaskPageBySourceCode(TaskPageReqVO pageReqVO){
+    public PageResult<TaskDO> getTaskPageBySourceCode(TaskPageReqVO pageReqVO) {
         List<WorkorderDO> workorderBySourceCode = workorderService.getWorkorderBySourceCode(pageReqVO.getSourceCode());
         List<Long> collect = workorderBySourceCode.stream().map(WorkorderDO::getId).collect(Collectors.toList());
-        return taskMapper.selectPage(pageReqVO,collect);
+        return taskMapper.selectPage(pageReqVO, collect);
     }
 
     @Override
@@ -182,10 +198,9 @@ public class TaskServiceImpl implements TaskService {
     public void updateTaskStatus(Long taskId, String status) {
         TaskDO taskDO = new TaskDO().setId(taskId).setStatus(status);
         LocalDateTime currentDateTime = LocalDateTime.now();
-        if (status.equals("STARTED"))
-        {
+        if (status.equals("STARTED")) {
             taskDO.setActualStartTime(currentDateTime);
-        }else if (status.equals("FINISHED")){
+        } else if (status.equals("FINISHED")) {
             taskDO.setActualEndTime(currentDateTime);
         }
         taskMapper.updateById(taskDO);
@@ -197,9 +212,9 @@ public class TaskServiceImpl implements TaskService {
         taskExportReqVO.setWorkorderId(workOrderId);
         List<TaskDO> list = taskMapper.selectList(taskExportReqVO);
 
-        if (list.isEmpty()){
+        if (list.isEmpty()) {
             return null;
-        }else{
+        } else {
 
             /*for (TaskDO taskDO : list) {
                 if (taskDO.getStatus().equals("FINISHED")){
@@ -215,13 +230,25 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskDO getTask(Long id, Long processId) {
-        return taskMapper.getTask(id,processId);
+        return taskMapper.getTask(id, processId);
     }
 
     @Override
     public Boolean updatePrintById(Long id) {
         int i = taskMapper.updateById(new TaskDO().setId(id).setIsPrint("1"));
-        return i>0;
+        return i > 0;
     }
+
+    /**
+     * 获得生产任务
+     *
+     * @param teamCode 班组编号
+     * @return 生产任务
+     */
+    @Override
+    public List<TaskDO> getTaskByTeamCode(String teamCode) {
+        return taskMapper.getTaskByTeamCode(teamCode);
+    }
+
 
 }

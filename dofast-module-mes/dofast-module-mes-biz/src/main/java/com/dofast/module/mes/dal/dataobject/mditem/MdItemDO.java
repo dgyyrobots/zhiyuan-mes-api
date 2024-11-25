@@ -139,4 +139,13 @@ public class MdItemDO extends BaseDO {
      */
     private LocalDateTime recptDate;
 
+    /**
+     * 供应商
+     */
+    private String suppliers;
+
+    /**
+     * 附件信息
+     */
+    private String adjuncts;
 }

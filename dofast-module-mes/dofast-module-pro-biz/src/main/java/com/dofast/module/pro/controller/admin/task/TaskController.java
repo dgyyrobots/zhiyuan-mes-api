@@ -6,6 +6,11 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.dofast.framework.common.pojo.AjaxResult;
 import com.dofast.framework.common.util.collection.CollectionUtils;
 import com.dofast.framework.web.core.util.WebFrameworkUtils;
+import com.dofast.module.cal.controller.admin.teammember.vo.TeamMemberExportReqVO;
+import com.dofast.module.cal.dal.dataobject.team.TeamDO;
+import com.dofast.module.cal.dal.dataobject.teammember.TeamMemberDO;
+import com.dofast.module.cal.service.team.TeamService;
+import com.dofast.module.cal.service.teammember.TeamMemberService;
 import com.dofast.module.mes.api.WorkStationAPi.WorkStationApi;
 import com.dofast.module.mes.api.WorkStationAPi.dto.WorkStationDTO;
 import com.dofast.module.mes.api.autocode.AutoCodeApi;
@@ -21,6 +26,7 @@ import com.dofast.module.pro.convert.workorder.WorkorderConvert;
 import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
 import com.dofast.module.pro.dal.dataobject.process.ProcessDO;
 import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
+import com.dofast.module.pro.dal.mysql.task.TaskMapper;
 import com.dofast.module.pro.enums.ErrorCodeConstants;
 import com.dofast.module.pro.gantt.GanttData;
 import com.dofast.module.pro.gantt.GanttLink;
@@ -36,7 +42,9 @@ import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
 import com.dofast.module.trade.api.mixinorder.MixinOrderApi;
 import com.dofast.module.trade.api.mixinorder.dto.MixinOrderDTO;
 import org.springframework.web.bind.annotation.*;
+
 import javax.annotation.Resource;
+
 import org.springframework.validation.annotation.Validated;
 import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -61,6 +69,7 @@ import static com.dofast.framework.common.pojo.CommonResult.success;
 import com.dofast.framework.excel.core.util.ExcelUtils;
 
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
+
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.*;
 import static com.dofast.module.pro.enums.ErrorCodeConstants.TASK_IS_EXITS;
 import static com.dofast.module.pro.enums.ErrorCodeConstants.UODATE_COME;
@@ -109,11 +118,21 @@ public class TaskController {
     @Resource
     private RouteProcessService routeProcessService;
 
+    @Resource
+    private TeamMemberService teamMemberService;
+
+    @Resource
+    private TeamService teamService;
+
+    @Resource
+    private TaskMapper taskMapper;
+
+
     @PostMapping("/create")
     @Operation(summary = "创建生产任务")
     @PreAuthorize("@ss.hasPermission('pro:task:create')")
     public CommonResult<Long> createTask(@Valid @RequestBody TaskCreateReqVO createReqVO) {
-        if(createReqVO.getQuantity() < 0){
+        if (createReqVO.getQuantity().doubleValue() < 0) {
             return error(ErrorCodeConstants.TASK_NUM_MORE_THAN_0);
         }
 
@@ -128,20 +147,20 @@ public class TaskController {
         taskExportReqVO.setWorkorderCode(createReqVO.getWorkorderCode());
         taskExportReqVO.setProcessId(createReqVO.getProcessId());
         List<TaskDO> taskList = taskService.getTaskList(taskExportReqVO);
-        if (taskList.size()>0){
-            if (order.getQuantity()-order.getQuantityProduced()<createReqVO.getQuantity()){
+        if (taskList.size() > 0) {
+            if (order.getQuantity() - order.getQuantityProduced() < createReqVO.getQuantity().doubleValue()) {
                 return error(ErrorCodeConstants.WORKORDER_BIG_COUNT);
             }
-            if(createReqVO.getQuantity().compareTo(order.getQuantity()) ==1){
+            if (createReqVO.getQuantity().compareTo(BigDecimal.valueOf(order.getQuantity())) == 1) {
                 return error(ErrorCodeConstants.WORKORDER_NUMBER_MORE);
             }
         }
-        order.setQuantityProduced(order.getQuantityProduced()+createReqVO.getQuantity());
+        order.setQuantityProduced(order.getQuantityProduced() + createReqVO.getQuantity().doubleValue());
         WorkorderUpdateReqVO workorderUpdateReqVO = WorkorderConvert.INSTANCE.convert1(order);
         //判断该任务是否为关键工序
         if (routeProcessService.checkKeyProcess(BeanUtil.toBean(createReqVO, FeedbackDO.class))) {
             //如果是关键工序，则改变workorder工单的已排产数量
-            workorderUpdateReqVO.setQuantityScheduled(createReqVO.getQuantity());
+            workorderUpdateReqVO.setQuantityScheduled(createReqVO.getQuantity().doubleValue());
         }
         workorderService.updateWorkorder(workorderUpdateReqVO);
 
@@ -157,13 +176,19 @@ public class TaskController {
         createReqVO.setClientName(order.getClientName());
 
         //工序信息
-        ProcessDO process = processService.getcess(createReqVO.getProcessId());
-        createReqVO.setProcessId(process.getId());
-        createReqVO.setProcessCode(process.getProcessCode());
-        createReqVO.setProcessName(process.getProcessName());
-
+        if (createReqVO.getProcessCode() != null) {
+            ProcessDO process = processService.getcess(createReqVO.getProcessCode());
+            createReqVO.setProcessId(process.getId());
+            createReqVO.setProcessCode(process.getProcessCode());
+            createReqVO.setProcessName(process.getProcessName());
+        } else {
+            ProcessDO process = processService.getcess(createReqVO.getProcessId());
+            createReqVO.setProcessId(process.getId());
+            createReqVO.setProcessCode(process.getProcessCode());
+            createReqVO.setProcessName(process.getProcessName());
+        }
         //自动生成任务编号和名称
-        createReqVO.setTaskCode(autoCodeApi.genSerialCode(Constant.TASK_CODE,null));
+        createReqVO.setTaskCode(autoCodeApi.genSerialCode(Constant.TASK_CODE, null));
         createReqVO.setTaskName(
                 new StringBuilder()
                         .append(createReqVO.getItemName())
@@ -177,14 +202,14 @@ public class TaskController {
     /**
      * 获取甘特图中需要显示的TASK，包括三种类型的内容：
      * 1.Project：基于时间范围搜索的生产工单转换而来的Project。
-     *   搜索逻辑为：默认使用当前日期作为开始时间，搜索所有需求时间大于当前时间的生产工单
+     * 搜索逻辑为：默认使用当前日期作为开始时间，搜索所有需求时间大于当前时间的生产工单
      * 2.Task：基于生产工单拆分到具体工作站后的生产任务转换而来的Task。
      * 3.Link：根据工序与工序之间的依赖关系转换而来的Link。
      */
     @Operation(summary = "获取甘特图中需要显示的TASK")
     @PreAuthorize("@ss.hasPermission('pro:task:query')")
     @GetMapping("/listGanttTaskList")
-    public CommonResult getGanttTaskList(WorkorderListVO proWorkorder){	
+    public CommonResult getGanttTaskList(WorkorderListVO proWorkorder) {
         GanttTask ganttTask = new GanttTask();
         List<GanttData> ganttData = new ArrayList<GanttData>();
         List<GanttLink> ganttLinks = new ArrayList<GanttLink>();
@@ -196,10 +221,10 @@ public class TaskController {
         //为每个workOrder生成type=project的GanttData
         //为每个proTask生产type=task的GanttData
         TaskListVO param = new TaskListVO();
-        if(CollUtil.isNotEmpty(workorders)){
-            for (WorkorderDO workorder: workorders
+        if (CollUtil.isNotEmpty(workorders)) {
+            for (WorkorderDO workorder : workorders
             ) {
-                if ("CONFIRMED".equals(workorder.getStatus())){
+                if ("CONFIRMED".equals(workorder.getStatus())) {
                     //先添加当前的生产工单TASK
                     GanttData wdata = new GanttData();
                     wdata.setCode(workorder.getWorkorderCode());
@@ -265,11 +290,11 @@ public class TaskController {
     @Operation(summary = "更新生产任务")
     @PreAuthorize("@ss.hasPermission('pro:task:update')")
     public CommonResult<Boolean> updateTask(@Valid @RequestBody TaskUpdateReqVO updateReqVO) {
-        if(updateReqVO.getQuantity() < 0){
+        if (updateReqVO.getQuantity().doubleValue() < 0) {
             return error(ErrorCodeConstants.TASK_NUM_MORE_THAN_0);
         }
         TaskDO task = taskService.getTask(updateReqVO.getId());
-        task.setQuantityProduced(task.getQuantityProduced() + updateReqVO.getQuantityProduced());
+        task.setQuantityProduced(task.getQuantityProduced() + updateReqVO.getQuantityProduced().doubleValue());
         /*if(task.getQuantityProduced().compareTo(updateReqVO.getQuantity()) ==1){
             return error(ErrorCodeConstants.TASK_NUM_MORE);
         }*/
@@ -311,7 +336,7 @@ public class TaskController {
         TaskExportReqVO taskExportReqVO = new TaskExportReqVO();
         taskExportReqVO.setStatus("NORMAL");
         List<TaskDO> list = taskService.getTaskList(taskExportReqVO);
-        Integer result = list == null? 0:list.size();
+        Integer result = list == null ? 0 : list.size();
         return success(result);
     }
 
@@ -336,7 +361,7 @@ public class TaskController {
     @PreAuthorize("@ss.hasPermission('pro:task:export')")
     @OperateLog(type = EXPORT)
     public void exportTaskExcel(@Valid TaskExportReqVO exportReqVO,
-              HttpServletResponse response) throws IOException {
+                                HttpServletResponse response) throws IOException {
         List<TaskDO> list = taskService.getTaskList(exportReqVO);
         // 导出 Excel
         List<TaskExcelVO> datas = TaskConvert.INSTANCE.convertList02(list);
@@ -348,7 +373,7 @@ public class TaskController {
     @PreAuthorize("@ss.hasPermission('pro:task:query')")
     public CommonResult<PageResult<TaskRespVO>> getMyTask(@Valid TaskPageReqVO pageVO) {
         PageResult<TaskDO> pageResult = taskService.getMyTask(pageVO);
-        if (pageResult.getTotal()<=0){
+        if (pageResult.getTotal() <= 0) {
             return success(TaskConvert.INSTANCE.convertPage(pageResult));
         }
         PageResult<TaskRespVO> taskRespVOPageResult = TaskConvert.INSTANCE.convertPage(pageResult);
@@ -357,17 +382,22 @@ public class TaskController {
             taskRespVOPageResult.getList().get(i).setActualEndTime(pageResult.getList().get(i).getActualEndTime());
         }
         for (TaskRespVO taskRespVO : taskRespVOPageResult.getList()) {
-            if (printLogApi.selectAllByPrintLog(taskRespVO.getTaskCode()).size()>0) {
+            if (printLogApi.selectAllByPrintLog(taskRespVO.getTaskCode()).size() > 0) {
                 taskRespVO.setIsPrint("1");
-            }else {
+            } else {
                 taskRespVO.setIsPrint("0");
             }
             taskRespVO.setIsReport(feedbackService.getFeedbackListByTaskId(taskRespVO.getId()).size());
 
             WorkorderDO workorder = workorderService.getWorkorder(taskRespVO.getWorkorderId());
-            taskRespVO.setSourceCode(workorder.getSourceCode());
+            if(workorder!= null){
+                String sourceCode = Optional.ofNullable(workorder.getSourceCode()).orElse(null);
+                taskRespVO.setSourceCode(sourceCode);
+            }
         }
+
         return success(taskRespVOPageResult);
+
     }
 
     @PutMapping("/change")
@@ -384,9 +414,8 @@ public class TaskController {
     @Operation(summary = "获取当前用户的生产任务")
     @GetMapping("/get-task")
     @PreAuthorize("@ss.hasPermission('pro:task:query')")
-    public CommonResult<List<TaskRespVO>> getMyTask(@RequestParam("no") String no)
-    {
-        //判断当前用户的岗位
+    public CommonResult<List<TaskRespVO>> getMyTask(@RequestParam("no") String no) {
+     /*   //判断当前用户的岗位
         AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
         if (CollectionUtil.isEmpty(adminUserRespDTO.getPostIds())) {
             return error(ErrorCodeConstants.FEEDBACK_NOT_ACQUIRE);
@@ -403,8 +432,6 @@ public class TaskController {
             return error(ErrorCodeConstants.WORKORDER_NOT_EXIST);
         }
         List<TaskDO> taskDOS = new ArrayList<>();
-
-
 
         List<MdWorkstationWorkerDO>  workstationWorkers = workstationWorkerService.getMdWorkstationWorkerListByPostId(adminUserRespDTO.getPostIds());
         if (CollectionUtil.isEmpty(workstationWorkers)) {
@@ -429,14 +456,39 @@ public class TaskController {
         if (taskDOS.isEmpty()){
             return error(ErrorCodeConstants.FEEDBACK_NOT_ACQUIRE);
         }
-        return success(TaskConvert.INSTANCE.convertList(taskDOS));
+        return success(TaskConvert.INSTANCE.convertList(taskDOS));*/
+
+        // 2024-11-13改
+        // 获取当前用户信息
+        AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
+        // 获取当前用户所在的班组
+        TeamMemberExportReqVO req = new TeamMemberExportReqVO();
+        req.setUserId(adminUserRespDTO.getId());
+        List<TeamMemberDO> memberDO = teamMemberService.getTeamMemberList(req);
+        TeamDO team =  teamService.getTeam(memberDO.get(0).getTeamId());
+        // 根据班组编码查询派工信息
+        List<TaskDO> tasks = taskService.getTaskByTeamCode(team.getTeamCode());
+        return success(TaskConvert.INSTANCE.convertList(tasks));
     }
 
     @PutMapping("/update/{id}")
     @Operation(summary = "更新生产任务的打印状态")
     @PreAuthorize("@ss.hasPermission('pro:task:update')")
-    public CommonResult<Boolean> UpdatePrintById(@PathVariable("id")Long id){
-        Boolean b=taskService.updatePrintById(id);
+    public CommonResult<Boolean> UpdatePrintById(@PathVariable("id") Long id) {
+        Boolean b = taskService.updatePrintById(id);
         return success(b);
     }
+
+    @PutMapping("/updateTeamById")
+    @Operation(summary = "更新生产任务的打印状态")
+    @PreAuthorize("@ss.hasPermission('pro:task:update')")
+    public CommonResult<Boolean> updateTeamById(@RequestBody Map<String, Object> request) {
+        String teamCode = (String) request.get("teamCode"); // 班组编码
+        Integer taskId = (Integer) request.get("taskId"); // 任务ID
+        TaskDO taskDO = taskService.getTask(taskId.longValue());
+        taskDO.setAttr1(teamCode); // 存储班组编码
+        taskService.updateTask(TaskConvert.INSTANCE.convert01(taskDO));
+        return success(true);
+    }
+
 }

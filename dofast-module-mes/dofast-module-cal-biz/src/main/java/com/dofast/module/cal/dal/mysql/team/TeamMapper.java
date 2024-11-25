@@ -28,6 +28,9 @@ public interface TeamMapper extends BaseMapperX<TeamDO> {
                 .eqIfPresent(TeamDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(TeamDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(TeamDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(TeamDO::getPrincipalId, reqVO.getPrincipalId())
+                .likeIfPresent(TeamDO::getPrincipalName, reqVO.getPrincipalName())
+                .eqIfPresent(TeamDO::getPersonCount, reqVO.getPersonCount())
                 .orderByDesc(TeamDO::getId));
     }
 
@@ -42,6 +45,9 @@ public interface TeamMapper extends BaseMapperX<TeamDO> {
                 .eqIfPresent(TeamDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(TeamDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(TeamDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(TeamDO::getPrincipalId, reqVO.getPrincipalId())
+                .likeIfPresent(TeamDO::getPrincipalName, reqVO.getPrincipalName())
+                .eqIfPresent(TeamDO::getPersonCount, reqVO.getPersonCount())
                 .orderByDesc(TeamDO::getId));
     }
 

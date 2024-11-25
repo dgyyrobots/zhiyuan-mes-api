@@ -121,4 +121,8 @@ public class IssueLineDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * 单身领料状态
+     */
+    private String status;
 }

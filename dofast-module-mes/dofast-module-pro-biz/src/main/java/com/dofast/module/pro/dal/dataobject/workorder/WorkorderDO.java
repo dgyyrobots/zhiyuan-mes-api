@@ -148,4 +148,8 @@ public class WorkorderDO extends BaseDO {
      * 是否外协
      */
     private Boolean isOut;
+    /**
+     * 工艺编号
+     */
+    private String routeCode;
 }

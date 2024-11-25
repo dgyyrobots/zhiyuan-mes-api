@@ -127,4 +127,8 @@ public class  WorkorderDTO {
      * 是否外协
      */
     private Boolean isOut;
+    /**
+     * 工艺编码
+     */
+    private String routeCode;
 }

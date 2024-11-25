@@ -1,8 +1,6 @@
 package com.dofast.module.wms.controller.admin.storagelocation.vo;
 
 import lombok.*;
-
-import java.math.BigDecimal;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.dofast.framework.common.pojo.PageParam;
@@ -27,7 +25,7 @@ public class StorageLocationPageReqVO extends PageParam {
     private Long warehouseId;
 
     @Schema(description = "面积")
-    private BigDecimal area;
+    private Object area;
 
     @Schema(description = "是否开启库位管理")
     private String areaFlag;
@@ -50,5 +48,8 @@ public class StorageLocationPageReqVO extends PageParam {
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
+
+    @Schema(description = "工序编码")
+    private String processCode;
 
 }

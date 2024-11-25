@@ -34,7 +34,7 @@ public class WarehouseApiImpl implements WarehouseApi {
 
     @Override
     public WarehouseDTO selectWmWarehouseByWarehouseCode(String code) {
-        WarehouseDO warehouseDO = warehouseMapper.selectById(code);
+        WarehouseDO warehouseDO = warehouseMapper.selectOne(WarehouseDO::getWarehouseCode, code);;
         WarehouseDTO dto = WarehouseConvert.INSTANCE.convert01(warehouseDO);
         return dto;
     }

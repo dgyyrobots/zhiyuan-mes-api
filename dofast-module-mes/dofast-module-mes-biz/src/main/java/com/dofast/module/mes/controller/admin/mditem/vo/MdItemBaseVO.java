@@ -109,5 +109,8 @@ public class MdItemBaseVO {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime recptDate;
 
+    @Schema(description = "附件信息")
+    private String adjuncts;
+
     public Long getId(){return null;}
 }

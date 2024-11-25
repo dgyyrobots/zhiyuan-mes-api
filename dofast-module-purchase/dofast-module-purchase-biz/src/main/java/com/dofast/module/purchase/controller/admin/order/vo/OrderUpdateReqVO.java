@@ -11,8 +11,8 @@ import javax.validation.constraints.*;
 @ToString(callSuper = true)
 public class OrderUpdateReqVO extends OrderBaseVO {
 
-    @Schema(description = "ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "24538")
-    @NotNull(message = "ID不能为空")
+    @Schema(description = "资金账户id", requiredMode = Schema.RequiredMode.REQUIRED, example = "8225")
+    @NotNull(message = "资金账户id不能为空")
     private Integer id;
 
 }

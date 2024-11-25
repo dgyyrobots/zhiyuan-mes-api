@@ -91,4 +91,6 @@ public interface IssueHeaderMapper extends BaseMapperX<IssueHeaderDO> {
                 .orderByDesc(IssueHeaderDO::getId));
     }
 
+    List<Map<String, Object>> initBomByWorkOrder(String workOrderNo);
+
 }

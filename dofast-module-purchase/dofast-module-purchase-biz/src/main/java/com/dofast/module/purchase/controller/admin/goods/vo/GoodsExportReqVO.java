@@ -1,6 +1,5 @@
 package com.dofast.module.purchase.controller.admin.goods.vo;
 
-import java.time.LocalDate;
 import lombok.*;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,9 +25,6 @@ public class GoodsExportReqVO {
     @Schema(description = "商品规格")
     private String goodsSpecs;
 
-    @Schema(description = "商品单位")
-    private Integer company;
-
     @Schema(description = "采购单价")
     private Object monovalent;
 
@@ -50,5 +46,30 @@ public class GoodsExportReqVO {
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
+
+    @Schema(description = "商品单位")
+    private String company;
+
+    @Schema(description = "采购订单号")
+    private String poNo;
+
+    @Schema(description = "入库数量")
+    private Integer receiveNum;
+
+    @Schema(description = "入库单位")
+    private String unitOfMeasure;
+
+    @Schema(description = "状态（0-未打印，1-已打印，2-已入库）", example = "2")
+    private Integer status;
+
+    @Schema(description = "收货时间")
+    @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
+    private LocalDateTime[] receiveTime;
+
+    @Schema(description = "批次")
+    private String batchCode;
+
+    @Schema(description = "母批次")
+    private String parentBatchCode;
 
 }

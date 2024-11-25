@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.mes.dal.oracle.mditem.MdItemOracleMapper">
+
+
+    <select id="initItemInfo" resultType="java.util.HashMap">
+        select distinct a.imaa001, a.imaa006, a.imaaent, b.imafsite , c.imaal003, c.imaal004 , f.imca004, DECODE(f.imca004, 'A', '组合/加工品', 'E', '费用/软件', 'F', '事务用品', 'M', '材料/零件/商品' , 'T', '范本' , 'X', '虚拟品' , '其它') as itemTypeName , DECODE(f.imca004 , 'A', '22', 'E', '23', 'F', '24', 'M', '25' , 'T', '26' , 'X', '27' ,  '28' ) as itemTypeId , a.imaa101  from DSDATA.imaa_t a
+                    left join DSDATA.IMAF_T b on a.imaa001 = b.imaf001 and a.imaaent = b.imafent
+                    left join DSDATA.IMAAL_T c on a.imaa001 = c.imaal001 and a.imaaent = c.imaalent
+                    left join DSDATA.IMAE_T d on a.imaa001 = d.imae001 and a.imaaent = d.imaeent and b.imafsite = d.imaesite
+                    left join DSDATA.IMAAUC_T e on c.imaal003 = e.imaauc001 and a.imaaent = e.imaaucent and e.imaaucsite = b.imafsite
+                    left join DSDATA.IMCA_T f on a.imaa003 = f.imca001 and imaaent = f.imcaent
+                    where b.IMAFSITE = 'AM01' and a.imaaent = 100 and c.imaal002 = 'zh_CN'
+    </select>
+
+</mapper>

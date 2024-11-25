@@ -62,4 +62,7 @@ public class WorkorderBomExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("项次")
+    private Long sequence;
+
 }

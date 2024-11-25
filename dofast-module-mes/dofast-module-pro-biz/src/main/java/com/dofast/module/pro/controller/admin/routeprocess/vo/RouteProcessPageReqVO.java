@@ -18,9 +18,6 @@ public class RouteProcessPageReqVO extends PageParam {
     @Schema(description = "工艺路线ID", example = "8819")
     private Long routeId;
 
-    @Schema(description = "工序ID", example = "7829")
-    private Long processId;
-
     @Schema(description = "工序编码")
     private String processCode;
 
@@ -29,9 +26,6 @@ public class RouteProcessPageReqVO extends PageParam {
 
     @Schema(description = "序号")
     private Integer orderNum;
-
-    @Schema(description = "工序ID", example = "28184")
-    private Long nextProcessId;
 
     @Schema(description = "工序编码")
     private String nextProcessCode;
@@ -44,11 +38,11 @@ public class RouteProcessPageReqVO extends PageParam {
 
     @Schema(description = "准备时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private Integer defaultPreTime;
+    private Integer[] defaultPreTime;
 
     @Schema(description = "等待时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private Integer defaultSufTime;
+    private Integer[] defaultSufTime;
 
     @Schema(description = "甘特图显示颜色")
     private String colorCode;
@@ -73,6 +67,15 @@ public class RouteProcessPageReqVO extends PageParam {
 
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
-    private LocalDateTime createTime;
+    private LocalDateTime[] createTime;
+
+    @Schema(description = "工序ID", example = "29944")
+    private Long processId;
+
+    @Schema(description = "工序ID", example = "13497")
+    private Long nextProcessId;
+
+    @Schema(description = "项次")
+    private Long sequence;
 
 }

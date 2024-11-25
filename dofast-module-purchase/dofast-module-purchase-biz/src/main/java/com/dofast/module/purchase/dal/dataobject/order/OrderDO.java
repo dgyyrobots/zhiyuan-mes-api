@@ -21,6 +21,8 @@ import com.dofast.framework.mybatis.core.dataobject.BaseDO;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class OrderDO extends BaseDO {
 
     /**
@@ -81,4 +83,7 @@ public class OrderDO extends BaseDO {
      */
     private String remarks;
 
+    private String parentBatchCode;
+
+    private String serial;
 }
