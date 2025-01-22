@@ -49,4 +49,12 @@ public class TeamBaseVO {
     @Schema(description = "班组人数", example = "32463")
     private Long personCount;
 
+    @Schema(description = "生产设备名称", example = "芋艿")
+    private String machineryName;
+
+    @Schema(description = "生产设备编码")
+    private String machineryCode;
+
+    @Schema(description = "生产设备ID", example = "14315")
+    private Long machineryId;
 }

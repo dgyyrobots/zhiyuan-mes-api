@@ -6,11 +6,15 @@ import com.dofast.framework.common.pojo.AjaxResult;
 import com.dofast.framework.common.pojo.CommonResult;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.pojo.UserConstants;
+import com.dofast.framework.common.util.bean.BeanUtils;
 import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.framework.excel.core.util.ExcelUtils;
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
 import com.dofast.framework.security.core.annotations.PreAuthenticated;
+import com.dofast.framework.security.core.util.SecurityFrameworkUtils;
 import com.dofast.framework.tenant.core.aop.TenantIgnore;
+import com.dofast.module.cmms.api.dvmachinery.DvMachineryApi;
+import com.dofast.module.cmms.api.dvmachinery.dto.DvMachineryDTO;
 import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.mes.controller.admin.mditem.vo.MdItemExportReqVO;
 import com.dofast.module.mes.dal.dataobject.mditem.MdItemDO;
@@ -30,6 +34,7 @@ import com.dofast.module.pro.controller.admin.routeprocess.vo.RouteProcessExport
 import com.dofast.module.pro.controller.admin.task.vo.TaskUpdateReqVO;
 import com.dofast.module.pro.controller.admin.workorder.vo.WorkorderUpdateReqVO;
 import com.dofast.module.pro.convert.feedback.FeedbackConvert;
+import com.dofast.module.pro.convert.feedbackmember.FeedbackMemberConvert;
 import com.dofast.module.pro.convert.task.TaskConvert;
 import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
 import com.dofast.module.pro.dal.dataobject.feedbackmember.FeedbackMemberDO;
@@ -46,19 +51,31 @@ import com.dofast.module.pro.service.workorder.WorkorderService;
 import com.dofast.module.qms.api.oqcApi.OqcApi;
 import com.dofast.module.qms.api.oqcApi.dto.OqcDTO;
 import com.dofast.module.system.api.user.AdminUserApi;
+import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
 import com.dofast.module.trade.api.mixinorder.MixinOrderApi;
+import com.dofast.module.wms.api.Issueheader.IssueApi;
+import com.dofast.module.wms.api.Issueheader.dto.IssueLineDTO;
+import com.dofast.module.wms.api.Issueheader.dto.IssueheaderDTO;
 import com.dofast.module.wms.api.WarehosueApi.dto.WarehouseDTO;
 import com.dofast.module.wms.api.WarehouseApi.WarehouseApiImpl;
+import com.dofast.module.wms.controller.admin.itemconsume.vo.ItemConsumeExportReqVO;
 import com.dofast.module.wms.controller.admin.itemconsume.vo.ItemConsumeUpdateReqVO;
+import com.dofast.module.wms.controller.admin.itemconsumeline.vo.ItemConsumeLineExportReqVO;
 import com.dofast.module.wms.controller.admin.itemrecpt.vo.ItemRecptUpdateReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockCreateReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockUpdateReqVO;
+import com.dofast.module.wms.controller.admin.productproduce.vo.ProductProduceExportReqVO;
 import com.dofast.module.wms.controller.admin.productproduce.vo.ProductProduceUpdateReqVO;
 import com.dofast.module.wms.controller.admin.productproduceline.vo.ProductProduceLineExportReqVO;
 import com.dofast.module.wms.controller.admin.storagearea.vo.StorageAreaExportReqVO;
+import com.dofast.module.wms.controller.admin.transaction.vo.TransactionUpdateReqVO;
+import com.dofast.module.wms.convert.itemconsume.ItemConsumeConvert;
+import com.dofast.module.wms.convert.materialstock.MaterialStockConvert;
+import com.dofast.module.wms.convert.productproduce.ProductProduceConvert;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeDO;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeTxBean;
+import com.dofast.module.wms.dal.dataobject.itemconsumeline.ItemConsumeLineDO;
 import com.dofast.module.wms.dal.dataobject.itemrecpt.ItemRecptDO;
 import com.dofast.module.wms.dal.dataobject.itemrecpt.ItemRecptTxBean;
 import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
@@ -68,6 +85,8 @@ import com.dofast.module.wms.dal.dataobject.productproduceline.ProductProduceLin
 import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
+import com.dofast.module.wms.dal.mysql.itemconsumeline.ItemConsumeLineMapper;
+import com.dofast.module.wms.dal.mysql.productproduceline.ProductProduceLineMapper;
 import com.dofast.module.wms.service.itemconsume.ItemConsumeService;
 import com.dofast.module.wms.service.itemrecpt.ItemRecptService;
 import com.dofast.module.wms.service.materialstock.MaterialStockService;
@@ -77,6 +96,8 @@ import com.dofast.module.wms.service.productsalse.ProductSalseService;
 import com.dofast.module.wms.service.storagearea.StorageAreaService;
 import com.dofast.module.wms.service.storagecore.StorageCoreService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
+import com.dofast.module.wms.service.transaction.TransactionService;
+import com.dofast.module.wms.service.warehouse.WarehouseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -93,7 +114,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -103,6 +126,7 @@ import static com.dofast.framework.common.exception.util.ServiceExceptionUtil.ex
 import static com.dofast.framework.common.pojo.CommonResult.error;
 import static com.dofast.framework.common.pojo.CommonResult.success;
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
+import static com.dofast.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static com.dofast.module.pro.enums.ErrorCodeConstants.QUENTITYP_RODUCED_IS_MORE;
 
 @Tag(name = "生产管理 - 生产报工记录")
@@ -180,15 +204,50 @@ public class FeedbackController {
     @Resource
     private FeedbackMemberService feedBackMemberService;
 
+    @Autowired
+    private TransactionService transactionService;
+
+    @Autowired
+    private WarehouseService warehouseService;
+
+    @Resource
+    private StorageLocationService storageLocationService;
+
+    @Resource
+    private StorageAreaService storageAreaService;
+
+    @Resource
+    private DvMachineryApi dvMachineryApi;
+
+    @Resource
+    private IssueApi issueApi;
+
+    @Resource
+    private ProductProduceLineMapper productProduceLineMapper;
+
+    @Resource
+    private ItemConsumeLineMapper itemConsumeLineMapper;
+
+
+
     @PostMapping("/create")
     @Operation(summary = "创建生产报工记录")
     @PreAuthorize("@ss.hasPermission('pro:feedback:create')")
     public CommonResult<Long> createFeedback(@Valid @RequestBody FeedbackCreateReqVO createReqVO) {
-        List<Map<String, Object>> list =createReqVO.getFeedbackMemberList();
+        List<Map<String, Object>> list = createReqVO.getFeedbackMemberList();
+        // 获得用户基本信息
+        Long loginUserId = SecurityFrameworkUtils.getLoginUserId();
+        AdminUserRespDTO userDTO = adminUserApi.getUser(loginUserId);
+        createReqVO.setNickName(userDTO.getNickname());
+        createReqVO.setUserName(userDTO.getUsername());
+        // 生成三位数随机数
+        int random = (int) ((Math.random() * 9 + 1) * 100);
+        createReqVO.setFeedbackCode(new StringBuffer().append("AMBG01").append("-").append(createReqVO.getTaskCode()).append("-").append(random).toString());
         Long feedbackId = feedbackService.createFeedback(createReqVO);
-        String taskCode  = createReqVO.getTaskCode();
+        String taskCode = createReqVO.getTaskCode();
         TaskDO task = taskService.getTask(taskCode);
         task.setFeedbackStatus("Y");
+
         taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
         for (Map<String, Object> map : list) {
             FeedbackMemberCreateReqVO req = new FeedbackMemberCreateReqVO();
@@ -209,23 +268,25 @@ public class FeedbackController {
     @PreAuthorize("@ss.hasPermission('pro:feedback:update')")
     public CommonResult<Boolean> updateFeedback(@Valid @RequestBody FeedbackUpdateReqVO updateReqVO) {
         feedbackService.updateFeedback(updateReqVO);
-        List<Map<String, Object>> list =updateReqVO.getFeedbackMemberList();
+        List<Map<String, Object>> list = Optional.ofNullable(updateReqVO.getFeedbackMemberList()).orElse(Collections.emptyList());
         FeedbackMemberExportReqVO pageReqVO = new FeedbackMemberExportReqVO();
         pageReqVO.setFeedbackId(String.valueOf(updateReqVO.getId()));
         List<FeedbackMemberDO> memberList = feedBackMemberService.getFeedbackMemberList(pageReqVO);
         for (FeedbackMemberDO member : memberList) {
             feedBackMemberService.deleteFeedbackMember(member.getId());
         }
-        for (Map<String, Object> map : list) {
-            FeedbackMemberCreateReqVO req = new FeedbackMemberCreateReqVO();
-            req.setFeedbackId(String.valueOf(updateReqVO.getId()));
-            req.setNickName((String) map.get("nickname"));
-            Integer userId = (Integer) map.get("id");
-            req.setUserId(userId.longValue());
-            req.setUserName((String) map.get("username"));
-            req.setTaskCode(updateReqVO.getTaskCode());
-            req.setTeamCode(updateReqVO.getTeamCode());
-            feedBackMemberService.createFeedbackMember(req);
+        if(!list.isEmpty()){
+            for (Map<String, Object> map : list) {
+                FeedbackMemberCreateReqVO req = new FeedbackMemberCreateReqVO();
+                req.setFeedbackId(String.valueOf(updateReqVO.getId()));
+                req.setNickName((String) map.get("nickname"));
+                Integer userId = (Integer) map.get("id");
+                req.setUserId(userId.longValue());
+                req.setUserName((String) map.get("username"));
+                req.setTaskCode(updateReqVO.getTaskCode());
+                req.setTeamCode(updateReqVO.getTeamCode());
+                feedBackMemberService.createFeedbackMember(req);
+            }
         }
         return success(true);
     }
@@ -360,8 +421,13 @@ public class FeedbackController {
         }
         //更新报工单的状态
         feedback.setStatus(UserConstants.ORDER_STATUS_FINISHED);
+        //feedback.setFeedbackTime(LocalDateTime.now());
         FeedbackUpdateReqVO feedbackUpdateReqVO = BeanUtil.toBean(feedback, FeedbackUpdateReqVO.class);
         feedbackService.updateFeedback(feedbackUpdateReqVO);
+        //更新设备状态
+        DvMachineryDTO dvMachineryDTO =  dvMachineryApi.getMachineryInfo(task.getMachineryCode());
+        dvMachineryDTO.setStatus("STOP"); // 报工后设备停机
+        dvMachineryApi.updateMachineryInfo(dvMachineryDTO);
         return CommonResult.success();
     }
 
@@ -406,7 +472,7 @@ public class FeedbackController {
         String nextProcessCode = Optional.ofNullable(routeProcess.get(0).getNextProcessCode()).orElse(null);
         MaterialStockCreateReqVO materialStock = new MaterialStockCreateReqVO();
         MdItemDO item = mdItemService.getMdItemByItemCode(task.getItemCode());
-        MdItemTypeDO itemType = mdItemTypeService.getMdItemType(item.getItemTypeCode());
+        MdItemTypeDO itemType = mdItemTypeService.getMdItemType(item.getItemTypeId());
         // 开始追加库存信息
         materialStock.setItemId(item.getId());
         materialStock.setItemCode(item.getItemCode());
@@ -414,7 +480,7 @@ public class FeedbackController {
         materialStock.setWorkorderId(workorder.getId());
         materialStock.setWorkorderCode(workorder.getWorkorderCode());
         materialStock.setUnitOfMeasure(task.getUnitOfMeasure());
-        materialStock.setQuantityOnhand(BigDecimal.valueOf(task.getQuantityQuanlify())); // 产成品数量为任务单合格数量
+        materialStock.setQuantityOnhand(BigDecimal.valueOf(feedBack.getQuantityQualified())); // 产成品数量为报工单合格数量
 
         // 获取当前日期
         LocalDate currentDate = LocalDate.now();
@@ -450,9 +516,12 @@ public class FeedbackController {
                 serialInt++;
                 serial = String.format("%03d", serialInt);
             }
-            materialStock.setBatchCode(task.getParentBatchCode() +"-"+ serial);
-            feedBack.setBatchCode(task.getParentBatchCode() +"-"+ serial);
+            materialStock.setBatchCode(task.getParentBatchCode() + "-" + serial);
+            feedBack.setBatchCode(task.getParentBatchCode() + "-" + serial);
             feedBack.setErpBatchCode(parentBatchCode);
+            // 修改任务单最新批次信息
+            task.setSerial(serial);
+            taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
         } else {
             // 入主仓
             // 仓库
@@ -463,8 +532,8 @@ public class FeedbackController {
             materialStock.setWarehouseId(warehouse.getId());
             materialStock.setWarehouseName(warehouse.getWarehouseName());
             // 传递至成品仓-基于正式库决定, 暂时写死
-            StorageLocationDO location = locationService.getStorageLocation("ST001");
-            StorageAreaDO area = areaService.getStorageArea("01");
+            StorageLocationDO location = locationService.getStorageLocation(40L);
+            StorageAreaDO area = areaService.getStorageArea(42L);
             materialStock.setLocationId(location.getId());
             materialStock.setLocationCode(location.getLocationCode());
             materialStock.setLocationName(location.getLocationName());
@@ -478,15 +547,21 @@ public class FeedbackController {
                 serial = "001";
             } else {
                 int serialInt = Integer.parseInt(serial);
-                serialInt++;
+                serialInt+=1;
                 serial = String.format("%03d", serialInt);
             }
-            materialStock.setBatchCode(task.getWorkorderCode() +"-"+ serial);
-            feedBack.setBatchCode(task.getParentBatchCode() +"-"+ serial);
+            materialStock.setBatchCode(task.getWorkorderCode() + "-" + serial);
+            feedBack.setBatchCode(task.getWorkorderCode() + "-" + serial);
             feedBack.setErpBatchCode(parentBatchCode);
+
+            // 修改任务单最新批次信息
+            task.setSerial(serial);
+            taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
         }
         // 追加库存
         materialStockService.createMaterialStock(materialStock);
+        FeedbackUpdateReqVO feedbackUpdateReqVO = BeanUtil.toBean(feedBack, FeedbackUpdateReqVO.class);
+        feedbackService.updateFeedback(feedbackUpdateReqVO);
     }
 
 
@@ -526,6 +601,12 @@ public class FeedbackController {
             return error(ErrorCodeConstants.FEEDBACK_NEED_SAVE_FIRST);
         }
         FeedbackDO feedback = feedbackService.getFeedback(id);
+        // 获得用户基本信息
+        Long loginUserId = SecurityFrameworkUtils.getLoginUserId();
+        AdminUserRespDTO userDTO = adminUserApi.getUser(loginUserId);
+        feedback.setNickName(userDTO.getNickname());
+        feedback.setUserName(userDTO.getUsername());
+
         if (status.equals("UNAPPROVED")) {
             FeedbackUpdateReqVO feedbackUpdateReqVO = BeanUtil.toBean(feedback, FeedbackUpdateReqVO.class);
             feedbackUpdateReqVO.setStatus("UNAPPROVED");
@@ -538,9 +619,9 @@ public class FeedbackController {
         }
 
         WorkorderDO workorder = workorderService.getWorkorder(feedback.getWorkorderId());
-        if (workorder.getQuantityProduced() > feedback.getQuantity()) {
+        /*if (workorder.getQuantityProduced() > feedback.getQuantity()) {
             return error(QUENTITYP_RODUCED_IS_MORE);
-        }
+        }*/
         //更新生产任务的生产数量
         TaskDO task = taskService.getTask(feedback.getTaskId());
         Double quantityProduced, quantityQuanlify, quantityUnquanlify;
@@ -552,15 +633,26 @@ public class FeedbackController {
         task.setQuantityUnquanlify(quantityUnquanlify + feedback.getQuantityUnquanlified());
         TaskUpdateReqVO taskUpdateReqVO = BeanUtil.toBean(task, TaskUpdateReqVO.class);
         taskService.updateTask(taskUpdateReqVO);
+
+
         //更新工单的生产数量
         //workorder.setQuantityProduced(quantityProduced + feedback.getQuantityFeedback());
         //WorkorderUpdateReqVO workorderUpdateReqVO = BeanUtil.toBean(workorder, WorkorderUpdateReqVO.class);
         //workorderService.updateWorkorder(workorderUpdateReqVO);
         //如果是关键工序，则更新当前工单的已生产数量
-        checkKeyProcess(feedback, workorder);
+        //checkKeyProcess(feedback, workorder);
 
         //父工单操作
-        parentOrder(feedback, workorder);
+        //parentOrder(feedback, workorder);
+
+        if (routeProcessService.checkFinProcess(task)) {
+            //更新生产工单的生产数量
+            Double produced = workorder.getQuantityProduced() == null ? 0 : workorder.getQuantityProduced();
+            Double feedBackQuantity = feedback.getQuantityFeedback() == null ? 0 : feedback.getQuantityFeedback();
+            workorder.setQuantityProduced(produced + feedBackQuantity);
+            WorkorderUpdateReqVO workorderUpdateReqVO = BeanUtil.toBean(workorder, WorkorderUpdateReqVO.class);
+            workorderService.updateWorkorder(workorderUpdateReqVO);
+        }
 
         //根据当前工序的物料BOM配置，进行物料消耗
         //先生成消耗单
@@ -576,6 +668,9 @@ public class FeedbackController {
         executeProductProduce(productRecord, workorder);
         //更新报工单的状态
         feedback.setStatus(UserConstants.ORDER_STATUS_FINISHED);
+        // 追加批次号信息
+        feedback.setBatchCode(null);
+        feedback.setErpBatchCode(null);
         FeedbackUpdateReqVO feedbackUpdateReqVO = BeanUtil.toBean(feedback, FeedbackUpdateReqVO.class);
         feedbackService.updateFeedback(feedbackUpdateReqVO);
         return success();
@@ -727,6 +822,333 @@ public class FeedbackController {
             materialStockService.updateMaterialStock(BeanUtil.toBean(materialStock.get(0), MaterialStockUpdateReqVO.class));
         }
         return "success";
+    }
+
+    @PostMapping("/splitFeedback")
+    public String splitFeedback(@RequestBody Map<String, Object> params) {
+        String workorderCode = (String) params.get("workorderCode");
+        Integer id = (Integer) params.get("id");
+        String itemCode = (String) params.get("itemCode");
+        String unitOfMeasure = (String) params.get("unitOfMeasure");
+        List<Map<String, Object>> splitList = (List<Map<String, Object>>) params.get("splitDetails");
+        FeedbackDO feedbackDO = feedbackService.getFeedback(id.longValue());
+        TaskDO task = taskService.getTask(feedbackDO.getTaskId());
+        BigDecimal updateCount = BigDecimal.ZERO;
+        MdItemDO mdItemDO = mdItemService.getMdItemByItemCode(itemCode);
+
+        String transactionType_out = Constant.TRANSACTION_TYPE_WAREHOUSE_TRANS_OUT;
+        String transactionType_in = Constant.TRANSACTION_TYPE_WAREHOUSE_TRANS_IN;
+
+        // 获取原报工单合格数量
+        BigDecimal originalQualifiedQuantity = BigDecimal.valueOf(feedbackDO.getQuantityQualified());
+        BigDecimal originalQuantity = BigDecimal.valueOf(feedbackDO.getQuantityFeedback());
+
+        // 开始追加报工单信息
+        for (Map<String, Object> split : splitList) {
+            String splitStr = (String) split.get("quantity");
+            BigDecimal quantityBig = new BigDecimal(splitStr); // 拆分数量
+            updateCount = updateCount.add(quantityBig);
+
+            // 计算拆分后的合格数量
+            //BigDecimal splitQualifiedQuantity = originalQualifiedQuantity.multiply(quantityBig.divide(originalQuantity, 3, RoundingMode.HALF_UP));
+
+            FeedbackDO addFeedback = new FeedbackDO();
+            BeanUtils.copyProperties(feedbackDO, addFeedback);
+            addFeedback.setId(null); // 清空ID
+            addFeedback.setQuantityFeedback(quantityBig.doubleValue());
+            addFeedback.setQuantityUnquanlified(0.0);
+            addFeedback.setQuantityQualified(quantityBig.doubleValue()); // 设置拆分后的合格数量
+            addFeedback.setTeamCode(feedbackDO.getTeamCode());
+
+            // 更新批次信息
+            String serial = task.getSerial();
+            if (serial == null) {
+                serial = "001";
+            } else {
+                int serialInt = Integer.parseInt(serial);
+                serialInt++;
+                serial = String.format("%03d", serialInt);
+            }
+
+            // AMGD01-202501006-001 拆分到最后一个"-"之前
+            String batchBegin = feedbackDO.getBatchCode().substring(0, feedbackDO.getBatchCode().lastIndexOf("-"));
+            addFeedback.setBatchCode(batchBegin + "-" + serial); // 更新子批次
+            // 修改任务单最新批次信息
+            task.setSerial(serial);
+            taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
+
+            Long lineId = feedbackService.createFeedback(FeedbackConvert.INSTANCE.convert01(addFeedback));
+            // 已完成的单据视为已入库
+            // 获取库存信息, 修改当前已入库数量
+            MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
+            exportReqVO.setItemCode(itemCode);
+            exportReqVO.setBatchCode(feedbackDO.getBatchCode());
+            List<MaterialStockDO> materialStockDO = materialStockService.getMaterialStockList(exportReqVO);
+            if(!materialStockDO.isEmpty()){
+                MaterialStockDO materialStock = materialStockDO.get(0);
+                //构造原库存减少事务
+                TransactionUpdateReqVO transaction_out = new TransactionUpdateReqVO();
+                BeanUtils.copyBeanProp(transaction_out, materialStock);
+                transaction_out.setTransactionType(transactionType_out);
+                transaction_out.setTransactionFlag(-1);//库存减少
+                transaction_out.setTransactionQuantity(quantityBig);
+                transaction_out.setTransactionDate(LocalDateTime.now());
+                transaction_out.setSourceDocId(feedbackDO.getWorkorderId());
+                transaction_out.setSourceDocCode(workorderCode);
+                transaction_out.setSourceDocLineId(feedbackDO.getId());
+                transactionService.processTransaction(transaction_out);
+
+                //再构造一条目的库存增加的事务
+                TransactionUpdateReqVO transaction_in = new TransactionUpdateReqVO();
+                BeanUtils.copyBeanProp(transaction_in, addFeedback);
+                transaction_in.setTransactionType(transactionType_in);
+                transaction_in.setTransactionFlag(1);//库存增加
+                transaction_in.setTransactionQuantity(quantityBig);
+                //由于是新增的库存记录所以需要将查询出来的库存记录ID置为空
+                transaction_in.setMaterialStockId(null);
+                //使用出库事务的供应商初始化入库事务的供应商
+                transaction_in.setVendorId(transaction_out.getVendorId());
+                transaction_in.setVendorCode(transaction_out.getVendorCode());
+                transaction_in.setVendorName(transaction_out.getVendorName());
+                transaction_in.setVendorNick(transaction_out.getVendorNick());
+                transaction_in.setItemId(mdItemDO.getId().longValue());
+                transaction_in.setItemCode(mdItemDO.getItemCode());
+                transaction_in.setItemName(mdItemDO.getItemName());
+                transaction_in.setSpecification(mdItemDO.getSpecification());
+
+                //库存,库区,库位信息继承原报工单
+                WarehouseDO warehouse = warehouseService.selectWmWarehouseByWarehouseCode(materialStock.getWarehouseCode());
+                transaction_in.setWarehouseId(warehouse.getId());
+                transaction_in.setWarehouseCode(warehouse.getWarehouseCode());
+                transaction_in.setWarehouseName(warehouse.getWarehouseName());
+                StorageLocationDO location = storageLocationService.selectWmStorageLocationByLocationCode(materialStock.getLocationCode());
+                transaction_in.setLocationId(location.getId());
+                transaction_in.setLocationCode(location.getLocationCode());
+                transaction_in.setLocationName(location.getLocationName());
+                StorageAreaExportReqVO erv = new StorageAreaExportReqVO();
+                erv.setLocationId(location.getId());
+                erv.setAreaCode(materialStock.getAreaCode());
+                List<StorageAreaDO> areaList = storageAreaService.getStorageAreaList(erv);
+                StorageAreaDO area = areaList.get(0);
+                transaction_in.setAreaId(area.getId());
+                transaction_in.setAreaCode(area.getAreaCode());
+                transaction_in.setAreaName(area.getAreaName());
+                transaction_in.setSourceDocId(feedbackDO.getWorkorderId());
+                transaction_in.setSourceDocCode(workorderCode);
+                transaction_in.setSourceDocLineId(lineId);
+                //设置入库相关联的出库事务ID
+                transaction_in.setRelatedTransactionId(transaction_out.getId());
+                transaction_in.setRecptStatus(materialStock.getRecptStatus());
+                transactionService.processTransaction(transaction_in);
+            }
+            // 获取原先班组人员信息
+            FeedbackMemberExportReqVO req = new FeedbackMemberExportReqVO();
+            req.setFeedbackId(String.valueOf(feedbackDO.getId()));
+            List<FeedbackMemberDO> memberList = feedBackMemberService.getFeedbackMemberList(req);
+            for (FeedbackMemberDO member : memberList) {
+                FeedbackMemberDO memberDO = new FeedbackMemberDO();
+                BeanUtils.copyProperties(member, memberDO); // 复制原班组人员信息
+                memberDO.setId(null); // 清空ID
+                memberDO.setFeedbackId(String.valueOf(lineId)); // 关联新增的报工单
+                feedBackMemberService.createFeedbackMember(FeedbackMemberConvert.INSTANCE.convert01(memberDO));
+            }
+        }
+        // 更新原始报工单的数量和合格数量
+        BigDecimal finQuantity = originalQuantity.subtract(updateCount); // 原始报工单剩余的数量
+        // 计算原始报工单剩余的合格数量
+        BigDecimal finQualifiedQuantity = originalQualifiedQuantity.subtract(updateCount);
+        feedbackDO.setQuantityFeedback(finQuantity.doubleValue()); // 更新报工数量
+        feedbackDO.setQuantityQualified(finQualifiedQuantity.doubleValue()); // 更新合格数量
+        feedbackService.updateFeedback(FeedbackConvert.INSTANCE.convert02(feedbackDO));
+        return "操作成功";
+    }
+
+    @GetMapping("/checkWarehousing")
+    @Operation(summary = "获得报工条码信息")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('pro:feedback:query')")
+    public CommonResult<String> checkWarehousing(@RequestParam("id") Long id) {
+        FeedbackDO feedback = feedbackService.getFeedback(id);
+        MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
+        exportReqVO.setBatchCode(feedback.getBatchCode());
+        exportReqVO.setItemCode(feedback.getItemCode());
+        List<MaterialStockDO> stockList = materialStockService.getMaterialStockList(exportReqVO);
+       if(stockList.isEmpty()){
+           return error(ErrorCodeConstants.MATERIAL_STOCK_NOT_EXISTS);
+       }
+        MaterialStockDO stock = stockList.get(0);
+    return success(stock.getRecptStatus());
+    }
+
+
+
+    @PostMapping("/reFeedback")
+    @Operation(summary = "撤销报工")
+    @PreAuthorize("@ss.hasPermission('pro:feedback:create')")
+    public CommonResult<Long> reFeedback(@Valid @RequestBody Integer headerId) {
+        String transactionType_out = Constant.TRANSACTION_TYPE_WAREHOUSE_TRANS_OUT;
+        String transactionType_in = Constant.TRANSACTION_TYPE_WAREHOUSE_TRANS_IN;
+        // 基于Id获取当前的报工单
+        FeedbackDO feedback = feedbackService.getFeedback(headerId.longValue());
+        // 基于当前的报工单获取当前的任务
+        TaskDO task = taskService.getTask(feedback.getTaskId());
+        // 基于当前的任务获取当前的工单
+        WorkorderDO workorder = workorderService.getWorkorder(task.getWorkorderId());
+        // 基于当前的工单获取当前的产品
+        MdItemDO mdItem = mdItemService.getMdItem(workorder.getProductId());
+        // 基于当前的报工单获取当前的子批次
+        String batchCode = feedback.getBatchCode();
+        // 基于当前的子批次获取当前的产成品库存信息
+        // 后续将产成品删除
+        MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
+        exportReqVO.setBatchCode(batchCode);
+        exportReqVO.setItemCode(mdItem.getItemCode());
+        List<MaterialStockDO> stockList = materialStockService.getMaterialStockList(exportReqVO);
+        if(stockList.isEmpty()){
+            return error(ErrorCodeConstants.MATERIAL_STOCK_NOT_EXISTS);
+        }
+        // 产成品信息
+        MaterialStockDO product = stockList.get(0);
+        // 基于任务单获取生产领料单
+        IssueheaderDTO issueHeader = new IssueheaderDTO();
+        issueHeader.setTaskId(task.getId());
+        issueHeader.setWorkorderCode(workorder.getWorkorderCode());
+        List<IssueheaderDTO> issueHeaderList = issueApi.listIssueHeader(issueHeader);
+        if(issueHeaderList.isEmpty()){
+            return error(ErrorCodeConstants.ISSUE_NOT_EXISTS);
+        }
+        IssueheaderDTO issueHeaderDTO = issueHeaderList.get(0);
+        // 基于生产领料单获取生产领料单行
+        IssueLineDTO issueLine = new IssueLineDTO();
+        issueLine.setIssueId(issueHeaderDTO.getId());
+        // 2025-1-17 追加报工单过滤(报工单与领料单身一对多)
+        issueLine.setFeedbackStatus("Y");
+        issueLine.setFeedbackCode(feedback.getFeedbackCode());
+        List<IssueLineDTO> issueLineList = issueApi.listIssueLine(issueLine);
+        /**
+         * 流程撤销
+         * 1. 生产领料单获取生产领料单身
+         * 2. 单身对应库存追加回库存表
+         * 3. 将产成品删除
+          */
+        // 1. 生产领料单获取生产领料单身
+        for (IssueLineDTO issueLineDTO : issueLineList) {
+            // 2. 单身对应库存追加回库存表
+            MaterialStockDO materialStock = new MaterialStockDO();
+            materialStock.setItemCode(issueLineDTO.getItemCode());
+            materialStock.setBatchCode(issueLineDTO.getBatchCode());
+            materialStock.setLocationId(issueLineDTO.getLocationId());
+            materialStock.setAreaId(issueLineDTO.getAreaId());
+            // 获取当前的bom库存信息
+            MaterialStockExportReqVO reqBom = new MaterialStockExportReqVO();
+            BeanUtils.copyProperties(materialStock, reqBom);
+            List<MaterialStockDO> materialStockDOList = materialStockService.getMaterialStockList(reqBom);
+            System.out.print(materialStockDOList.toString());
+            if(materialStockDOList.isEmpty()){
+                return error(ErrorCodeConstants.MATERIAL_STOCK_NOT_EXISTS);
+            }
+            MaterialStockDO bomStock = materialStockDOList.get(0);
+            // 追加库存撤销报工事务
+            TransactionUpdateReqVO transaction_in = new TransactionUpdateReqVO();
+            BeanUtils.copyBeanProp(transaction_in, bomStock);
+            transaction_in.setTransactionType(transactionType_in);
+            transaction_in.setTransactionFlag(1);//库存增加
+            transaction_in.setTransactionQuantity(issueLineDTO.getQuantityIssued());
+            transaction_in.setMaterialStockId(bomStock.getId());
+            //库存,库区,库位信息继承原领料单
+            WarehouseDO warehouse = warehouseService.selectWmWarehouseByWarehouseCode(issueLineDTO.getWarehouseCode());
+            transaction_in.setWarehouseId(warehouse.getId());
+            transaction_in.setWarehouseCode(warehouse.getWarehouseCode());
+            transaction_in.setWarehouseName(warehouse.getWarehouseName());
+            StorageLocationDO location = storageLocationService.selectWmStorageLocationByLocationCode(issueLineDTO.getLocationCode());
+            transaction_in.setLocationId(location.getId());
+            transaction_in.setLocationCode(location.getLocationCode());
+            transaction_in.setLocationName(location.getLocationName());
+            StorageAreaDO area = storageAreaService.selectWmStorageAreaByAreaCode(issueLineDTO.getAreaCode());
+            transaction_in.setAreaId(area.getId());
+            transaction_in.setAreaCode(area.getAreaCode());
+            transaction_in.setAreaName(area.getAreaName());
+            transaction_in.setSourceDocId(issueHeaderDTO.getWorkorderId());
+            transaction_in.setSourceDocCode(issueHeaderDTO.getWorkorderCode());
+            transaction_in.setSourceDocLineId(issueLineDTO.getId());
+            //设置入库相关联的出库事务ID
+            transactionService.processTransaction(transaction_in);
+        }
+        // 构造产成品库存减少事务
+        // 清空产成品数量
+        TransactionUpdateReqVO transaction_out = new TransactionUpdateReqVO();
+        BeanUtils.copyBeanProp(transaction_out, product);
+        transaction_out.setTransactionType(transactionType_out);
+        transaction_out.setTransactionFlag(-1);//库存减少
+        BigDecimal transactionQuantity = new BigDecimal(String.valueOf(product.getQuantityOnhand()));
+        transaction_out.setTransactionQuantity(transactionQuantity);
+        transaction_out.setTransactionDate(LocalDateTime.now());
+        transaction_out.setSourceDocId(issueHeaderDTO.getWorkorderId());
+        transaction_out.setSourceDocCode(issueHeaderDTO.getWorkorderCode());
+        transaction_out.setSourceDocLineId(issueHeaderDTO.getId());
+        transactionService.processTransaction(transaction_out);
+
+        // 开始修改报工单状态
+        // 撤销报工暂时不回滚上料信息
+        feedback.setStatus(Constant.ORDER_STATUS_PREPARE);
+        feedbackService.updateFeedback(FeedbackConvert.INSTANCE.convert02(feedback));
+
+        // 回滚任务单生产数量
+        // task.setQuantity(task.getQuantity() - feedback.getQuantityFeedback());
+        task.setQuantityProduced(task.getQuantityProduced() - feedback.getQuantityFeedback());
+        task.setQuantityQuanlify(task.getQuantityQuanlify() - feedback.getQuantityQualified());
+        task.setQuantityUnquanlify(task.getQuantityUnquanlify() - feedback.getQuantityUnquanlified());
+        task.setDeleted(false);
+        taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
+
+        // 移除产品产出记录单信息
+        ProductProduceDO productRecord = new ProductProduceDO();
+        productRecord.setWorkorderId(workorder.getId());
+        productRecord.setTaskCode(task.getTaskCode());
+        productRecord.setTaskId(task.getId());
+        ProductProduceExportReqVO produceVO = new ProductProduceExportReqVO();
+        BeanUtils.copyProperties(productRecord, produceVO);
+        List<ProductProduceDO> productProduceList = productProduceService.getProductProduceList(produceVO);
+        if(productProduceList.isEmpty()){
+            return error(ErrorCodeConstants.PRODUCT_PRODUCE_NOT_EXISTS);
+        }
+        ProductProduceDO productProduce = productProduceList.get(0);
+        productProduceService.deleteProductProduce(productProduce.getId());
+
+        // 移除产品产出记录单行信息
+        ProductProduceLineDO productProduceLine = new ProductProduceLineDO();
+        productProduceLine.setRecordId(productProduce.getId());
+        ProductProduceLineExportReqVO linereqVO = new ProductProduceLineExportReqVO();
+        BeanUtils.copyProperties(productProduceLine, linereqVO);
+        List<ProductProduceLineDO> productProduceLineList = productProduceLineMapper.selectList(linereqVO);
+        for (ProductProduceLineDO productProduceLineDO : productProduceLineList) {
+            productProduceLineMapper.deleteById(productProduceLineDO);
+        }
+
+        // 移除物料消耗单信息
+        ItemConsumeDO itemConsume = new ItemConsumeDO();
+        itemConsume.setWorkorderId(workorder.getId());
+        itemConsume.setTaskCode(task.getTaskCode());
+        itemConsume.setTaskId(task.getId());
+        ItemConsumeExportReqVO consumeVO = new ItemConsumeExportReqVO();
+        BeanUtils.copyProperties(itemConsume, consumeVO);
+        List<ItemConsumeDO> itemConsumeList = itemConsumeService.getItemConsumeList(consumeVO);
+        if(itemConsumeList.isEmpty()){
+            return error(ErrorCodeConstants.ITEM_CONSUME_NOT_EXISTS);
+        }
+        ItemConsumeDO itemConsumeDO = itemConsumeList.get(0);
+        itemConsumeService.deleteItemConsume(itemConsumeDO.getId());
+        // 移除物料消耗单行信息
+        ItemConsumeLineDO itemConsumeLine = new ItemConsumeLineDO();
+        itemConsumeLine.setRecordId(itemConsumeDO.getId());
+        ItemConsumeLineExportReqVO lineVO = new ItemConsumeLineExportReqVO();
+        BeanUtils.copyProperties(itemConsumeLine, lineVO);
+        List<ItemConsumeLineDO> itemConsumeLineList = itemConsumeLineMapper.selectList(lineVO);
+        for (ItemConsumeLineDO itemConsumeLineDO : itemConsumeLineList) {
+            itemConsumeLineMapper.deleteById(itemConsumeLineDO);
+        }
+
+        return success();
     }
 
 }

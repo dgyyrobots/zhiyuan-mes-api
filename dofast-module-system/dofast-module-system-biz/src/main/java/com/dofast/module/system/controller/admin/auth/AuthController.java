@@ -5,6 +5,7 @@ import com.dofast.framework.common.enums.CommonStatusEnum;
 import com.dofast.framework.common.exception.ErrorCode;
 import com.dofast.framework.common.pojo.CommonResult;
 import com.dofast.framework.common.util.collection.SetUtils;
+import com.dofast.framework.common.util.io.MinioUtil;
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
 import com.dofast.framework.security.config.SecurityProperties;
 import com.dofast.framework.tenant.core.context.TenantContextHolder;
@@ -70,6 +71,9 @@ public class AuthController {
     @Resource
     private WechatGetDept wechatGetDept;
 
+    @Resource
+    private MinioUtil minioUtil;
+
     @GetMapping("/get-wechat-department")
     @PermitAll
     @Parameter(name = "parentId", description = "部门ID", required = false)
@@ -118,6 +122,10 @@ public class AuthController {
         if (user == null) {
             return null;
         }
+        // 基于头像名称获取访问地址
+        String finUrl =  minioUtil.getUploadObjectUrl("ammes", user.getAvatar(), 3600);
+        user.setAvatar(finUrl);
+
         // 获得角色列表
         Set<Long> roleIds = permissionService.getUserRoleIdsFromCache(getLoginUserId(), singleton(CommonStatusEnum.ENABLE.getStatus()));
         List<RoleDO> roleList = roleService.getRoleListFromCache(roleIds);

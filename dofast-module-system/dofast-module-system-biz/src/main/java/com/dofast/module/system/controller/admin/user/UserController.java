@@ -54,6 +54,7 @@ public class UserController {
     @Operation(summary = "新增用户")
     @PreAuthorize("@ss.hasPermission('system:user:create')")
     public CommonResult<Long> createUser(@Valid @RequestBody UserCreateReqVO reqVO) {
+        reqVO.setAvatar("userAvatar_99b17814119e43ebaaed73e617c7e304."); // 默认头像
         Long id = userService.createUser(reqVO);
         return success(id);
     }

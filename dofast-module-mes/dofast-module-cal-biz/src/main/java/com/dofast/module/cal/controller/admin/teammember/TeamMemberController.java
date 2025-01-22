@@ -1,5 +1,6 @@
 package com.dofast.module.cal.controller.admin.teammember;
 
+import com.dofast.framework.common.util.bean.BeanUtils;
 import com.dofast.module.cal.dal.dataobject.team.TeamDO;
 import com.dofast.module.cal.service.team.TeamService;
 import org.springframework.web.bind.annotation.*;
@@ -78,11 +79,54 @@ public class TeamMemberController {
     @Operation(summary = "获得班组成员")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('cal:team-member:query')")
-    public CommonResult<List<TeamMemberDO>> getTeamMemberByTeamCode(@RequestParam("teamCode") String teamCode) {
+    public CommonResult<List<Map<String, Object>>> getTeamMemberByTeamCode(@RequestParam("teamCode") String teamCode) {
         TeamDO team = teamSerice.getTeam(teamCode);
         List<TeamMemberDO> teamMember = teamMemberService.getTeamMemberByTeamId(team.getId());
-        return success(teamMember);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (TeamMemberDO member : teamMember) {
+            Map<String, Object> map = new HashMap<>();
+            BeanUtils.copyProperties(member, map);
+            map.put("teamId", member.getTeamId());
+            map.put("nickName",member.getNickName());
+            map.put("userName",member.getUserName());
+            map.put("userId",member.getUserId());
+            map.put("id",member.getId());
+            map.put("principalId", team.getPrincipalId());
+            map.put("principalName", team.getPrincipalName());
+            result.add(map);
+        }
+        return success(result);
     }
+
+    @GetMapping("/getByTeamCodeAndShiftInfo")
+    @Operation(summary = "获得班组成员")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @Parameter(name = "shiftInfo", description = "班次信息", required = true, example = "1-2-3")
+    @PreAuthorize("@ss.hasPermission('cal:team-member:query')")
+    public CommonResult<List<Map<String, Object>>> getByTeamCodeAndShiftInfo(@RequestParam("teamCode") String teamCode, @RequestParam("shiftInfo") String shiftInfo) {
+        TeamDO team = teamSerice.getTeam(teamCode);
+        TeamMemberExportReqVO exportReqVO = new TeamMemberExportReqVO();
+        exportReqVO.setTeamId(team.getId());
+        if(shiftInfo!="default"&& !"default".equals(shiftInfo)){
+            exportReqVO.setShiftInfo(shiftInfo);
+        }
+        List<TeamMemberDO> teamMember = teamMemberService.getTeamMemberList(exportReqVO);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (TeamMemberDO member : teamMember) {
+            Map<String, Object> map = new HashMap<>();
+            BeanUtils.copyProperties(member, map);
+            map.put("teamId", member.getTeamId());
+            map.put("nickName",member.getNickName());
+            map.put("userName",member.getUserName());
+            map.put("userId",member.getUserId());
+            map.put("id",member.getId());
+            map.put("principalId", team.getPrincipalId());
+            map.put("principalName", team.getPrincipalName());
+            result.add(map);
+        }
+        return success(result);
+    }
+
 
     @GetMapping("/list")
     @Operation(summary = "获得班组成员列表")

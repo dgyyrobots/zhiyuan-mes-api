@@ -64,6 +64,7 @@ public interface AllocatedLineMapper extends BaseMapperX<AllocatedLineDO> {
                 .likeIfPresent(AllocatedLineDO::getAreaName, reqVO.getAreaName())
                 .eqIfPresent(AllocatedLineDO::getRemark, reqVO.getRemark())
                 .betweenIfPresent(AllocatedLineDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(AllocatedLineDO::getDeleted, 0)
                 .orderByDesc(AllocatedLineDO::getId));
     }
 

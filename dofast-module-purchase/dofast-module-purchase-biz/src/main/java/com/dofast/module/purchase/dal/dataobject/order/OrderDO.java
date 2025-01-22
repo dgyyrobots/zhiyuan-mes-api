@@ -1,6 +1,8 @@
 package com.dofast.module.purchase.dal.dataobject.order;
 
 import java.time.LocalDate;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.math.BigDecimal;
@@ -86,4 +88,7 @@ public class OrderDO extends BaseDO {
     private String parentBatchCode;
 
     private String serial;
+
+    private String supplierCode;
+
 }

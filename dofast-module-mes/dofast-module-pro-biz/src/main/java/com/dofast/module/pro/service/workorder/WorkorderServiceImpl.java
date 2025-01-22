@@ -4,6 +4,8 @@ import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.module.mes.constant.Constant;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+import javax.validation.Valid;
+
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigInteger;
@@ -87,6 +89,12 @@ public class WorkorderServiceImpl implements WorkorderService {
     public WorkorderDO getWorkorder(Long id) {
         return workorderMapper.selectById(id);
     }
+
+    @Override
+    public WorkorderDO getWorkorder(String workorderCode){
+        return workorderMapper.selectOne(WorkorderDO::getWorkorderCode, workorderCode);
+    }
+
 
     @Override
     public List<WorkorderDO> getWorkorderList(Collection<Long> ids) {

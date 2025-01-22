@@ -65,7 +65,6 @@ public class FeedLineController {
     @Operation(summary = "创建上料详情")
     @PreAuthorize("@ss.hasPermission('wms:feed-line:create')")
     public CommonResult<Long> createFeedLine(@Valid @RequestBody FeedLineCreateReqVO createReqVO) {
-        System.out.println("createReqVO: " + createReqVO);
         createReqVO.setStatus("Y");
         return success(feedLineService.createFeedLine(createReqVO));
     }
@@ -119,6 +118,7 @@ public class FeedLineController {
             lineDO.setWorkorderCode(issueHeader.getWorkorderCode());
             lineDO.setWorkstationCode(issueHeader.getWorkstationCode());
             lineDO.setWorkstationName(issueHeader.getWorkstationName());
+            lineDO.setVendorCode(issueLine.getVendorCode());
             lineDO.setStatus("Y");
             createReqVOList.add(lineDO);
         }
@@ -164,6 +164,17 @@ public class FeedLineController {
         return success(FeedLineConvert.INSTANCE.convertList(feedList));
     }
 
+    @GetMapping("/getByTaskId")
+    @Operation(summary = "获得上料详情")
+    @PreAuthorize("@ss.hasPermission('wms:feed-line:query')")
+    public CommonResult<List<FeedLineRespVO>> getByTaskId(@RequestParam("id") Long id) {
+        FeedLineExportReqVO feedLine = new FeedLineExportReqVO();
+        TaskDTO task = taskService.getTask(id);
+        feedLine.setTaskCode(task.getTaskCode());
+        // 基于任务编号获取上料记录
+        List<FeedLineDO> feedList = feedLineMapper.selectList(feedLine);
+        return success(FeedLineConvert.INSTANCE.convertList(feedList));
+    }
 
     @GetMapping("/list")
     @Operation(summary = "获得上料详情列表")

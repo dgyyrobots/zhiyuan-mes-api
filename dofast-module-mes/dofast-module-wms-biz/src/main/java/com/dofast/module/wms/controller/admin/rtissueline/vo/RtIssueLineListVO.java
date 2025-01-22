@@ -65,6 +65,8 @@ public class RtIssueLineListVO {
 
     private Integer attr4;
 
+    private String vendorCode;
+
     private LocalDateTime createTime;
 
 }

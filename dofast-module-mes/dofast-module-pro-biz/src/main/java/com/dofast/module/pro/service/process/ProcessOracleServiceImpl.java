@@ -1,6 +1,7 @@
 package com.dofast.module.pro.service.process;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.dal.oracle.process.ProcessOracleMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -22,7 +23,8 @@ public class ProcessOracleServiceImpl implements ProcessOracleService{
      */
     @Override
     public List<Map<String, Object>> initProcess(){
-        return processOracleMapper.initProcess();
+        String erpCode = Constant.ERP_PROD_DODE;
+        return processOracleMapper.initProcess(erpCode);
     }
 
 }

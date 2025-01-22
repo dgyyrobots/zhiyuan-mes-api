@@ -1,9 +1,12 @@
 package com.dofast.module.purchase.controller.admin.goods.vo;
 
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.dofast.framework.common.pojo.PageParam;
+import org.apache.poi.hpsf.Decimal;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
@@ -31,7 +34,7 @@ public class GoodsPageReqVO extends PageParam {
     private Object monovalent;
 
     @Schema(description = "采购数量")
-    private Integer quantity;
+    private BigDecimal quantity;
 
     @Schema(description = "税金")
     private Object taxes;
@@ -56,7 +59,7 @@ public class GoodsPageReqVO extends PageParam {
     private String poNo;
 
     @Schema(description = "入库数量")
-    private Integer receiveNum;
+    private BigDecimal receiveNum;
 
     @Schema(description = "入库单位")
     private String unitOfMeasure;
@@ -73,5 +76,11 @@ public class GoodsPageReqVO extends PageParam {
 
     @Schema(description = "母批次")
     private String parentBatchCode;
+
+    @Schema(description = "项次")
+    private String consequence;
+
+    @Schema(description = "ERP数量")
+    private BigDecimal erpNum;
 
 }

@@ -65,6 +65,12 @@ public class DvMachineryServiceImpl implements DvMachineryService {
     }
 
     @Override
+    public  DvMachineryDO getDvMachinery(String machineryCode){
+        return dvMachineryMapper.selectOne(DvMachineryDO::getMachineryCode, machineryCode);
+    }
+
+
+    @Override
     public List<DvMachineryDO> getDvMachineryList(Collection<Long> ids) {
         return dvMachineryMapper.selectBatchIds(ids);
     }

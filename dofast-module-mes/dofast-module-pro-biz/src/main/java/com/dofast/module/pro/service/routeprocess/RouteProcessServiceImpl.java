@@ -7,10 +7,14 @@ import com.dofast.module.mes.api.WorkStationAPi.dto.WorkStationDTO;
 import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.controller.admin.routeproduct.vo.RouteProductListVO;
 import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
+import com.dofast.module.pro.dal.dataobject.route.RouteDO;
 import com.dofast.module.pro.dal.dataobject.routeproduct.RouteProductDO;
+import com.dofast.module.pro.dal.dataobject.task.TaskDO;
+import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
 import com.dofast.module.pro.dal.mysql.route.RouteMapper;
 import com.dofast.module.pro.dal.mysql.routeproduct.RouteProductMapper;
 import com.dofast.module.pro.service.route.RouteService;
+import com.dofast.module.pro.service.workorder.WorkorderService;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -51,6 +55,8 @@ public class RouteProcessServiceImpl implements RouteProcessService {
     private WorkStationApi workStationApi;
     @Resource
     private RouteService routeService;
+    @Resource
+    private WorkorderService workorderService;
 
     @Override
     public int deleteByRouteId(Long routeId) {
@@ -188,5 +194,44 @@ public class RouteProcessServiceImpl implements RouteProcessService {
     public List<RouteProcessDO> getRouteProcessList(RouteProcessExportReqVO exportReqVO) {
         return routeProcessMapper.selectList(exportReqVO);
     }
+
+    /**
+     * 校验是否为最后一道工序, 如果是, 则返回 true
+     * @return
+     */
+
+    @Override
+    public  boolean checkFinProcess(TaskDO taskDO){
+        String processCode = taskDO.getProcessCode();
+        String workOrderCode = taskDO.getWorkorderCode();
+        // 根据工单号获取工艺路线信息
+        WorkorderDO workorderDO = workorderService.getWorkorder(workOrderCode);
+        String routeCode = workorderDO.getRouteCode();
+        String finCode = null;
+        // 校验routeCode是否包含"-"
+        if(!routeCode.contains("-")){
+            finCode = workorderDO.getProductCode() +"-"+routeCode;
+        }else{
+            finCode = routeCode;
+        }
+        RouteDO routeDO = routeService.getRoute(routeCode);
+        if(routeDO == null){
+            System.out.println("工单号: "+workOrderCode+" 对应工艺路线不存在!");
+            return false;
+        }
+        // 根据工艺路线获取工艺路线信息
+        RouteProcessListVO reqVO = new RouteProcessListVO();
+        reqVO.setProcessCode(routeCode);
+        reqVO.setRouteId(routeDO.getId());
+        List<RouteProcessDO> routeProcessList = routeProcessMapper.selectList(reqVO);
+        if(!routeProcessList.isEmpty()){
+            Long nextProcessId = routeProcessList.get(0).getNextProcessId();
+            if(nextProcessId.equals(0L)){
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 }

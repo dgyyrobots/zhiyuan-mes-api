@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.dofast.framework.common.enums.CommonStatusEnum;
 import com.dofast.framework.common.enums.UserTypeEnum;
 import com.dofast.framework.common.exception.ErrorCode;
+import com.dofast.framework.common.util.io.MinioUtil;
 import com.dofast.framework.common.util.monitor.TracerUtils;
 import com.dofast.framework.common.util.servlet.ServletUtils;
 import com.dofast.framework.common.util.validation.ValidationUtils;
@@ -76,6 +77,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private CaptchaService captchaService;
     @Resource
     private SmsCodeApi smsCodeApi;
+    @Resource
+    private MinioUtil minioUtil;
 
     /**
      * 验证码的开关，默认为 true
@@ -110,6 +113,12 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         // validateCaptcha(reqVO); // 验证码暂时不进行校验
         // 使用账号密码，进行登录
         AdminUserDO user = authenticate(reqVO.getUsername(), reqVO.getPassword());
+        // 基于头像名称获取访问地址
+        if(user.getAvatar()!=null){
+            String finUrl =  minioUtil.getUploadObjectUrl("ammes", user.getAvatar(), 3600);
+            user.setAvatar(finUrl);
+        }
+
         // 如果 socialType 非空，说明需要绑定社交用户
         if (reqVO.getSocialType() != null) {
             socialUserService.bindSocialUser(new SocialUserBindReqDTO(user.getId(), getUserType().getValue(),

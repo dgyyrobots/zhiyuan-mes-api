@@ -9,7 +9,7 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
-    <select id="initWorkorderBomInfo" resultType="java.util.HashMap">
+    <select id="initWorkorderBomInfo" parameterType="java.lang.String" resultType="java.util.HashMap">
         SELECT DISTINCT
             sfbadocno AS WORKORDER_NO,
             SFBA006 AS ITEM_CODE,
@@ -25,7 +25,7 @@
                 LEFT JOIN DSDATA.IMAAL_T C ON A.SFBA006 = C.IMAAl001
                 AND SFBAENT = IMAALENT
         WHERE
-            A.SFBAENT = 100
+            A.SFBAENT = #{erpCode}
           AND A.SFBASITE = 'AM01'
           AND IMAAL002 = 'zh_CN'
     </select>
@@ -65,7 +65,7 @@
                 LEFT JOIN DSDATA.IMAAL_T C ON A.SFBA006 = C.IMAAl001
                 AND SFBAENT = IMAALENT
         WHERE
-            A.SFBAENT = 100
+            A.SFBAENT =  #{erpCode}
           AND A.SFBASITE = 'AM01'
           AND IMAAL002 = 'zh_CN'
           AND sfbadocno = #{workorderNo}

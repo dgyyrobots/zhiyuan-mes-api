@@ -1,5 +1,6 @@
 package com.dofast.module.wms.dal.dataobject.issueheader;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -144,6 +145,17 @@ public class IssueHeaderDO extends BaseDO {
      * 预留字段4
      */
     private Integer attr4;
+
+    /**
+     * 工序编码
+     */
+    private String processCode;
+
+
+    /**
+     * 工序名称
+     */
+    private String processName;
 
     /**
      * 虚拟字段-bom列表

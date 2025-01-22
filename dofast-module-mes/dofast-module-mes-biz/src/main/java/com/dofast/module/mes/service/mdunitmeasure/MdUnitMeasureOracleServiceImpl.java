@@ -1,6 +1,7 @@
 package com.dofast.module.mes.service.mdunitmeasure;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.mes.dal.oracle.mdunitmeasure.MdUnitMeasureOracleMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -23,7 +24,8 @@ public class MdUnitMeasureOracleServiceImpl implements MdUnitMeasureOracleServic
     @Override
     public List<Map<String, Object>> initUnitMeasure(){
         // 获取单位信息
-       return mdUnitMeasureOracleMapper.initMdUnitMeasure();
+        String erpCode = Constant.ERP_PROD_DODE;
+       return mdUnitMeasureOracleMapper.initMdUnitMeasure(erpCode);
     }
 
     /**
@@ -33,7 +35,8 @@ public class MdUnitMeasureOracleServiceImpl implements MdUnitMeasureOracleServic
     @Override
     public List<Map<String, Object>> initUnitConverse(){
         // 获取单位信息
-        return mdUnitMeasureOracleMapper.initUnitConverse();
+        String erpCode = Constant.ERP_PROD_DODE;
+        return mdUnitMeasureOracleMapper.initUnitConverse(erpCode);
     }
 
 }

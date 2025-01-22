@@ -1,6 +1,7 @@
 package com.dofast.module.pro.service.route;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.dal.oracle.route.RouteOracleMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -23,7 +24,8 @@ public class RouteOracleServiceImpl implements RouteOracleService {
      */
     @Override
     public List<Map<String, Object>> initRoute(){
-        return routeOracleMapper.initRoute();
+        String erpCode = Constant.ERP_PROD_DODE;
+        return routeOracleMapper.initRoute(erpCode);
     }
 
 
@@ -33,7 +35,8 @@ public class RouteOracleServiceImpl implements RouteOracleService {
      */
     @Override
     public List<Map<String, Object>> initRouteBindProcess(){
-        return routeOracleMapper.initRouteBindProcess();
+        String erpCode = Constant.ERP_PROD_DODE;
+        return routeOracleMapper.initRouteBindProcess(erpCode);
     }
 
     /**
@@ -42,7 +45,8 @@ public class RouteOracleServiceImpl implements RouteOracleService {
      */
     @Override
     public List<Map<String, Object>> initChangeWorkOrderRouteBindProcess(String workOrderNo){
-        return routeOracleMapper.initChangeWorkOrderRouteBindProcess(workOrderNo);
+        String erpCode = Constant.ERP_PROD_DODE;
+        return routeOracleMapper.initChangeWorkOrderRouteBindProcess(workOrderNo, erpCode);
     }
 
 

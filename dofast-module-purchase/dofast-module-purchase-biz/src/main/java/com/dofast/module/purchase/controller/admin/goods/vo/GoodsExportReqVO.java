@@ -5,10 +5,12 @@ import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.dofast.framework.common.pojo.PageParam;
 import java.time.LocalDateTime;
+
+import org.apache.poi.hpsf.Decimal;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import static com.dofast.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
-
+import java.math.BigDecimal;
 @Schema(description = "管理后台 - 采购商品明细 Excel 导出 Request VO，参数和 GoodsPageReqVO 是一致的")
 @Data
 public class GoodsExportReqVO {
@@ -29,7 +31,7 @@ public class GoodsExportReqVO {
     private Object monovalent;
 
     @Schema(description = "采购数量")
-    private Integer quantity;
+    private BigDecimal quantity;
 
     @Schema(description = "税金")
     private Object taxes;
@@ -54,7 +56,7 @@ public class GoodsExportReqVO {
     private String poNo;
 
     @Schema(description = "入库数量")
-    private Integer receiveNum;
+    private BigDecimal receiveNum;
 
     @Schema(description = "入库单位")
     private String unitOfMeasure;
@@ -71,5 +73,11 @@ public class GoodsExportReqVO {
 
     @Schema(description = "母批次")
     private String parentBatchCode;
+
+    @Schema(description = "项次")
+    private String consequence;
+
+    @Schema(description = "ERP数量")
+    private BigDecimal erpNum;
 
 }

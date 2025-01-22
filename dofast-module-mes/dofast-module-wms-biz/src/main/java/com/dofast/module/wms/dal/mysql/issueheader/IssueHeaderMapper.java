@@ -52,6 +52,8 @@ public interface IssueHeaderMapper extends BaseMapperX<IssueHeaderDO> {
                 .eqIfPresent(IssueHeaderDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(IssueHeaderDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(IssueHeaderDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(IssueHeaderDO::getProcessCode, reqVO.getProcessCode())
+                .eqIfPresent(IssueHeaderDO::getProcessName, reqVO.getProcessName())
                 .betweenIfPresent(IssueHeaderDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(IssueHeaderDO::getId));
     }
@@ -88,6 +90,8 @@ public interface IssueHeaderMapper extends BaseMapperX<IssueHeaderDO> {
                 .eqIfPresent(IssueHeaderDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(IssueHeaderDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(IssueHeaderDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(IssueHeaderDO::getProcessCode, reqVO.getProcessCode())
+                .eqIfPresent(IssueHeaderDO::getProcessName, reqVO.getProcessName())
                 .orderByDesc(IssueHeaderDO::getId));
     }
 

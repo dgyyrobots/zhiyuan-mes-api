@@ -13,4 +13,5 @@ public class DeptListReqVO {
     @Schema(description = "展示状态,参见 CommonStatusEnum 枚举类", example = "1")
     private Integer status;
 
+
 }

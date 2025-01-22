@@ -1,6 +1,7 @@
 package com.dofast.module.mes.service.mdclient;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.mes.dal.oracle.mdclient.MdClientOracleMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -21,7 +22,8 @@ public class MdClientOracleServiceImpl implements MdClientOracleService {
 
     @Override
     public List<Map<String, Object>> initClient(String type) {
-        return mdClientOracleMapper.initClient(type);
+        String erpCode = Constant.ERP_PROD_DODE;
+        return mdClientOracleMapper.initClient(type, erpCode);
     }
 
 }

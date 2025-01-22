@@ -188,4 +188,24 @@ public class FeedbackDO extends BaseDO {
      * 班组编号
      */
     private String teamCode;
+
+    /**
+     * 缺陷Id
+     */
+    private String defectId;
+
+    /**
+     * 班组负责人
+     */
+    private String principalName;
+
+    /**
+     * 班组负责人Id
+     */
+    private Long principalId;
+
+    /**
+     * 班组类型
+     */
+    private String shiftInfo;
 }

@@ -21,6 +21,8 @@ public interface DictTypeConvert {
 
     DictTypeDO convert(DictTypeUpdateReqVO bean);
 
+    DictTypeCreateReqVO convert01(DictTypeDO bean);
+
     List<DictTypeSimpleRespVO> convertList(List<DictTypeDO> list);
 
     List<DictTypeExcelVO> convertList02(List<DictTypeDO> list);

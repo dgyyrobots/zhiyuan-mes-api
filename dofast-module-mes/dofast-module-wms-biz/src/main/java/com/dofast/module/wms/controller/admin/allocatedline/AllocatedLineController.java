@@ -1,7 +1,12 @@
 package com.dofast.module.wms.controller.admin.allocatedline;
 
+import com.dofast.module.wms.controller.admin.allocatedrecord.vo.AllocatedRecordExportReqVO;
+import com.dofast.module.wms.dal.dataobject.allocatedrecord.AllocatedRecordDO;
+import com.dofast.module.wms.service.allocatedrecord.AllocatedRecordService;
 import org.springframework.web.bind.annotation.*;
+
 import javax.annotation.Resource;
+
 import org.springframework.validation.annotation.Validated;
 import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,16 +16,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.io.IOException;
 
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.pojo.CommonResult;
+
 import static com.dofast.framework.common.pojo.CommonResult.success;
 
 import com.dofast.framework.excel.core.util.ExcelUtils;
 
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
+
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.*;
 
 import com.dofast.module.wms.controller.admin.allocatedline.vo.*;
@@ -36,6 +44,9 @@ public class AllocatedLineController {
 
     @Resource
     private AllocatedLineService allocatedLineService;
+
+    @Resource
+    private AllocatedRecordService allocatedRecordService;
 
     @PostMapping("/create")
     @Operation(summary = "创建调拨单身")
@@ -92,11 +103,70 @@ public class AllocatedLineController {
     @PreAuthorize("@ss.hasPermission('wms:allocated-line:export')")
     @OperateLog(type = EXPORT)
     public void exportAllocatedLineExcel(@Valid AllocatedLineExportReqVO exportReqVO,
-              HttpServletResponse response) throws IOException {
+                                         HttpServletResponse response) throws IOException {
         List<AllocatedLineDO> list = allocatedLineService.getAllocatedLineList(exportReqVO);
         // 导出 Excel
         List<AllocatedLineExcelVO> datas = AllocatedLineConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "调拨单身.xls", "数据", AllocatedLineExcelVO.class, datas);
     }
+
+    @PostMapping("/updateLine")
+    @Operation(summary = "修改调拨单身")
+    //@PreAuthorize("@ss.hasPermission('wms:allocated-line:create')")
+    public CommonResult<Long> updateLine(@Valid @RequestBody Map<String, Object> requestmap) {
+        Integer headerId = (Integer) requestmap.get("headerId");
+        List<Map<String, Object>> detailList = (List<Map<String, Object>>) requestmap.get("bomList");
+
+        // 比对recordList与detailList, 若存在相同的则进行修改, 不存在则新增
+        // 基于物料号与批次号视为一个唯一标识. 比对recordList中是否存在
+
+        List<AllocatedRecordDO> addList = new ArrayList<>();
+        List<AllocatedRecordDO> editList = new ArrayList<>();
+
+        for (Map<String, Object> detail : detailList) {
+            String itemCode = (String) detail.get("itemCode");
+            String batchCode = (String) detail.get("batchCode");
+
+            // 根据单头Id获取记录
+            AllocatedRecordExportReqVO exportReqVO = new AllocatedRecordExportReqVO();
+            exportReqVO.setAllocatedId(headerId.longValue());
+            exportReqVO.setItemCode(itemCode);
+            exportReqVO.setBatchCode(batchCode);
+            List<AllocatedRecordDO> recordList = allocatedRecordService.getAllocatedRecordList(exportReqVO);
+            if (recordList.isEmpty()) {
+                // 不存在相同的, 新增记录
+                AllocatedRecordDO allocatedRecordDO = new AllocatedRecordDO();
+                allocatedRecordDO.setAllocatedId(headerId.longValue());
+                allocatedRecordDO.setItemCode((String) detail.get("itemCode"));
+                allocatedRecordDO.setItemName((String) detail.get("itemName"));
+                allocatedRecordDO.setSpecification((String) detail.get("specification"));
+                Integer itemId = (Integer) detail.get("itemId");
+                allocatedRecordDO.setItemId(itemId.longValue());
+                allocatedRecordDO.setBatchCode((String) detail.get("batchCode"));
+                allocatedRecordDO.setWarehouseCode((String) detail.get("warehouseCode"));
+                allocatedRecordDO.setWarehouseName((String) detail.get("warehouseName"));
+                Integer warehouseId = (Integer) detail.get("warehouseId");
+                allocatedRecordDO.setWarehouseId(warehouseId.longValue());
+                allocatedRecordDO.setLocationCode((String) detail.get("locationCode"));
+                allocatedRecordDO.setLocationName((String) detail.get("locationName"));
+                Integer locationId = (Integer) detail.get("locationId");
+                allocatedRecordDO.setLocationId(locationId.longValue());
+                allocatedRecordDO.setAreaCode((String) detail.get("areaCode"));
+                allocatedRecordDO.setAreaName((String) detail.get("areaName"));
+                Integer areaId = (Integer) detail.get("areaId");
+                allocatedRecordDO.setAreaId(areaId.longValue());
+                BigDecimal quantityAllocated = new BigDecimal(String.valueOf(detail.get("quantityAllocated")));
+                allocatedRecordDO.setQuantityAllocated(quantityAllocated.doubleValue());
+                allocatedRecordDO.setUnitOfMeasure((String) detail.get("unitOfMeasure"));
+                allocatedRecordDO.setMaterialStockId((Long) detail.get("materialStockId"));
+                allocatedRecordDO.setAllocatedFlag("N");
+                allocatedRecordDO.setVendorCode((String) detail.get("vendorCode"));
+                addList.add(allocatedRecordDO);
+            }
+        }
+        allocatedRecordService.createBatchAllocatedRecord(addList);
+        return success();
+    }
+
 
 }

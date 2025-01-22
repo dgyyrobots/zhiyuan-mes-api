@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import com.dofast.module.pro.controller.admin.feedback.vo.*;
 import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
@@ -59,6 +60,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     public Long createFeedback(FeedbackCreateReqVO createReqVO) {
         // 插入
         MdWorkstationDO mdWorkstationDO = mdWorkstationService.getMdWorkstation(createReqVO.getWorkstationId());
+        // 获取当前时间, 类型为LocalDateTime
+        createReqVO.setFeedbackTime( LocalDateTime.now() ); // 设置报工时间
         if(StrUtils.isNotNull(mdWorkstationDO)){
             createReqVO.setProcessId(mdWorkstationDO.getProcessId());
             createReqVO.setProcessCode(mdWorkstationDO.getProcessCode());

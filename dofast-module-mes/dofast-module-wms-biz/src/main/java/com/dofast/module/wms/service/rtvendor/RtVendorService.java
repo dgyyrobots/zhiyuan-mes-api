@@ -55,6 +55,9 @@ public interface RtVendorService {
      */
     RtVendorDO getRtVendor(Long id);
 
+    RtVendorDO getRtVendor(String vendorCode);
+
+
     /**
      * 获得供应商退货列表
      *

@@ -20,7 +20,7 @@
             DSDATA.pmaa_t a
                 LEFT JOIN DSDATA.pmaal_t b ON a.PMAA001 = b.PMAAL001
         WHERE
-            a.pmaaent = '32'
+            a.pmaaent =  #{erpCode}
           AND b.pmaal002 = 'zh_CN'
           AND pmaa002 = #{type}
     </select>

@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-
+import org.apache.poi.hpsf.Decimal;
+import java.math.BigDecimal;
 /**
  * 采购商品明细 Excel VO
  *
@@ -36,7 +37,7 @@ public class GoodsExcelVO {
     private Object monovalent;
 
     @ExcelProperty("采购数量")
-    private Integer quantity;
+    private BigDecimal quantity;
 
     @ExcelProperty("税金")
     private Object taxes;
@@ -60,7 +61,7 @@ public class GoodsExcelVO {
     private String poNo;
 
     @ExcelProperty("入库数量")
-    private Integer receiveNum;
+    private BigDecimal receiveNum;
 
     @ExcelProperty("入库单位")
     private String unitOfMeasure;
@@ -76,5 +77,11 @@ public class GoodsExcelVO {
 
     @ExcelProperty("母批次")
     private String parentBatchCode;
+
+    @ExcelProperty("项次")
+    private String consequence;
+
+    @ExcelProperty("ERP数量")
+    private BigDecimal erpNum;
 
 }

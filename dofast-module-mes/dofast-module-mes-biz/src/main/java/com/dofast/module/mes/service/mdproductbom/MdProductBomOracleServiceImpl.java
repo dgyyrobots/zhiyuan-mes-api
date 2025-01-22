@@ -1,6 +1,7 @@
 package com.dofast.module.mes.service.mdproductbom;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.mes.dal.dataobject.mdproductbom.MdProductBomDO;
 import com.dofast.module.mes.dal.oracle.mdproductbom.MdProductBomOracleMapper;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class MdProductBomOracleServiceImpl implements MdProductBomOracleService{
 
     @Override
     public List<Map<String, Object>> initProductBomInfo() {
-        return mdProductBomOracleMapper.initProductBomInfo();
+        String erpCode = Constant.ERP_PROD_DODE;
+        return mdProductBomOracleMapper.initProductBomInfo(erpCode);
     }
 }

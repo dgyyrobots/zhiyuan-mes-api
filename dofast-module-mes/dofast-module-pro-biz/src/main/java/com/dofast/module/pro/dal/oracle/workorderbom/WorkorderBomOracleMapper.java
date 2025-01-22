@@ -13,12 +13,12 @@ public interface WorkorderBomOracleMapper {
     /**
      * 从ERP获取工单BOM信息
      */
-    List<Map<String , Object>> initWorkorderBomInfo();
+    List<Map<String , Object>> initWorkorderBomInfo(String erpCode);
 
     /**
      * 从ERP获取变更工单BOM信息
      */
-    List<Map<String , Object>> initChangeWorkorderBomInfo(String workorderNo);
+    List<Map<String , Object>> initChangeWorkorderBomInfo(String workorderNo, String erpCode);
 
 
 }

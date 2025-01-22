@@ -8,7 +8,7 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
-    <select id="initProductBomInfo" resultType="java.util.HashMap">
+    <select id="initProductBomInfo" parameterType="java.lang.String" resultType="java.util.HashMap">
         select DISTINCT A.BMBA001  AS ITEM_ID,
                         A.BMBA003  AS BOM_ITEM_CODE,
                         BMBA011    AS PRODUCT_QUANTITY,
@@ -29,7 +29,7 @@
                            ON A.BMBA001 = B.BMAA001 AND A.BMBAENT = B.BMAAENT AND A.BMBASITE = B.BMAASITE
                  left join DSDATA.IMAA_T C ON A.BMBA003 = C.IMAA001 AND A.BMBAENT = C.IMAAENT
                  left join DSDATA.IMAAL_T D ON C.IMAA001 = D.IMAAL001 AND A.BMBAENT = D.IMAALENT
-        where A.BMBAENT = 100
+        where A.BMBAENT = #{erpCode}
           AND BMBASITE = 'AM01'
           AND BMAASTUS = 'Y'
           AND d.imaal002 = 'zh_CN'

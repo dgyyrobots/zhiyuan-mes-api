@@ -119,7 +119,7 @@ public class UserProfileController {
         if (file.isEmpty()) {
             throw exception(FILE_IS_EMPTY);
         }
-        String avatar = userService.updateUserAvatar(getLoginUserId(), file.getInputStream());
+        String avatar = userService.updateUserAvatar(getLoginUserId(), file);
         return success(avatar);
     }
 
@@ -165,7 +165,7 @@ public class UserProfileController {
             UsersFaceCreateReqVO createReqVO = new UsersFaceCreateReqVO();
             createReqVO.setUserId(userId);
             // 开始上传minio, 数据库仅保存图片路径
-            String pathFileName = minioUtil.uploadFileSingle("ammes", file);
+            String pathFileName = minioUtil.uploadFileSingle("userFace" , "ammes", file);
             createReqVO.setFaceImg(pathFileName);
             usersFaceService.createUsersFace(createReqVO);
         }

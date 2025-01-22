@@ -49,6 +49,7 @@ public interface RtIssueMapper extends BaseMapperX<RtIssueDO> {
                 .eqIfPresent(RtIssueDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(RtIssueDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(RtIssueDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(RtIssueDO::getTaskCode, reqVO.getTaskCode())
                 .betweenIfPresent(RtIssueDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(RtIssueDO::getUpdater, reqVO.getUpdator())
                 .orderByDesc(RtIssueDO::getId));
@@ -76,6 +77,7 @@ public interface RtIssueMapper extends BaseMapperX<RtIssueDO> {
                 .eqIfPresent(RtIssueDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(RtIssueDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(RtIssueDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(RtIssueDO::getTaskCode, reqVO.getTaskCode())
                 .betweenIfPresent(RtIssueDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(RtIssueDO::getUpdater, reqVO.getUpdator())
                 .orderByDesc(RtIssueDO::getId));

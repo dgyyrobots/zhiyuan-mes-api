@@ -1,5 +1,6 @@
 package com.dofast.module.wms.dal.dataobject.rtissue;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -108,5 +109,10 @@ public class RtIssueDO extends BaseDO {
      * 预留字段4
      */
     private Integer attr4;
+
+    /**
+     * 生产任务单编码
+     */
+    private String taskCode;
 
 }

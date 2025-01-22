@@ -47,4 +47,7 @@ public class TeamMemberBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "班次")
+    private String shiftInfo;
+
 }

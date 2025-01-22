@@ -1,12 +1,19 @@
 package com.dofast.module.wms.controller.admin.rtissueline;
 
 import com.dofast.framework.common.util.string.StrUtils;
+import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderExportReqVO;
+import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
+import com.dofast.module.wms.dal.dataobject.rtissue.RtIssueDO;
 import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
+import com.dofast.module.wms.enums.ErrorCodeConstants;
+import com.dofast.module.wms.service.issueheader.IssueHeaderService;
+import com.dofast.module.wms.service.rtissue.RtIssueService;
 import com.dofast.module.wms.service.storagearea.StorageAreaService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import com.dofast.module.wms.service.warehouse.WarehouseService;
+import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -23,6 +30,8 @@ import java.io.IOException;
 
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.pojo.CommonResult;
+
+import static com.dofast.framework.common.pojo.CommonResult.error;
 import static com.dofast.framework.common.pojo.CommonResult.success;
 
 import com.dofast.framework.excel.core.util.ExcelUtils;
@@ -52,6 +61,12 @@ public class RtIssueLineController {
 
     @Resource
     private StorageAreaService storageAreaService;
+
+    @Resource
+    private RtIssueService rtIssueService;
+
+    @Resource
+    private IssueHeaderService issueService;
 
     @PostMapping("/create")
     @Operation(summary = "创建生产退料单行")
@@ -144,6 +159,42 @@ public class RtIssueLineController {
         // 导出 Excel
         List<RtIssueLineExcelVO> datas = RtIssueLineConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "生产退料单行.xls", "数据", RtIssueLineExcelVO.class, datas);
+    }
+
+    @GetMapping("/getRtIssueLineId")
+    @Operation(summary = "获得生产退料单行")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('wms:rt-issue-line:query')")
+    public CommonResult< List<Map<String, Object>>> getRtIssueLineId(@RequestParam("id") Long id) {
+        RtIssueLineExportReqVO exportReqVO = new RtIssueLineExportReqVO();
+        exportReqVO.setRtId(id);
+        List<RtIssueLineDO> list = rtIssueLineService.getRtIssueLineList(exportReqVO);
+        RtIssueDO rtIssueDO = rtIssueService.getRtIssue(id);
+        if(rtIssueDO == null){
+            return error(ErrorCodeConstants.RT_ISSUE_CODE_EXISTS);
+        }
+        IssueHeaderExportReqVO issueReq = new IssueHeaderExportReqVO();
+        issueReq.setWorkorderId(rtIssueDO.getWorkorderId());
+        issueReq.setTaskCode(rtIssueDO.getTaskCode());
+        List<IssueHeaderDO> issueList = issueService.getIssueHeaderList(issueReq);
+        if(issueList.size() == 0){
+            return error(ErrorCodeConstants.ISSUE_HEADER_NOT_EXISTS);
+        }
+        IssueHeaderDO issueHeaderDO = issueList.get(0);
+        List<Map<String, Object>> finalList = new ArrayList();
+        for(RtIssueLineDO rtIssueLineDO : list){
+            Map<String, Object> result = new HashMap();
+            result.put("id", rtIssueLineDO.getId());
+            result.put("itemName", rtIssueLineDO.getItemName());
+            result.put("itemCode", rtIssueLineDO.getItemCode());
+            result.put("batchCode", rtIssueLineDO.getBatchCode());
+            result.put("quantity", rtIssueLineDO.getQuantityRt());
+            result.put("unitOfMeasure", rtIssueLineDO.getUnitOfMeasure());
+            result.put("createTime", rtIssueLineDO.getCreateTime());
+            result.put("workstationName", issueHeaderDO.getWorkstationName());
+            finalList.add(result);
+        }
+        return success(finalList);
     }
 
 }

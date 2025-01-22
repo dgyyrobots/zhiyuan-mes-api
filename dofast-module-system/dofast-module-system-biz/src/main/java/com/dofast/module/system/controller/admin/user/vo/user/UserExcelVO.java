@@ -4,6 +4,7 @@ import com.dofast.framework.excel.core.annotations.DictFormat;
 import com.dofast.framework.excel.core.convert.DictConvert;
 import com.dofast.module.system.enums.DictTypeConstants;
 import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -49,4 +50,6 @@ public class UserExcelVO {
     @ExcelProperty("部门负责人")
     private String deptLeaderNickname;
 
+    @ExcelProperty("ERP部门编码")
+    private String erpDept;
 }

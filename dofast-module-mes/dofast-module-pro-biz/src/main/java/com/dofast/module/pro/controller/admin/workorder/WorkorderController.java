@@ -2,6 +2,7 @@ package com.dofast.module.pro.controller.admin.workorder;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.dofast.framework.common.util.io.MinioUtil;
 import com.dofast.module.mes.api.ProductBomApi.ProductBomApi;
 import com.dofast.module.mes.api.ProductBomApi.dto.MdProductBomDTO;
 import com.dofast.module.mes.constant.Constant;
@@ -15,7 +16,9 @@ import com.dofast.module.pro.service.task.TaskService;
 import com.dofast.module.pro.service.workorderbom.WorkorderBomService;
 import com.dofast.module.report.api.PrintLog.PrintLogApi;
 import org.springframework.web.bind.annotation.*;
+
 import javax.annotation.Resource;
+
 import org.springframework.validation.annotation.Validated;
 import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,6 +43,7 @@ import static com.dofast.framework.common.pojo.CommonResult.success;
 import com.dofast.framework.excel.core.util.ExcelUtils;
 
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
+
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.*;
 
 import com.dofast.module.pro.controller.admin.workorder.vo.*;
@@ -67,18 +71,21 @@ public class WorkorderController {
     @Resource
     private PrintLogApi printLogApi;
 
+    @Resource
+    private MinioUtil minioUtil;
+
     @PostMapping("/create")
     @Operation(summary = "创建生产工单")
     @PreAuthorize("@ss.hasPermission('pro:workorder:create')")
     public CommonResult<Long> createWorkorder(@Valid @RequestBody WorkorderCreateReqVO createReqVO) {
-        if(Constant.NOT_UNIQUE.equals(workorderService.checkWorkorderCodeUnique(createReqVO))){
+        if (Constant.NOT_UNIQUE.equals(workorderService.checkWorkorderCodeUnique(createReqVO))) {
             return error(ErrorCodeConstants.WORKORDER_CODE_EXISTS);
         }
 
-        if(createReqVO.getParentId()==null || createReqVO.getParentId()==0){
+        if (createReqVO.getParentId() == null || createReqVO.getParentId() == 0) {
             createReqVO.setAncestors("0");
         }
-        Long workorderId =  workorderService.createWorkorder(createReqVO);
+        Long workorderId = workorderService.createWorkorder(createReqVO);
         generateBomLine(workorderId);
         return success(workorderId);
     }
@@ -90,13 +97,66 @@ public class WorkorderController {
         WorkorderDO workorder = workorderService.getWorkorder(updateReqVO.getId());
         workorderService.updateWorkorder(updateReqVO);
 
-        if(workorder.getProductId().longValue() != updateReqVO.getProductId().longValue() ||
-                workorder.getQuantity() > updateReqVO.getQuantity()){
+        if (workorder.getProductId().longValue() != updateReqVO.getProductId().longValue() ||
+                workorder.getQuantity() > updateReqVO.getQuantity()) {
             removeBomLine(updateReqVO.getId());
             generateBomLine(updateReqVO.getId());
             generateBomLine(updateReqVO.getId());
         }
 
+        return success(true);
+    }
+
+    @PutMapping("/updateAdjuncts")
+    @Operation(summary = "更新生产工单")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:update')")
+    public CommonResult<Boolean> updateAdjuncts( @RequestBody WorkorderUpdateReqVO updateReqVO) {
+        WorkorderDO workorder = workorderService.getWorkorder(updateReqVO.getId());
+        if(workorder == null){
+            return success(true);
+        }
+        String url = updateReqVO.getAdjuncts();
+        if(url==null){
+            return success(true);
+        }
+        // 将url基于","进行拆分
+        String[] urls = url.split(",");
+        if (urls.length == 0) {
+            return success(true);
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < urls.length; i++) {
+            String currentUrl = urls[i].trim();
+
+            if (currentUrl.isEmpty()) {
+                continue;
+            }
+            // 校验当前url是否包含"?", "/"特殊字符
+            //String finName = Optional.ofNullable(urls[i].substring(urls[i].lastIndexOf("/") + 1, urls[i].indexOf("?"))).orElse(urls[i]);
+
+            // 如果需要去掉路径部分，只保留文件名
+            String[] parts = currentUrl.split("/");
+            // parts 可能为： uploadFile_AMGYD-03_5a0ceaffa19c4571b501fa8e4a250a46.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3Dadmin%252F20250109%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20250109T035950Z%26X-Amz-Expires%3D604800%26X-Amz-SignedHeaders%3Dhost%26X-Amz-Signature%3D23f4c36b7bccc63b9a661c3e4d62e18c8a545a0f02d7be9179933019e8b49980?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=admin%2F20250109%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250109T040210Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c25e401d033dc17c56ed52688690ad4d328e38104d93f99e7e0402ad8fc77f25,http://172.18.12.250:9000/ammes/uploadFile_AMGYD-03_8e6432c179d14a04a368d05683665e08.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=admin%2F20250109%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250109T040210Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=458aa07fb3e75f099b5c53b4733a54d76fb6f0d82b12ed5b0109968f79c32c7c
+            // 校验当前parts是否包含%, 若包含只保留%前信息
+            if( parts[parts.length - 1].contains("%")) {
+                parts[parts.length - 1] = parts[parts.length - 1].substring(0, parts[parts.length - 1].indexOf("%"));
+                if(parts[parts.length - 1].contains("?")){
+                    parts[parts.length - 1] = parts[parts.length - 1].substring(0, parts[parts.length - 1].indexOf("?"));
+                }
+            }
+            String finName = parts[parts.length - 1];
+            System.out.println(finName);
+            sb.append(finName);
+            // 校验当前url是否为最后一个
+            if (i != urls.length - 1) {
+                sb.append(",");
+            }
+        }
+        String adjuncts = Optional.ofNullable(sb.toString()).orElse("");
+        if( adjuncts!="") {
+            workorder.setAdjuncts(adjuncts);
+        }
+        workorderService.updateWorkorder(WorkorderConvert.INSTANCE.convert1(workorder));
         return success(true);
     }
 
@@ -106,7 +166,7 @@ public class WorkorderController {
     @PreAuthorize("@ss.hasPermission('pro:workorder:delete')")
     public CommonResult<Boolean> deleteWorkorder(@RequestParam("id") Long id) {
         WorkorderDO workorder = workorderService.getWorkorder(id);
-        if(!Constant.ORDER_STATUS_PREPARE.equals(workorder.getStatus())){
+        if (!Constant.ORDER_STATUS_PREPARE.equals(workorder.getStatus())) {
             return error(ErrorCodeConstants.WORKORDER_NOT_DELETED);
         }
         removeBomLine(id);
@@ -120,7 +180,29 @@ public class WorkorderController {
     @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
     public CommonResult<WorkorderRespVO> getWorkorder(@RequestParam("id") Long id) {
         WorkorderDO workorder = workorderService.getWorkorder(id);
-        System.out.println(workorder.getRouteCode());
+        // 获取实际图片地址
+        String fileName = workorder.getAdjuncts();
+        // 校验当前fileName是否存在"," 基于逗号进行拆分
+        StringBuffer sb = new StringBuffer();
+        if (fileName != null) {
+            String[] fileNames = fileName.split(",");
+            if (fileNames.length > 0) {
+                for (int i = 0; i < fileNames.length; i++) {
+                    String currentUrl = fileNames[i].trim();
+                    if (currentUrl.isEmpty()) {
+                        continue;
+                    }
+                    String queryFileName = minioUtil.getUploadObjectUrl("ammes", fileNames[i], 60 * 60 * 24 * 7);
+                    System.out.println(queryFileName);
+
+                    sb.append(queryFileName);
+                    if (i != fileNames.length - 1) {
+                        sb.append(",");
+                    }
+                }
+            }
+            workorder.setAdjuncts(sb.toString());
+        }
         WorkorderRespVO workorderRespVO = WorkorderConvert.INSTANCE.convert(workorder);
         workorderRespVO.setRouteCode(workorder.getRouteCode());
         return success(workorderRespVO);
@@ -155,13 +237,12 @@ public class WorkorderController {
     }*/
 
 
-
     @GetMapping("/page")
     @Operation(summary = "获得生产工单分页")
     @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
     public CommonResult<PageResult<WorkorderRespPlusVO>> getWorkorderPage(@Valid WorkorderPageReqVO pageVO) {
         PageResult<WorkorderDO> pageResult = workorderService.getWorkorderPage(pageVO);
-        List<WorkorderRespPlusVO> workorderRespPlusVOList=new ArrayList<>();
+        List<WorkorderRespPlusVO> workorderRespPlusVOList = new ArrayList<>();
 
         for (WorkorderDO workorderDO : pageResult.getList()) {
             TaskExportReqVO taskExportReqVO = new TaskExportReqVO();
@@ -182,7 +263,7 @@ public class WorkorderController {
             workorderRespPlusVOList.add(bean);
         }
 
-        PageResult<WorkorderRespPlusVO> result=new PageResult<>();
+        PageResult<WorkorderRespPlusVO> result = new PageResult<>();
         result.setList(workorderRespPlusVOList);
         result.setTotal(pageResult.getTotal());
 
@@ -194,7 +275,7 @@ public class WorkorderController {
     @PreAuthorize("@ss.hasPermission('pro:workorder:export')")
     @OperateLog(type = EXPORT)
     public void exportWorkorderExcel(@Valid WorkorderExportReqVO exportReqVO,
-              HttpServletResponse response) throws IOException {
+                                     HttpServletResponse response) throws IOException {
         List<WorkorderDO> list = workorderService.getWorkorderList(exportReqVO);
         // 导出 Excel
         List<WorkorderExcelVO> datas = WorkorderConvert.INSTANCE.convertList02(list);
@@ -204,9 +285,10 @@ public class WorkorderController {
 
     /**
      * 根据生产工单中的产品生成BOM物料行
+     *
      * @param workorderId
      */
-    private void generateBomLine(Long workorderId){
+    private void generateBomLine(Long workorderId) {
         //先根据ID找到对应的产品
         WorkorderDO workorder = workorderService.getWorkorder(workorderId);
 
@@ -216,8 +298,8 @@ public class WorkorderController {
         //生成BOM数据
         Double orderQuantitiy = workorder.getQuantity();
         WorkorderBomCreateReqVO workorderBom = new WorkorderBomCreateReqVO();
-        if(CollUtil.isNotEmpty(boms)){
-            for (MdProductBomDTO bom:boms
+        if (CollUtil.isNotEmpty(boms)) {
+            for (MdProductBomDTO bom : boms
             ) {
                 workorderBom.setWorkorderId(workorderId);
                 workorderBom.setItemId(bom.getBomItemId());
@@ -234,9 +316,10 @@ public class WorkorderController {
 
     /**
      * 删除当前工单下所有BOM组成
+     *
      * @param workorderId
      */
-    private void removeBomLine(Long workorderId){
+    private void removeBomLine(Long workorderId) {
         workorderBomService.deleteProWorkorderBomByWorkorderId(workorderId);
     }
 
@@ -246,7 +329,7 @@ public class WorkorderController {
     public CommonResult<Integer> CountAll() {
         WorkorderExportReqVO workorderExportReqVO = new WorkorderExportReqVO();
         List<WorkorderDO> list = workorderService.getWorkorderList(workorderExportReqVO);
-        Integer result = list == null?0: list.size();
+        Integer result = list == null ? 0 : list.size();
         return success(result);
     }
 
@@ -257,7 +340,9 @@ public class WorkorderController {
         WorkorderExportReqVO workorderExportReqVO = new WorkorderExportReqVO();
         workorderExportReqVO.setOrderSource("3");
         List<WorkorderDO> list = workorderService.getWorkorderList(workorderExportReqVO);
-        Integer result = list == null?0: list.size();
+        Integer result = list == null ? 0 : list.size();
         return success(result);
     }
+
+
 }

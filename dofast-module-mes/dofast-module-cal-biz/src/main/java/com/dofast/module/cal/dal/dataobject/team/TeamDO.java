@@ -1,6 +1,8 @@
 package com.dofast.module.cal.dal.dataobject.team;
 
 import java.time.LocalDate;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -73,4 +75,17 @@ public class TeamDO extends BaseDO {
      */
     private Long personCount;
 
+    /**
+     * 设备名称
+     */
+    private String machineryName;
+
+    /**
+     * 设备编码
+     */
+    private String machineryCode;
+    /**
+     * 设备ID
+     */
+    private Long machineryId;
 }

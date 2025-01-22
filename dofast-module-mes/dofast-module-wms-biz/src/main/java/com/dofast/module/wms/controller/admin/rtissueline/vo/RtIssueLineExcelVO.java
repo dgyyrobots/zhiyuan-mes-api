@@ -92,4 +92,6 @@ public class RtIssueLineExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("供应商编码")
+    private String vendorCode;
 }

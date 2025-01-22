@@ -3,18 +3,35 @@ package com.dofast.module.wms.controller.admin.rtissue;
 import cn.hutool.core.collection.CollUtil;
 import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.pro.api.FeedbackApi.FeedbackApi;
+import com.dofast.module.pro.api.FeedbackApi.dto.FeedbackDTO;
+import com.dofast.module.pro.api.TaskApi.TaskApi;
+import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
+import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineExportReqVO;
+import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderExportReqVO;
+import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
+import com.dofast.module.wms.controller.admin.rtissueline.vo.RtIssueLineCreateReqVO;
 import com.dofast.module.wms.controller.admin.rtissueline.vo.RtIssueLineListVO;
+import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
+import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
+import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
+import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
 import com.dofast.module.wms.dal.dataobject.rtissue.RtIssueTxBean;
 import com.dofast.module.wms.dal.dataobject.rtissueline.RtIssueLineDO;
 import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
 import com.dofast.module.wms.enums.ErrorCodeConstants;
+import com.dofast.module.wms.service.feedline.FeedLineService;
+import com.dofast.module.wms.service.issueheader.IssueHeaderService;
+import com.dofast.module.wms.service.issueline.IssueLineService;
+import com.dofast.module.wms.service.materialstock.MaterialStockService;
 import com.dofast.module.wms.service.rtissueline.RtIssueLineService;
 import com.dofast.module.wms.service.storagearea.StorageAreaService;
 import com.dofast.module.wms.service.storagecore.StorageCoreService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import com.dofast.module.wms.service.warehouse.WarehouseService;
+import org.redisson.executor.TasksService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -27,6 +44,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
+import java.beans.beancontext.BeanContext;
+import java.math.BigDecimal;
 import java.util.*;
 import java.io.IOException;
 
@@ -70,6 +89,25 @@ public class RtIssueController {
     @Resource
     private StorageCoreService storageCoreService;
 
+    @Resource
+    private MaterialStockService materialStockService;
+
+    @Resource
+    private TaskApi taskApi;
+
+    @Resource
+    private FeedLineService feedLineService;
+
+    @Resource
+    private FeedbackApi feedBackApi;
+
+    @Resource
+    private IssueLineService issuseLineService;
+
+    @Resource
+    private IssueHeaderService issueHeaderService;
+
+
     @PostMapping("/create")
     @Operation(summary = "创建生产退料单头")
     @PreAuthorize("@ss.hasPermission('wms:rt-issue:create')")
@@ -77,22 +115,68 @@ public class RtIssueController {
         if(Constant.NOT_UNIQUE.equals(rtIssueService.checkUnique(createReqVO))){
             return error(ErrorCodeConstants.RT_ISSUE_CODE_EXISTS);
         }
+        // 校验当前的任务单是否已报工
+        FeedbackDTO feedbackInfo = feedBackApi.getFeedBackByTaskCode(createReqVO.getTaskCode());
+        if(feedbackInfo != null){
+            return error(ErrorCodeConstants.RT_ISSUE_HAS_FEEDBACK);
+        }
+
+        WarehouseDO warehouse = null;
+        StorageLocationDO location = null;
+        StorageAreaDO area = null;
         if(StrUtils.isNotNull(createReqVO.getWarehouseId())){
-            WarehouseDO warehouse = warehouseService.getWarehouse(createReqVO.getWarehouseId());
+            warehouse =  warehouseService.getWarehouse(createReqVO.getWarehouseId());
             createReqVO.setWarehouseCode(warehouse.getWarehouseCode());
             createReqVO.setWarehouseName(warehouse.getWarehouseName());
         }
         if(StrUtils.isNotNull(createReqVO.getLocationId())){
-            StorageLocationDO location = storageLocationService.getStorageLocation(createReqVO.getLocationId());
+            location = storageLocationService.getStorageLocation(createReqVO.getLocationId());
             createReqVO.setLocationCode(location.getLocationCode());
             createReqVO.setLocationName(location.getLocationName());
         }
         if(StrUtils.isNotNull(createReqVO.getAreaId())){
-            StorageAreaDO area = storageAreaService.getStorageArea(createReqVO.getAreaId());
+            area = storageAreaService.getStorageArea(createReqVO.getAreaId());
             createReqVO.setAreaCode(area.getAreaCode());
             createReqVO.setAreaName(area.getAreaName());
         }
-        return success(rtIssueService.createRtIssue(createReqVO));
+        Long rtissueId = rtIssueService.createRtIssue(createReqVO);
+        List<Map<String, Object>> lines = createReqVO.getRtissuelineList();
+        for(Map<String, Object> line : lines){
+            //追加单身
+            RtIssueLineCreateReqVO req = new RtIssueLineCreateReqVO();
+            // 追加库存
+            req.setWarehouseId(createReqVO.getWarehouseId());
+            req.setWarehouseCode(warehouse.getWarehouseCode());
+            req.setWarehouseName(warehouse.getWarehouseName());
+            req.setLocationId(createReqVO.getLocationId());
+            req.setLocationCode(location.getLocationCode());
+            req.setLocationName(location.getLocationName());
+            req.setAreaId(createReqVO.getAreaId());
+            req.setAreaCode(area.getAreaCode());
+            req.setAreaName(area.getAreaName());
+            req.setRtId(rtissueId);
+            req.setBatchCode((String) line.get("batchCode"));
+            req.setItemCode((String) line.get("itemCode"));
+            req.setItemName((String) line.get("itemName"));
+            req.setSpecification((String) line.get("specification"));
+            Integer itemId = (Integer) line.get("itemId");
+            req.setItemId(itemId.longValue());
+            req.setUnitOfMeasure((String) line.get("unitOfMeasure"));
+            // 基于当前的物料与批次号获取库存Id
+            MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
+            exportReqVO.setBatchCode((String) line.get("batchCode"));
+            exportReqVO.setItemCode((String) line.get("itemCode"));
+            List<MaterialStockDO> materialStockList = materialStockService.getMaterialStockList(exportReqVO);
+            if(materialStockList.isEmpty()){
+                continue;
+            }
+            req.setMaterialStockId(materialStockList.get(0).getId());
+            BigDecimal quantity = new BigDecimal(String.valueOf(line.get("quantity")));
+            req.setQuantityRt(quantity);
+            rtIssueLineService.createRtIssueLine(req);
+        }
+        // 追加退料单身信息
+        return success();
     }
 
     /**
@@ -105,6 +189,11 @@ public class RtIssueController {
     @PutMapping("/{rtId}")
     public CommonResult execute(@PathVariable Long rtId){
         RtIssueDO rtIssue = rtIssueService.getRtIssue(rtId);
+        // 校验当前的任务单是否已报工
+        FeedbackDTO feedbackInfo = feedBackApi.getFeedBackByTaskCode(rtIssue.getTaskCode());
+        if(feedbackInfo != null){
+            return error(ErrorCodeConstants.RT_ISSUE_HAS_FEEDBACK);
+        }
         RtIssueLineListVO param = new RtIssueLineListVO();
         param.setRtId(rtId);
         List<RtIssueLineDO> lines = rtIssueLineService.selectList(param);
@@ -115,13 +204,51 @@ public class RtIssueController {
         List<RtIssueTxBean> beans = rtIssueService.getTxBeans(rtId);
 
         //执行生产退料
-        storageCoreService.processRtIssue(beans);
-
+        storageCoreService.processRtIssue(beans, rtIssue);
 
         rtIssue.setStatus(Constant.ORDER_STATUS_FINISHED);
 
         RtIssueUpdateReqVO updateReqVO = RtIssueConvert.INSTANCE.convert01(rtIssue);
         rtIssueService.updateRtIssue(updateReqVO);
+
+        // 修改上料记录表数据-用于后续报工数据卡控
+        TaskDTO taskDTO = taskApi.getTask(rtIssue.getTaskCode());
+        FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
+        exportReqVO.setTaskCode(taskDTO.getTaskCode());
+        List<FeedLineDO> feedLineList = feedLineService.getFeedLineList(exportReqVO);
+        // 将feedLineList与param进行对比, 若当前的物料料号相同, 则将feedLineList中对应的数量减去param中的数量
+        for(FeedLineDO feedLine : feedLineList){
+            for(RtIssueLineDO line : lines){
+                if(feedLine.getItemCode().equals(line.getItemCode())){
+                    BigDecimal feedQuantity = new BigDecimal(feedLine.getQuantity());
+                    BigDecimal finQuantity = feedQuantity.subtract(line.getQuantityRt());
+                    feedLine.setQuantity(finQuantity.doubleValue());
+                }
+            }
+        }
+        // 更新FeedLine表
+        feedLineService.updateFeedLineBatch(feedLineList);
+
+        // 修改领料单身表信息
+        IssueHeaderExportReqVO issueReq = new IssueHeaderExportReqVO();
+        issueReq.setTaskCode(taskDTO.getTaskCode());
+        List<IssueHeaderDO> issueList = issueHeaderService.getIssueHeaderList(issueReq);
+        if(CollUtil.isEmpty(issueList)){
+            return error(ErrorCodeConstants.ISSUE_LINE_NOT_EXISTS);
+        }
+        List<IssueLineDO> issueLine = issuseLineService.getIssueLineByHeaderId(issueList.get(0).getId());
+        // 操作同上料记录表, 若当前的物料料号相同, 则将issueLine中对应的数量减去param中的数量
+        for(IssueLineDO issue : issueLine){
+            for(RtIssueLineDO line : lines){
+                if(issue.getItemCode().equals(line.getItemCode())){
+                    BigDecimal issueQuantity = new BigDecimal(String.valueOf(issue.getQuantityIssued()));
+                    BigDecimal finQuantity = issueQuantity.subtract(line.getQuantityRt());
+                    issue.setQuantityIssued(finQuantity);
+                }
+            }
+        }
+        // 更新IssueLine表
+        issuseLineService.updateIssueLineBatch(issueLine);
         return success(true);
     }
 
@@ -132,6 +259,7 @@ public class RtIssueController {
         if(Constant.NOT_UNIQUE.equals(rtIssueService.checkUnique(updateReqVO))){
             return error(ErrorCodeConstants.RT_ISSUE_CODE_EXISTS);
         }
+        List<Map<String, Object>> rtissueLine = updateReqVO.getRtissuelineList();
         if(StrUtils.isNotNull(updateReqVO.getWarehouseId())){
             WarehouseDO warehouse = warehouseService.getWarehouse(updateReqVO.getWarehouseId());
             updateReqVO.setWarehouseCode(warehouse.getWarehouseCode());
@@ -148,6 +276,19 @@ public class RtIssueController {
             updateReqVO.setAreaName(area.getAreaName());
         }
         rtIssueService.updateRtIssue(updateReqVO);
+        // 获取当前的单身信息
+        RtIssueLineDO rtIssueLineDO = new RtIssueLineDO();
+        rtIssueLineDO.setRtId(updateReqVO.getId());
+        List<RtIssueLineDO> rtIssueLineList = rtIssueLineService.selectList(RtIssueConvert.INSTANCE.conver02(rtIssueLineDO));
+        // 将当前前台获取的RtissueLine与获取的rtIssueLineList进行对比, 若当前的物料料号相同, 则将rtIssueLineList中对应的数量更新为param中的数量
+        for(RtIssueLineDO line : rtIssueLineList){
+            for(Map<String, Object> map : rtissueLine) {
+                if (line.getItemCode().equals(map.get("itemCode"))) {
+                    line.setQuantityRt(new BigDecimal(String.valueOf(map.get("quantity"))));
+                }
+            }
+        }
+        rtIssueLineService.updateRtIssueLineBatch(rtIssueLineList);
         return success(true);
     }
 
@@ -167,7 +308,67 @@ public class RtIssueController {
     @PreAuthorize("@ss.hasPermission('wms:rt-issue:query')")
     public CommonResult<RtIssueRespVO> getRtIssue(@RequestParam("id") Long id) {
         RtIssueDO rtIssue = rtIssueService.getRtIssue(id);
-        return success(RtIssueConvert.INSTANCE.convert(rtIssue));
+        RtIssueRespVO respVO = RtIssueConvert.INSTANCE.convert(rtIssue);
+        // 初始化上料信息
+        FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
+        exportReqVO.setTaskCode(rtIssue.getTaskCode());
+        List<FeedLineDO> feedLineList = feedLineService.getFeedLineList(exportReqVO);
+        // 将feedLineList转为List<Map<String, Object>
+        List<Map<String, Object>> feedLineMapList = new ArrayList<>();
+        for(FeedLineDO feedLine : feedLineList){
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", feedLine.getId());
+            map.put("batchCode", feedLine.getBatchCode());
+            map.put("itemCode", feedLine.getItemCode());
+            map.put("itemName", feedLine.getItemName());
+            map.put("itemId", feedLine.getItemId());
+            map.put("specification", feedLine.getSpecification());
+            map.put("unitOfMeasure", feedLine.getUnitOfMeasure());
+            map.put("quantity", feedLine.getQuantity());
+            map.put("warehouseCode", feedLine.getWarehouseCode());
+            map.put("warehouseName", feedLine.getWarehouseName());
+            map.put("warehouseId", feedLine.getWarehouseId());
+            map.put("locationCode", feedLine.getLocationCode());
+            map.put("locationName", feedLine.getLocationName());
+            map.put("locationId", feedLine.getLocationId());
+            map.put("areaCode", feedLine.getAreaCode());
+            map.put("areaName", feedLine.getAreaName());
+            map.put("areaId", feedLine.getAreaId());
+            feedLineMapList.add(map);
+        }
+        // 初始化上料信息
+        respVO.setIssuelineList(feedLineMapList);
+        // 基于单身表初始化退料信息
+        RtIssueLineListVO param = new RtIssueLineListVO();
+        param.setRtId(id);
+        List<RtIssueLineDO> rtIssueLineList = rtIssueLineService.selectList(param);
+        // 将rtIssueLineList转为List<Map<String, Object>
+        List<Map<String, Object>> rtIssueLineMapList = new ArrayList<>();
+        for(RtIssueLineDO rtIssueLine : rtIssueLineList){
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", rtIssueLine.getId());
+            map.put("batchCode", rtIssueLine.getBatchCode());
+            map.put("itemCode", rtIssueLine.getItemCode());
+            map.put("itemName", rtIssueLine.getItemName());
+            map.put("itemId", rtIssueLine.getItemId());
+            map.put("specification", rtIssueLine.getSpecification());
+            map.put("unitOfMeasure", rtIssueLine.getUnitOfMeasure());
+            map.put("quantity", rtIssueLine.getQuantityRt());
+            map.put("itemId", rtIssueLine.getItemId());
+            map.put("warehouseCode", rtIssueLine.getWarehouseCode());
+            map.put("warehouseName", rtIssueLine.getWarehouseName());
+            map.put("warehouseId", rtIssueLine.getWarehouseId());
+            map.put("locationCode", rtIssueLine.getLocationCode());
+            map.put("locationName", rtIssueLine.getLocationName());
+            map.put("locationId", rtIssueLine.getLocationId());
+            map.put("areaCode", rtIssueLine.getAreaCode());
+            map.put("areaName", rtIssueLine.getAreaName());
+            map.put("areaId", rtIssueLine.getAreaId());
+            rtIssueLineMapList.add(map);
+        }
+        // 初始化退料信息
+        respVO.setRtissuelineList(rtIssueLineMapList);
+        return success(respVO);
     }
 
     @GetMapping("/list")

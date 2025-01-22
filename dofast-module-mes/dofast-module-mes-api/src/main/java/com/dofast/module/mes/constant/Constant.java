@@ -119,6 +119,11 @@ public class Constant {
     public static final String WAREHOUSE_CODE = "WH166";
     public static final String LINE_EDGE_CODE = "WH165";
 
+    /**
+     * ERP企业编码
+     */
+    public static final String ERP_DEV_DODE = "30";
+    public static final String ERP_PROD_DODE = "100";
 
 
 }

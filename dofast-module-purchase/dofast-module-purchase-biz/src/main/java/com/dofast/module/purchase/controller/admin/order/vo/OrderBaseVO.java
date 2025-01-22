@@ -51,4 +51,8 @@ public class OrderBaseVO {
     @Schema(description = "流水号")
     private String serial;
 
+    @Schema(description = "供应商编码")
+    private String supplierCode;
+
+
 }

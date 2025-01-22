@@ -86,4 +86,7 @@ public class RtIssueLineBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "供应商编码", example = "S1865")
+    private String vendorCode;
+
 }

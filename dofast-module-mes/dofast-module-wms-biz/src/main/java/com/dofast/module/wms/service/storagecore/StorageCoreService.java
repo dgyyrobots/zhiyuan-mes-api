@@ -7,6 +7,7 @@ import com.dofast.module.wms.dal.dataobject.itemrecpt.ItemRecptTxBean;
 import com.dofast.module.wms.dal.dataobject.productproduce.ProductProductTxBean;
 import com.dofast.module.wms.dal.dataobject.productrecpt.ProductRecptTxBean;
 import com.dofast.module.wms.dal.dataobject.productsalse.ProductSalseTxBean;
+import com.dofast.module.wms.dal.dataobject.rtissue.RtIssueDO;
 import com.dofast.module.wms.dal.dataobject.rtissue.RtIssueTxBean;
 import com.dofast.module.wms.dal.dataobject.rtsalse.RtSalseTxBean;
 import com.dofast.module.wms.dal.dataobject.rtvendor.RtVendorTxBean;
@@ -55,7 +56,7 @@ public interface StorageCoreService {
      * 处理生产退料
      * @param lines
      */
-    public void processRtIssue(List<RtIssueTxBean> lines);
+    public void processRtIssue(List<RtIssueTxBean> lines, RtIssueDO rtIssueDO);
 
     /**
      * 处理生产消耗

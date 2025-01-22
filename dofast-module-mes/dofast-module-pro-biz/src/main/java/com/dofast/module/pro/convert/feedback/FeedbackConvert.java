@@ -29,6 +29,10 @@ public interface FeedbackConvert {
 
     FeedbackRespVO convert(FeedbackDO bean);
 
+    FeedbackCreateReqVO convert01(FeedbackDO bean);
+
+    FeedbackUpdateReqVO convert02(FeedbackDO bean);
+
     List<FeedbackRespVO> convertList(List<FeedbackDO> list);
 
     PageResult<FeedbackRespVO> convertPage(PageResult<FeedbackDO> page);

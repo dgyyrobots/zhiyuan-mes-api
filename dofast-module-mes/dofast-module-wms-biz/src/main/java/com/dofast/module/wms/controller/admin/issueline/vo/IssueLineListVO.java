@@ -61,4 +61,9 @@ public class IssueLineListVO {
 
     private String status;
 
+    private String vendorCode;
+
+    private String feedbackStatus;
+
+    private String feedbackCode;
 }

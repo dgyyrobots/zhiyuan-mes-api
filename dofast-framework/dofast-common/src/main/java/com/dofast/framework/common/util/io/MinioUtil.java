@@ -12,6 +12,7 @@ import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import lombok.SneakyThrows;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,17 +129,22 @@ public class MinioUtil {
 
 
     /**
-     * 單個文件上傳遞
+     * 单文件上传
      * @param bucketName
      * @param multipartFile
      * @return
      */
     @SneakyThrows(Exception.class)
-    public String uploadFileSingle(String bucketName, MultipartFile multipartFile) {
+    public String uploadFileSingle(String prefix , String bucketName, MultipartFile multipartFile) {
         if (!bucketExists(bucketName)) {
             createBucket(bucketName);
         }
-        String fileName = "userFace_" + IdUtil.simpleUUID();
+
+        String originalFilename = multipartFile.getOriginalFilename();
+        String extension = FilenameUtils.getExtension(originalFilename);
+        String name = originalFilename.substring(0,originalFilename.lastIndexOf("."));
+
+        String fileName = prefix + "_" + name + "_" + IdUtil.simpleUUID() + "." + extension;
         InputStream in = null;
         try {
             in = multipartFile.getInputStream();
@@ -161,30 +168,6 @@ public class MinioUtil {
         // 只返回文件名，而不是完整的URL
         return fileName;
     }
-
-
-    /**
-     * description: 上传文件
-     * @param multipartFile
-     * @return: java.lang.String
-     */
-    public List<String> uploadFileBatch(String  bucketName,MultipartFile[] multipartFile) {
-        if(!bucketExists(bucketName)){
-            createBucket(bucketName);
-        }
-        List<String> names = new ArrayList<>();
-        for (MultipartFile file : multipartFile) {
-            try {
-                String fileName = file.getOriginalFilename();
-                uploadFileSingle(bucketName,file);
-                names.add(fileName);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-        return names;
-    }
-
 
     /**
      * 获取文件外链
@@ -213,6 +196,24 @@ public class MinioUtil {
         InputStream is = minioClient.getObject(GetObjectArgs.builder().bucket(bucketName).object(fileName).build());
         IOUtils.copy(is, response.getOutputStream());
         is.close();
+    }
+
+    /**
+     * 删除文件
+     * @param bucketName
+     * @throws Exception
+     */
+    public void deleteFile(String bucketName, String fileName) throws Exception {
+        if (StringUtils.isBlank(bucketName)){
+            // 存储桶名字不能为空
+            System.out.println("存储桶名字不能为空");
+            return;
+        }
+        try {
+            minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(fileName).build());
+        } catch (Exception e) {
+            System.out.println("文件删除失败" + e.getMessage());
+        }
     }
 
 }

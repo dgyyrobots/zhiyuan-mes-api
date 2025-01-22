@@ -81,4 +81,7 @@ public class RtIssueExportReqVO {
     @Schema(description = "更新者")
     private String updator;
 
+    @Schema(description = "任务编号")
+    private String taskCode;
+
 }

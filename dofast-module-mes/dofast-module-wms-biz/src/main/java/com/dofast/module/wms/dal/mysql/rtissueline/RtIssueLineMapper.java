@@ -44,6 +44,7 @@ public interface RtIssueLineMapper extends BaseMapperX<RtIssueLineDO> {
                 .eqIfPresent(RtIssueLineDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(RtIssueLineDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(RtIssueLineDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(RtIssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .betweenIfPresent(RtIssueLineDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(RtIssueLineDO::getId));
     }
@@ -74,6 +75,7 @@ public interface RtIssueLineMapper extends BaseMapperX<RtIssueLineDO> {
                 .eqIfPresent(RtIssueLineDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(RtIssueLineDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(RtIssueLineDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(RtIssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .orderByDesc(RtIssueLineDO::getId));
     }
 
@@ -103,6 +105,7 @@ public interface RtIssueLineMapper extends BaseMapperX<RtIssueLineDO> {
                 .eqIfPresent(RtIssueLineDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(RtIssueLineDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(RtIssueLineDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(RtIssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .orderByDesc(RtIssueLineDO::getId));
     }
 

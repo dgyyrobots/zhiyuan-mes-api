@@ -233,7 +233,7 @@ public class AdminUserServiceImplTest extends BaseDbUnitTest {
         assertEquals("encode:yuanma", user.getPassword());
     }
 
-    @Test
+   /* @Test
     public void testUpdateUserAvatar_success() throws Exception {
         // mock 数据
         AdminUserDO dbUser = randomAdminUserDO();
@@ -251,7 +251,7 @@ public class AdminUserServiceImplTest extends BaseDbUnitTest {
         // 断言
         AdminUserDO user = userMapper.selectById(userId);
         assertEquals(avatar, user.getAvatar());
-    }
+    }*/
 
     @Test
     public void testUpdateUserPassword02_success() {

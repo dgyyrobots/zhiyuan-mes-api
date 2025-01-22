@@ -43,6 +43,7 @@ import com.dofast.module.wms.dal.mysql.productproduce.ProductProduceMapper;
 import static com.dofast.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.dofast.module.pro.enums.ErrorCodeConstants.*;
 import static com.dofast.module.wms.enums.ErrorCodeConstants.*;
+import static com.dofast.module.wms.enums.ErrorCodeConstants.PRODUCT_PRODUCE_NOT_EXISTS;
 
 /**
  * 产品产出记录 Service 实现类
@@ -185,10 +186,10 @@ public class ProductProduceServiceImpl implements ProductProduceService {
         // 校验流水号是否存在
         if (task.getParentBatchCode() == null) {
             // 若母批次号为空，生成母批次号
-            String serial = "01";
+            String serial = "001";
             // 修改任务单表
             task.setParentBatchCode(task.getTaskCode());
-            task.setSerial(serial);
+            //task.setSerial(serial);
             taskApi.updateTask(task);
             line.setBatchCode(task.getTaskCode() + "-" + serial);
         } else {
@@ -199,10 +200,10 @@ public class ProductProduceServiceImpl implements ProductProduceService {
             } else {
                 int serialInt = Integer.parseInt(serial);
                 serialInt++;
-                serial = String.format("%02d", serialInt);
+                serial = String.format("%03d", serialInt);
             }
             line.setBatchCode(task.getTaskCode() + "-" + serial);
-            task.setSerial(serial);
+            //task.setSerial(serial);
             taskApi.updateTask(task);
         }
         line.setOrderSource(workorder.getOrderSource());

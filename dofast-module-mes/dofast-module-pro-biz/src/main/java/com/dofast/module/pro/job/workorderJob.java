@@ -77,6 +77,9 @@ public class workorderJob implements JobHandler {
                     workorderDO.setProductSpc(Optional.ofNullable(itemDO.getSpecification()).orElse("")); // 产品类型
                 }
                 BigDecimal quantity = (BigDecimal) workOrder.get("QUANTITY");
+                if(quantity == null){
+                    continue;
+                }
                 workorderDO.setQuantity(quantity.doubleValue()); // 数量
                 workorderDO.setUnitOfMeasure((String) workOrder.get("UNIT_OF_MEASURE")); // 单位
                 Timestamp timestamp = (Timestamp) workOrder.get("REQUEST_DATE");

@@ -8,6 +8,7 @@ import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.pro.dal.dataobject.task.TaskDO;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.pro.controller.admin.task.vo.*;
 
@@ -62,6 +63,9 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
                 .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
+                .eqIfPresent(TaskDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(TaskDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(TaskDO::getMachineryId, reqVO.getMachineryId())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -109,6 +113,9 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
                 .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
+                .eqIfPresent(TaskDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(TaskDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(TaskDO::getMachineryId, reqVO.getMachineryId())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -157,6 +164,9 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
                 .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
+                .eqIfPresent(TaskDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(TaskDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(TaskDO::getMachineryId, reqVO.getMachineryId())
                 /*.and(reqVO.getStatus()!=null,v->{
                     if ("1".equals(reqVO.getStatus())){
                         v.in(TaskDO::getStatus,"FINISHED");
@@ -223,6 +233,9 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
                 .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
+                .eqIfPresent(TaskDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(TaskDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(TaskDO::getMachineryId, reqVO.getMachineryId())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -271,6 +284,9 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
                 .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
+                .eqIfPresent(TaskDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(TaskDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(TaskDO::getMachineryId, reqVO.getMachineryId())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -317,6 +333,9 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
                 .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
+                .eqIfPresent(TaskDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(TaskDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(TaskDO::getMachineryId, reqVO.getMachineryId())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -380,6 +399,9 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .eqIfPresent(TaskDO::getSerial, reqVO.getSerial())
                 .eqIfPresent(TaskDO::getFeedbackStatus, reqVO.getFeedbackStatus())
+                .eqIfPresent(TaskDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(TaskDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(TaskDO::getMachineryId, reqVO.getMachineryId())
                 .orderByDesc(TaskDO::getId));
     }
 

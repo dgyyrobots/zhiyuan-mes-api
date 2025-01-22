@@ -25,6 +25,8 @@ public interface ItemConsumeConvert {
 
     ItemConsumeRespVO convert(ItemConsumeDO bean);
 
+    ItemConsumeUpdateReqVO convert01(ItemConsumeDO bean);
+
     List<ItemConsumeRespVO> convertList(List<ItemConsumeDO> list);
 
     PageResult<ItemConsumeRespVO> convertPage(PageResult<ItemConsumeDO> page);

@@ -6,6 +6,7 @@ import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
+import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.wms.controller.admin.feedline.vo.*;
 
@@ -49,6 +50,9 @@ public interface FeedLineMapper extends BaseMapperX<FeedLineDO> {
                 .eqIfPresent(FeedLineDO::getWorkstationCode, reqVO.getWorkstationCode())
                 .likeIfPresent(FeedLineDO::getWorkstationName, reqVO.getWorkstationName())
                 .eqIfPresent(FeedLineDO::getStatus, reqVO.getStatus())
+                .eqIfPresent(FeedLineDO::getVendorCode, reqVO.getVendorCode())
+                .eqIfPresent(FeedLineDO::getFeedbackStatus, reqVO.getFeedbackStatus())
+                .eqIfPresent(FeedLineDO::getFeedbackCode, reqVO.getFeedbackCode())
                 .orderByDesc(FeedLineDO::getId));
     }
 
@@ -84,6 +88,9 @@ public interface FeedLineMapper extends BaseMapperX<FeedLineDO> {
                 .eqIfPresent(FeedLineDO::getWorkstationCode, reqVO.getWorkstationCode())
                 .likeIfPresent(FeedLineDO::getWorkstationName, reqVO.getWorkstationName())
                 .eqIfPresent(FeedLineDO::getStatus, reqVO.getStatus())
+                .eqIfPresent(FeedLineDO::getVendorCode, reqVO.getVendorCode())
+                .eqIfPresent(FeedLineDO::getFeedbackStatus, reqVO.getFeedbackStatus())
+                .eqIfPresent(FeedLineDO::getFeedbackCode, reqVO.getFeedbackCode())
                 .orderByDesc(FeedLineDO::getId));
     }
 

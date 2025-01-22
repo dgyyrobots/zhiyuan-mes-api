@@ -10,6 +10,7 @@ import com.dofast.module.mes.service.mdproductbom.MdProductBomOracleServiceImpl;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,8 @@ public class mdProductBomJob implements JobHandler {
                 mdProductBomDO.setUnitOfMeasure((String) productBom.get("UNIT_OF_MEASURE"));
                 mdProductBomDO.setItemOrProduct("PRODUCT");
                 mdProductBomDO.setInverted((String) productBom.get("INVERTED"));
-                mdProductBomDO.setSequence((Long) productBom.get("SEQUENCE"));
+                BigDecimal bigSequence = (BigDecimal) productBom.get("SEQUENCE");
+                mdProductBomDO.setSequence(bigSequence.longValue());
                 insertList.add(mdProductBomDO);
             } else {
                 // 更新产品BOM信息
@@ -82,7 +84,8 @@ public class mdProductBomJob implements JobHandler {
                 query.setBomItemSpec((String) productBom.get("BOM_ITEM_SPEC"));
                 query.setUnitOfMeasure((String) productBom.get("UNIT_OF_MEASURE"));
                 query.setInverted((String) productBom.get("INVERTED"));
-                query.setSequence((Long) productBom.get("SEQUENCE"));
+                BigDecimal bigSequence = (BigDecimal) productBom.get("SEQUENCE");
+                query.setSequence(bigSequence.longValue());
                 query.setItemOrProduct("PRODUCT");
                 updateList.add(query);
             }

@@ -1,6 +1,7 @@
 package com.dofast.module.wms.service.warehouse;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.wms.dal.oracle.warehouse.WarehouseOracleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,13 +21,15 @@ public class WarehouseOracleServiceImpl implements WarehouseOracleService {
     // 初始化线边仓 , 库区 , 库位信息
     @Override
     public List<Map<String, Object>> initAreaInfo(){
-        return warehouseOracleMapper.initAreaInfo();
+        String erpCode = Constant.ERP_PROD_DODE;
+        return warehouseOracleMapper.initAreaInfo(erpCode);
     }
 
     @Override
     // 初始化线边仓, 库区 , 库位信息
     public List<Map<String, Object>> initLocationInfo(){
-        return warehouseOracleMapper.initLocationInfo();
+        String erpCode = Constant.ERP_PROD_DODE;
+        return warehouseOracleMapper.initLocationInfo(erpCode);
     }
 
 

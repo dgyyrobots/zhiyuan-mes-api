@@ -86,4 +86,6 @@ public class RtIssueExcelVO {
     @ExcelProperty("更新者")
     private String updator;
 
+    @ExcelProperty("任务编号")
+    private String taskCode;
 }

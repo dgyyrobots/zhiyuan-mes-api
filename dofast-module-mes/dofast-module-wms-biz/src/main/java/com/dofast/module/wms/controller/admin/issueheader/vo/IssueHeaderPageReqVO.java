@@ -107,4 +107,10 @@ public class IssueHeaderPageReqVO extends PageParam {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "工序编号")
+    private String processCode;
+
+    @Schema(description = "工序名称")
+    private String processName;
+
 }

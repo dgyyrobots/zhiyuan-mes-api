@@ -22,6 +22,13 @@ public class TaskApiImpl implements TaskApi{
     }
 
     @Override
+    public TaskDTO getTask(String taskCode){
+        TaskDO taskDO = taskService.getTask(taskCode);
+        TaskDTO taskDTO = BeanUtil.toBean(taskDO, TaskDTO.class);
+        return taskDTO;
+    }
+
+    @Override
     public  void updateTask(TaskDTO taskDTO){
         TaskUpdateReqVO reqVO = BeanUtil.toBean(taskDTO, TaskUpdateReqVO.class);
         taskService.updateTask(reqVO);

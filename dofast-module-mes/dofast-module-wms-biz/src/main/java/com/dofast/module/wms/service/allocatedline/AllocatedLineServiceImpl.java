@@ -90,4 +90,15 @@ public class AllocatedLineServiceImpl implements AllocatedLineService {
         return allocatedLineMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public void deleteAllocatedLineByHeaderId(Long headerId){
+        Map<String, Object> map = new HashMap<>();
+        map.put("allocated_id", headerId.longValue());
+        allocatedLineMapper.deleteByMap(map);
+    }
+
+    @Override
+    public void createAllocatedBatch(List<AllocatedLineDO> allocatedLineDOList){
+        allocatedLineMapper.insertBatch(allocatedLineDOList);
+    }
 }

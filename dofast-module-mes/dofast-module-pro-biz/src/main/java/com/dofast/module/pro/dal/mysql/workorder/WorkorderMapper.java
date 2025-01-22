@@ -53,8 +53,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
                 .eqIfPresent(WorkorderDO::getAdjuncts, reqVO.getAdjuncts())
                 .eqIfPresent(WorkorderDO::getMixinOrderId, reqVO.getMixinOrderId())
                 .notInIfPresent(WorkorderDO::getOrderSource, Collections.singleton("4"))
-                .orderByAsc(WorkorderDO::getRequestDate)
-                .orderByDesc(WorkorderDO::getProductSpc));
+                .orderByDesc(WorkorderDO::getCreateTime));
     }
     default List<WorkorderDO> selectList(WorkorderListVO reqVO) {
         return selectList(new LambdaQueryWrapperX<WorkorderDO>()
@@ -87,8 +86,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
                 .eqIfPresent(WorkorderDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(WorkorderDO::getAdjuncts, reqVO.getAdjuncts())
                 .eqIfPresent(WorkorderDO::getIsOut, reqVO.getIsOut())
-                .orderByAsc(WorkorderDO::getRequestDate)
-                .orderByAsc(WorkorderDO::getProductSpc));
+                .orderByDesc(WorkorderDO::getCreateTime));
     }
 
 

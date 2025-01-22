@@ -20,4 +20,13 @@ public class ProcessApiImpl implements ProcessApi{
         ProcessDTO dto = ProcessConvert.INSTANCE.convert01(processDO);
         return dto;
     }
+
+    @Override
+    public ProcessDTO getcess(String processCode){
+        ProcessDO processDO = processService.getcess(processCode);
+        ProcessDTO dto = ProcessConvert.INSTANCE.convert01(processDO);
+        return dto;
+    }
+
+
 }

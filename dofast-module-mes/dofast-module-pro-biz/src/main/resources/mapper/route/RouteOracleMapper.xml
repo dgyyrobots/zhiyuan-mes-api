@@ -2,18 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dofast.module.pro.dal.oracle.route.RouteOracleMapper">
 
-    <select id="initRoute" resultType="java.util.HashMap">
+    <select id="initRoute" parameterType="java.lang.String" resultType="java.util.HashMap">
         SELECT DISTINCT a.ecba001 AS ITEM_CODE, a.ecba002 AS ROUTE_CODE FROM DSDATA.ecba_t A
         LEFT JOIN DSDATA.ECBB_T B on a.ecba001 = b.ecbb001 and a.ecba002 = b.ecbb002 and a.ecbaent = b.ecbbent and a.ecbasite = b.ecbbsite
-        where a.ecbasite = 'AM01' and a.ecbaent = 100 and a.ecba001 is not null and a.ecba002 is not null order by a.ecba001 , ECBA002
+        where a.ecbasite = 'AM01' and a.ecbaent = #{erpCode} and a.ecba001 is not null and a.ecba002 is not null order by a.ecba001 , ECBA002
     </select>
 
 
-    <select id="initRouteBindProcess" resultType="java.util.HashMap">
+    <select id="initRouteBindProcess" parameterType="java.lang.String" resultType="java.util.HashMap">
         SELECT DISTINCT a.ecba001 AS ITEM_CODE, a.ecba002 AS ROUTE_CODE, a.ecba003 AS ROUTE_DESC , b.ecbb004 AS PROCESS_CODE,
         b.ecbb008 AS TOP_PROCESS_CODE , b.ecbb010 AS NEXT_PROCESS_CODE , b.ecbb003 AS SEQUENCE FROM DSDATA.ecba_t A
         LEFT JOIN DSDATA.ECBB_T B on a.ecba001 = b.ecbb001 and a.ecba002 = b.ecbb002 and a.ecbaent = b.ecbbent and a.ecbasite = b.ecbbsite
-        where a.ecbasite = 'AM01' and a.ecbaent = 100 and a.ecba001 is not null and a.ecba002 is not null and b.ecbb004 is not null
+        where a.ecbasite = 'AM01' and a.ecbaent = #{erpCode} and a.ecba001 is not null and a.ecba002 is not null and b.ecbb004 is not null
         order by a.ecba001 , ECBA002
     </select>
 
@@ -33,7 +33,7 @@
                 AND a.sfoaent = c.sfaaent
                 AND a.sfoasite = c.sfaasite
         WHERE
-            a.sfoaent = 100
+            a.sfoaent = #{erpCode}
           --AND sfoacnfdt BETWEEN SYSDATE - INTERVAL '5' MINUTE AND SYSDATE
           AND a.sfoasite = 'AM01'
           AND a.sfoadocno = #{workOrderNo}

@@ -264,4 +264,11 @@ public class DeptServiceImpl implements DeptService {
         });
     }
 
+   /* @Override
+    public DeptDO getDeptByErpCode(String erpCode){
+        return deptMapper.selectOne(DeptDO::getErpCode,erpCode);
+    }*/
+
+
+
 }

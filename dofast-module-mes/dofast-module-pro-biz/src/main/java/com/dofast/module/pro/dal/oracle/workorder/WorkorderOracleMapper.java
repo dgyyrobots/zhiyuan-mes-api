@@ -11,9 +11,9 @@ import java.util.Map;
 public interface WorkorderOracleMapper {
 
     // 初始化工单信息
-    List<Map<String, Object>> initWorkorder();
+    List<Map<String, Object>> initWorkorder(String erpCode);
 
     // 初始化变更工单信息
-    List<Map<String, Object>> initChangeWorkorder();
+    List<Map<String, Object>> initChangeWorkorder(String erpCode);
 
 }

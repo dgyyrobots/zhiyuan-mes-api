@@ -30,6 +30,7 @@ public interface WorkorderService {
      */
     void updateWorkorder(@Valid WorkorderUpdateReqVO updateReqVO);
 
+
     /**
      * 删除生产工单
      *
@@ -44,6 +45,15 @@ public interface WorkorderService {
      * @return 生产工单
      */
     WorkorderDO getWorkorder(Long id);
+
+    /**
+     * 获得生产工单
+     *
+     * @param workorderCode 工单编号
+     * @return 生产工单
+     */
+    WorkorderDO getWorkorder(String workorderCode);
+
 
     /**
      * 获得生产工单列表

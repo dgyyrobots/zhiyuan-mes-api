@@ -128,6 +128,7 @@ public class TaskController {
     private TaskMapper taskMapper;
 
 
+
     @PostMapping("/create")
     @Operation(summary = "创建生产任务")
     @PreAuthorize("@ss.hasPermission('pro:task:create')")
@@ -155,14 +156,15 @@ public class TaskController {
                 return error(ErrorCodeConstants.WORKORDER_NUMBER_MORE);
             }
         }
-        order.setQuantityProduced(order.getQuantityProduced() + createReqVO.getQuantity().doubleValue());
+        // 2025-01-13改: 工单生产数量由报工进行管控
+        /*order.setQuantityProduced(order.getQuantityProduced() + createReqVO.getQuantity().doubleValue());
         WorkorderUpdateReqVO workorderUpdateReqVO = WorkorderConvert.INSTANCE.convert1(order);
         //判断该任务是否为关键工序
         if (routeProcessService.checkKeyProcess(BeanUtil.toBean(createReqVO, FeedbackDO.class))) {
             //如果是关键工序，则改变workorder工单的已排产数量
             workorderUpdateReqVO.setQuantityScheduled(createReqVO.getQuantity().doubleValue());
         }
-        workorderService.updateWorkorder(workorderUpdateReqVO);
+        workorderService.updateWorkorder(workorderUpdateReqVO);*/
 
         createReqVO.setWorkorderCode(order.getWorkorderCode());
         createReqVO.setWorkorderName(order.getWorkorderName());
@@ -298,6 +300,7 @@ public class TaskController {
         /*if(task.getQuantityProduced().compareTo(updateReqVO.getQuantity()) ==1){
             return error(ErrorCodeConstants.TASK_NUM_MORE);
         }*/
+
         taskService.updateTask(updateReqVO);
         return success(true);
     }
@@ -345,7 +348,19 @@ public class TaskController {
     @PreAuthorize("@ss.hasPermission('pro:task:query')")
     public CommonResult<PageResult<TaskRespVO>> getTaskPage(@Valid TaskPageReqVO pageVO) {
         PageResult<TaskDO> pageResult = taskService.getTaskPage(pageVO);
-        return success(TaskConvert.INSTANCE.convertPage(pageResult));
+       /* for(TaskDO taskDO:pageResult.getList()){
+            String teamCode = taskDO.getAttr1();
+            // 基于班组获取设备信息
+            TeamDO team = teamService.getTeam(teamCode);
+            if (team == null) {
+                continue;
+            }
+            taskDO.setMachineryName(team.getMachineryName());
+            taskDO.setMachineryCode(team.getMachineryCode());
+            taskDO.setMachineryId(String.valueOf(team.getMachineryId()));
+        }*/
+        PageResult<TaskRespVO> pageResultVO = TaskConvert.INSTANCE.convertPage(pageResult);
+        return success(pageResultVO);
     }
 
     @GetMapping("/pageBySourceCode")
@@ -372,7 +387,10 @@ public class TaskController {
     @Operation(summary = "获得当前用户的生产任务分页")
     @PreAuthorize("@ss.hasPermission('pro:task:query')")
     public CommonResult<PageResult<TaskRespVO>> getMyTask(@Valid TaskPageReqVO pageVO) {
-        PageResult<TaskDO> pageResult = taskService.getMyTask(pageVO);
+        PageResult<TaskDO> pageResult = Optional.ofNullable(taskService.getMyTask(pageVO)).orElse(null);
+        if(pageResult==null){
+            return success(TaskConvert.INSTANCE.convertPage(pageResult));
+        }
         if (pageResult.getTotal() <= 0) {
             return success(TaskConvert.INSTANCE.convertPage(pageResult));
         }
@@ -403,8 +421,9 @@ public class TaskController {
     @PutMapping("/change")
     @Operation(summary = "更新生产任务状态")
     @PreAuthorize("@ss.hasPermission('pro:task:update')")
-    public CommonResult<Boolean> updateTaskStatus(@Valid @RequestBody TaskUpdateStatusReqVO proTask) {
-        taskService.updateTaskStatus(proTask.getId(), proTask.getStatus());
+    public CommonResult<Boolean> updateTaskStatus(@Valid @RequestBody TaskUpdateReqVO proTask) {
+        taskService.updateTask(proTask);
+        //taskService.updateTaskStatus(proTask.getId(), proTask.getStatus());
         return success(true);
     }
 
@@ -420,7 +439,6 @@ public class TaskController {
         if (CollectionUtil.isEmpty(adminUserRespDTO.getPostIds())) {
             return error(ErrorCodeConstants.FEEDBACK_NOT_ACQUIRE);
         }
-
 
         //根据销售单号查询工单
 //        MixinOrderDTO mixinOrderDTO = mixinOrderApi.getByNo(no);
@@ -468,7 +486,11 @@ public class TaskController {
         TeamDO team =  teamService.getTeam(memberDO.get(0).getTeamId());
         // 根据班组编码查询派工信息
         List<TaskDO> tasks = taskService.getTaskByTeamCode(team.getTeamCode());
-        return success(TaskConvert.INSTANCE.convertList(tasks));
+        if (!tasks.isEmpty()) {
+            return success(TaskConvert.INSTANCE.convertList(tasks));
+        }else{
+            return success(new ArrayList<>());
+        }
     }
 
     @PutMapping("/update/{id}")
@@ -487,6 +509,14 @@ public class TaskController {
         Integer taskId = (Integer) request.get("taskId"); // 任务ID
         TaskDO taskDO = taskService.getTask(taskId.longValue());
         taskDO.setAttr1(teamCode); // 存储班组编码
+        taskDO.setMachineryId(taskDO.getMachineryId());
+        taskDO.setMachineryName(taskDO.getMachineryName());
+        taskDO.setMachineryCode(taskDO.getMachineryCode());
+        // 根据选取的班组信息同步更新任务单的机台设备
+        TeamDO team = teamService.getTeam(taskDO.getAttr1());
+        taskDO.setMachineryCode(team.getMachineryCode());
+        taskDO.setMachineryName(team.getMachineryName());
+        taskDO.setMachineryId(String.valueOf(team.getMachineryId())); //更新任务单的机台设备ID
         taskService.updateTask(TaskConvert.INSTANCE.convert01(taskDO));
         return success(true);
     }

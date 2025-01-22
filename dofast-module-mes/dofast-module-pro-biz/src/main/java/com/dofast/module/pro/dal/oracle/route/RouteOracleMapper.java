@@ -10,10 +10,10 @@ import java.util.Map;
 @InterceptorIgnore(tenantLine = "true")
 public interface RouteOracleMapper {
 
-    List<Map<String, Object>> initRoute();
+    List<Map<String, Object>> initRoute(String erpCode);
 
 
-    List<Map<String, Object>> initRouteBindProcess();
+    List<Map<String, Object>> initRouteBindProcess(String erpCode);
 
-    List<Map<String, Object>> initChangeWorkOrderRouteBindProcess(String workOrderNo);
+    List<Map<String, Object>> initChangeWorkOrderRouteBindProcess(String workOrderNo, String erpCode);
 }

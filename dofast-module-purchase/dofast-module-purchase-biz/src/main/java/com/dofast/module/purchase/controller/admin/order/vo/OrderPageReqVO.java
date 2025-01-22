@@ -57,4 +57,7 @@ public class OrderPageReqVO extends PageParam {
     @Schema(description = "流水号")
     private String serial;
 
+    @Schema(description = "供应商编码")
+    private String supplierCode;
+
 }

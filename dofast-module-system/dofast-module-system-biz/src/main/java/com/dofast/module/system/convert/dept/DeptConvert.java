@@ -27,6 +27,8 @@ public interface DeptConvert {
 
     DeptDO convert(DeptUpdateReqVO bean);
 
+    DeptCreateReqVO convert01(DeptDO bean);
+
     List<DeptRespDTO> convertList03(List<DeptDO> list);
 
     DeptRespDTO convert03(DeptDO bean);

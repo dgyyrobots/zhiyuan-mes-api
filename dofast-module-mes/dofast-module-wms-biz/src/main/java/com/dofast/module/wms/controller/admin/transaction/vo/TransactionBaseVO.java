@@ -149,6 +149,9 @@ public class TransactionBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "入库标识")
+    private String recptStatus;
+
     public Long getId(){
         return null;
     }

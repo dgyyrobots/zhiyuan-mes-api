@@ -10,7 +10,7 @@
                     left join DSDATA.IMAE_T d on a.imaa001 = d.imae001 and a.imaaent = d.imaeent and b.imafsite = d.imaesite
                     left join DSDATA.IMAAUC_T e on c.imaal003 = e.imaauc001 and a.imaaent = e.imaaucent and e.imaaucsite = b.imafsite
                     left join DSDATA.IMCA_T f on a.imaa003 = f.imca001 and imaaent = f.imcaent
-                    where b.IMAFSITE = 'AM01' and a.imaaent = 100 and c.imaal002 = 'zh_CN'
+                    where b.IMAFSITE = 'AM01' and a.imaaent = #{erpCode} and c.imaal002 = 'zh_CN'
     </select>
 
 </mapper>

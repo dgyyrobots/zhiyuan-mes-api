@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -92,5 +93,10 @@ public class AdminUserDO extends TenantBaseDO {
      * 最后登录时间
      */
     private LocalDateTime loginDate;
+
+    /**
+     * ERP 部门编码
+     */
+    private String erpDept;
 
 }

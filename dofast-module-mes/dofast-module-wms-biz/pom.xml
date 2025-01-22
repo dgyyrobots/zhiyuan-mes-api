@@ -38,6 +38,11 @@
             <version>${revision}</version>
         </dependency>
 
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-cmms-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <!-- 业务组件 -->
         <dependency>
@@ -70,6 +75,12 @@
         <dependency>
             <groupId>vip.huizhizao</groupId>
             <artifactId>dofast-spring-boot-starter-excel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-cmms-api</artifactId>
+            <version>1.7.3-snapshot</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

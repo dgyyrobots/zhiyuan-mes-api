@@ -170,8 +170,8 @@ public class FileUploadUtils {
         {
             String fileName = extractFilename(file);
             MinioUtil minioUtil = new MinioUtil();
-            // String pathFileName = minioUtil.uploadFile(bucketName, fileName, file);
-            String pathFileName = "";
+            String pathFileName = minioUtil.uploadFileSingle(bucketName, fileName, file);
+            //String pathFileName = "";
             return pathFileName;
         }
         catch (Exception e)

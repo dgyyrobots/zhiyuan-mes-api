@@ -61,4 +61,5 @@ public class DeptDO extends TenantBaseDO {
      */
     private Integer status;
 
+
 }

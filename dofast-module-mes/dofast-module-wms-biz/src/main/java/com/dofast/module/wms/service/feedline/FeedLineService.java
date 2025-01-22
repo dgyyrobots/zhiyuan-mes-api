@@ -67,4 +67,7 @@ public interface FeedLineService {
      */
     List<FeedLineDO> getFeedLineList(FeedLineExportReqVO exportReqVO);
 
+    void updateFeedLineBatch(List<FeedLineDO> feedLineDOS);
+
+    void insertBatch(List<FeedLineDO> feedLineDOS);
 }

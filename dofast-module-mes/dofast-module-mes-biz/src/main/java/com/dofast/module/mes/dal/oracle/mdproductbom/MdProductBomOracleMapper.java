@@ -12,6 +12,6 @@ public interface MdProductBomOracleMapper {
     /**
      * 基于ERP获取物料BOM信息
      */
-    List<Map<String , Object>> initProductBomInfo();
+    List<Map<String , Object>> initProductBomInfo(String erpCode);
 
 }

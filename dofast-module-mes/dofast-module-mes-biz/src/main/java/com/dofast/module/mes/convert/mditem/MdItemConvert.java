@@ -26,6 +26,8 @@ public interface MdItemConvert {
     MdItemDTO convert01(MdItemDO bean);
     MdItemRespVO convert(MdItemDO bean);
 
+    MdItemUpdateReqVO convert02(MdItemDO bean);
+
     List<MdItemRespVO> convertList(List<MdItemDO> list);
 
     PageResult<MdItemRespVO> convertPage(PageResult<MdItemDO> page);

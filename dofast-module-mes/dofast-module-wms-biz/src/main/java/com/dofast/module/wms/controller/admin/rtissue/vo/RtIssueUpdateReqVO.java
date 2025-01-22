@@ -15,4 +15,8 @@ public class RtIssueUpdateReqVO extends RtIssueBaseVO {
     @NotNull(message = "退料单ID不能为空")
     private Long id;
 
+    // 虚拟字段
+    // 退料信息
+    private List<Map<String, Object>> rtissuelineList;
+
 }

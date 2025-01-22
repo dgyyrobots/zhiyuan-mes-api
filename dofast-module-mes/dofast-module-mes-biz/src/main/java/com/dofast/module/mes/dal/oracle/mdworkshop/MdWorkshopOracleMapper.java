@@ -14,7 +14,7 @@ public interface MdWorkshopOracleMapper {
      * 从ERP获取车间信息
      * @return
      */
-    List<Map<String, Object>> initWorkShop();
+    List<Map<String, Object>> initWorkShop(String erpCode);
 
 
 }

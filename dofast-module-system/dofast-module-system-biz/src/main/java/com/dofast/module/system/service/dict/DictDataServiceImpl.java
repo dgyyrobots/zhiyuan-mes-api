@@ -186,5 +186,15 @@ public class DictDataServiceImpl implements DictDataService {
         return dictDataMapper.selectByDictType(type);
     }
 
+    @Override
+    public void createBatch(List<DictDataDO> dictDataDOS){
+        dictDataMapper.insertBatch(dictDataDOS);
+    }
+
+    @Override
+    public void updateBatch(List<DictDataDO> dictDataDOS){
+        dictDataMapper.updateBatch(dictDataDOS);
+    }
+
 
 }

@@ -15,7 +15,7 @@ public interface MdItemOracleMapper {
      * 初始化ERP所有物料信息, 届时到Mysql中比对是否存在
      * @return
      */
-    List<Map<String, Object>> initItemInfo();
+    List<Map<String, Object>> initItemInfo(String erpCode);
 
 
 }

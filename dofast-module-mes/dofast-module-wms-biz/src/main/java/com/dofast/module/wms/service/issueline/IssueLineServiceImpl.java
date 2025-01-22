@@ -94,4 +94,11 @@ public class IssueLineServiceImpl implements IssueLineService {
         return issueLineMapper.selectList(IssueLineDO::getIssueId, headerId);
     }
 
+    @Override
+    public void updateIssueLineBatch(List<IssueLineDO> issueLineDOS){
+        issueLineMapper.updateBatch(issueLineDOS);
+    }
+
+
+
 }

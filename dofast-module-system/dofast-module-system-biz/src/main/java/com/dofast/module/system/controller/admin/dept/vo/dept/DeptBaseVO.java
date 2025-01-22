@@ -44,4 +44,5 @@ public class DeptBaseVO {
 //    @InEnum(value = CommonStatusEnum.class, message = "修改状态必须是 {value}")
     private Integer status;
 
+
 }

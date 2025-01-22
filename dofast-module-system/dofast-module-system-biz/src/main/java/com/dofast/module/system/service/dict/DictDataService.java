@@ -108,4 +108,9 @@ public interface DictDataService {
     DictDataDO parseDictData(String dictType, String label);
 
     List<DictDataDO> getInfoByType(String type);
+
+    void createBatch(List<DictDataDO> dictDataDOS);
+
+    void updateBatch(List<DictDataDO> dictDataDOS);
+
 }

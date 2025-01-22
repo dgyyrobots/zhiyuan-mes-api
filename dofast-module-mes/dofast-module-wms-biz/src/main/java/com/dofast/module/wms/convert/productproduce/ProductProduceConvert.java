@@ -25,6 +25,8 @@ public interface ProductProduceConvert {
 
     ProductProduceRespVO convert(ProductProduceDO bean);
 
+    ProductProduceUpdateReqVO convert01(ProductProduceDO bean);
+
     List<ProductProduceRespVO> convertList(List<ProductProduceDO> list);
 
     PageResult<ProductProduceRespVO> convertPage(PageResult<ProductProduceDO> page);

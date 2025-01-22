@@ -89,4 +89,9 @@ public class RtIssueLineServiceImpl implements RtIssueLineService {
         return rtIssueLineMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public void updateRtIssueLineBatch(List<RtIssueLineDO> list){
+        rtIssueLineMapper.updateBatch(list);
+    }
+
 }

@@ -44,6 +44,15 @@ public interface DvMachineryService {
     DvMachineryDO getDvMachinery(Long id);
 
     /**
+     * 获得设备台账
+     *
+     * @param machineryCode 编号
+     * @return 设备台账
+     */
+    DvMachineryDO getDvMachinery(String machineryCode);
+
+
+    /**
      * 获得设备台账列表
      *
      * @param ids 编号

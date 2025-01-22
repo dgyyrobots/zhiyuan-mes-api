@@ -10,9 +10,9 @@ import java.util.Map;
 @InterceptorIgnore(tenantLine = "true")
 public interface PurchaseOrderOracleMapper {
 
-    List<Map<String, Object>> initPurchaseOrder();
+    List<Map<String, Object>> initPurchaseOrder(String erpCode);
 
-    List<Map<String, Object>> initPurchaseGoods();
+    List<Map<String, Object>> initPurchaseGoods(String erpCode);
 
 
 }

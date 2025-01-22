@@ -14,11 +14,11 @@ public interface MdUnitMeasureOracleMapper {
      * 初始化单位信息
      * @return
      */
-    List<Map<String, Object>> initMdUnitMeasure();
+    List<Map<String, Object>> initMdUnitMeasure(String erpCode);
 
     /**
      * 初始化单位换算信息
      * @return
      */
-    List<Map<String, Object>> initUnitConverse();
+    List<Map<String, Object>> initUnitConverse(String erpCode);
 }

@@ -134,6 +134,12 @@
             <version>1.70</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-mes-api</artifactId>
+            <version>1.7.3-snapshot</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

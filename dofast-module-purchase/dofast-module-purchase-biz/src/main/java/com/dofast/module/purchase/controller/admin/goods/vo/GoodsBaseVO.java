@@ -2,11 +2,15 @@ package com.dofast.module.purchase.controller.admin.goods.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import javax.validation.constraints.*;
+
+import org.apache.poi.hpsf.Decimal;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import static com.dofast.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
@@ -34,7 +38,7 @@ public class GoodsBaseVO {
     private Object monovalent;
 
     @Schema(description = "采购数量")
-    private Integer quantity;
+    private BigDecimal quantity;
 
     @Schema(description = "税金")
     private Object taxes;
@@ -55,7 +59,7 @@ public class GoodsBaseVO {
     private String poNo;
 
     @Schema(description = "入库数量")
-    private Integer receiveNum;
+    private BigDecimal receiveNum;
 
     @Schema(description = "入库单位")
     private String unitOfMeasure;
@@ -72,5 +76,13 @@ public class GoodsBaseVO {
 
     @Schema(description = "母批次")
     private String parentBatchCode;
+
+    @Schema(description = "项次")
+    private String consequence;
+
+    @Schema(description = "ERP数量")
+    private BigDecimal erpNum;
+
+
 
 }

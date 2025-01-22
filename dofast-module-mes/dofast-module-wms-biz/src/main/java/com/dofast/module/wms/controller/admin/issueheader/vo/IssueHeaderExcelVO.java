@@ -110,4 +110,10 @@ public class IssueHeaderExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("工序编号")
+    private String processCode;
+
+    @ExcelProperty("工序名称")
+    private String processName;
+
 }

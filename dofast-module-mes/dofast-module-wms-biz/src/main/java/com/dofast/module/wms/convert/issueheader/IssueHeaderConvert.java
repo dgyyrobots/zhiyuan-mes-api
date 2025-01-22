@@ -25,7 +25,6 @@ public interface IssueHeaderConvert {
 
     IssueHeaderRespVO convert(IssueHeaderDO bean);
 
-
     IssueHeaderUpdateReqVO convert01(IssueHeaderDO bean);
 
     IssueHeaderCreateReqVO convert02(IssueHeaderDO bean);

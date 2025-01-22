@@ -9,7 +9,7 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
-    <select id="initWorkstation" resultType="java.util.HashMap">
+    <select id="initWorkstation" parameterType="java.lang.String" resultType="java.util.HashMap">
         -- 获取所有工作站信息
         -- 包含车间绑定信息
         select distinct a.ecaa001 as WORKSTATIONCODE , a.ecaa002 as WORKSTATIONNAME ,a.ecaa003 as WORKSHOPCODE, d.ooefl003 as WORKSHOPNAME,
@@ -18,7 +18,7 @@
                                                        left join DSDATA.ECAAL_T b on a.ecaa001 = b.ECAAL001 and a.ECAAENT = b.ECAALENT and a.ECAASITE = b.ECAALSITE
                                                        left join DSDATA.OOEF_T c on a.ecaa003 = c.ooef001
                                                        left join DSDATA.OOEFL_T d on a.ecaa003 = d.ooefl001 and c.ooef001 = d.ooefl001
-        WHERE A.ECAAENT = 100 AND A.ECAASITE = 'AM01' AND b.ecaal002 = 'zh_CN' and ooefl002 = 'zh_CN' and a.ecaastus = 'Y'
+        WHERE A.ECAAENT = #{erpCode} AND A.ECAASITE = 'AM01' AND b.ecaal002 = 'zh_CN' and ooefl002 = 'zh_CN' and a.ecaastus = 'Y'
     </select>
 
 </mapper>

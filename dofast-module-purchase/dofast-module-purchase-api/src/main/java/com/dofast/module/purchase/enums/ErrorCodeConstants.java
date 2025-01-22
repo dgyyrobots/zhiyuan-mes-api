@@ -21,4 +21,8 @@ public interface ErrorCodeConstants {
     ErrorCode GOODS_NOT_WAREHOUSE = new ErrorCode(1030005000, "采购商品未入库");
 
     ErrorCode MATERIAL_NOT_WAREHOUSE = new ErrorCode(1030006000, "当前物料未入库");
+
+    ErrorCode MATERIAL_MAX_STOCK = new ErrorCode(1030006000, "物料在调拨线边仓超出最大上限");
+
+
 }

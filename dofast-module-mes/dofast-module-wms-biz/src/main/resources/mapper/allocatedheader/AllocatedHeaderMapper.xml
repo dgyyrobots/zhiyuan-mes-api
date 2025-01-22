@@ -104,12 +104,13 @@
             ir.location_name as in_location_name,
             ir.area_id as in_area_id,
             ir.area_code as in_area_code,
-            ir.area_name as in_area_name
+            ir.area_name as in_area_name,
+            irl.vendor_code
         FROM
             wms_allocated_header ir
-                LEFT JOIN wms_allocated_line irl ON ir.id = irl.`allocated_id`
+            LEFT JOIN wms_allocated_record irl ON ir.id = irl.`allocated_id`
         WHERE
-            ir.`id` = #{allocatedId}
+            ir.`id` = #{allocatedId} and irl.allocated_flag = 'N'
 
     </select>
 

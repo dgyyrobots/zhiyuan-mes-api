@@ -140,4 +140,16 @@ public class FeedbackExcelVO {
     @ExcelProperty("班组编码")
     private String teamCode;
 
+    @ExcelProperty("缺陷Id")
+    private String defectId;
+
+    @ExcelProperty("班组负责人")
+    private String principalName;
+
+    @ExcelProperty("班组负责人Id")
+    private Long principalId;
+
+    @ExcelProperty("班组类型")
+    private String shiftInfo;
+
 }

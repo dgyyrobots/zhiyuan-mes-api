@@ -2,17 +2,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dofast.module.mes.dal.oracle.mdunitmeasure.MdUnitMeasureOracleMapper">
 
-   <select id="initMdUnitMeasure" resultType="java.util.HashMap">
+   <select id="initMdUnitMeasure" parameterType="java.lang.String" resultType="java.util.HashMap">
        select distinct a.ooca001 as measureCode , a.ooca002 , a.ooca003 ,  b.oocal003 as measureName from DSDATA.OOCA_T a
                                    left join DSDATA.OOCAL_T b on  a.ooca001 = b.oocal001 and a.OOCAENT = b.OOCALENT
-                                    where a.OOCAENT  = 32 and oocal002 = 'zh_CN'
+                                    where a.OOCAENT  = #{erpCode} and oocal002 = 'zh_CN'
    </select>
 
 
-    <select id="initUnitConverse" resultType="java.util.HashMap">
+    <select id="initUnitConverse" parameterType="java.lang.String" resultType="java.util.HashMap">
         select distinct oocc001 as measureCode, oocc002 as originCount , oocc003 as converCode , oocc004 as converCount ,
                         ooccstus as deleted from DSDATA.oocc_t
-                        where ooccent = 100
+                        where ooccent = #{erpCode}
     </select>
 
 

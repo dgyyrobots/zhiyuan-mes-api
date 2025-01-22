@@ -104,4 +104,13 @@ public class FeedLineBaseVO {
     @Schema(description = "上料状态", example = "2")
     private String status;
 
+    @Schema(description = "供应商编码", example = "S1865")
+    private String vendorCode;
+
+    @Schema(description = "报工状态", example = "Y")
+    private String feedbackStatus;
+
+    @Schema(description = "报工单号")
+    private String feedbackCode;
+
 }

@@ -90,4 +90,15 @@ public class FeedLineServiceImpl implements FeedLineService {
         return feedLineMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public  void updateFeedLineBatch(List<FeedLineDO> feedLineDOS){
+        feedLineMapper.updateBatch(feedLineDOS);
+    }
+
+    @Override
+    public  void insertBatch(List<FeedLineDO> feedLineDOS){
+        feedLineMapper.insertBatch(feedLineDOS);
+    }
+
+
 }

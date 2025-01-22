@@ -2,6 +2,7 @@ package com.dofast.module.mes.dal.oracle.mdclient;
 
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,6 @@ public interface MdClientOracleMapper {
      * @param type
      * @return
      */
-    List<Map<String, Object>> initClient(String type);
+    List<Map<String, Object>> initClient(@Param("type") String type,@Param("erpCode") String erpCode);
 
 }

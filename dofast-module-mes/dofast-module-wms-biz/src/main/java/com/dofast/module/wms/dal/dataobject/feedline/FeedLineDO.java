@@ -1,5 +1,6 @@
 package com.dofast.module.wms.dal.dataobject.feedline;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -141,4 +142,19 @@ public class FeedLineDO extends BaseDO {
     private String workstationName;
 
     private String status;
+
+    /**
+     * 供应商编码
+     */
+    private String vendorCode;
+
+    /**
+     * 报工状态
+     */
+    private String feedbackStatus;
+
+    /**
+     * 报工单号
+     */
+    private String feedbackCode;
 }

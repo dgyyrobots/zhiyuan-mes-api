@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.dofast.framework.common.pojo.PageResult;
 
+import com.dofast.module.cmms.api.dvmachinery.dto.DvMachineryDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import com.dofast.module.cmms.controller.admin.dvmachinery.vo.*;
@@ -24,6 +25,10 @@ public interface DvMachineryConvert {
     DvMachineryDO convert(DvMachineryUpdateReqVO bean);
 
     DvMachineryRespVO convert(DvMachineryDO bean);
+
+    DvMachineryDTO convert01(DvMachineryDO bean);
+
+    DvMachineryUpdateReqVO convert02(DvMachineryDTO bean) ;
 
     List<DvMachineryRespVO> convertList(List<DvMachineryDO> list);
 

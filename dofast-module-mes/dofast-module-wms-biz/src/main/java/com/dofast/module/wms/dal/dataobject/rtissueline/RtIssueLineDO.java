@@ -1,5 +1,6 @@
 package com.dofast.module.wms.dal.dataobject.rtissueline;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.math.BigDecimal;
@@ -120,5 +121,10 @@ public class RtIssueLineDO extends BaseDO {
      * 预留字段4
      */
     private Integer attr4;
+
+    /**
+     * 供应商编码
+     */
+    private String vendorCode;
 
 }

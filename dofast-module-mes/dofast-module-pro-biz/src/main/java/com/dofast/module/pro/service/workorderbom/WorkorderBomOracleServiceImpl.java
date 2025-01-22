@@ -1,6 +1,7 @@
 package com.dofast.module.pro.service.workorderbom;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.dal.oracle.workorderbom.WorkorderBomOracleMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -20,12 +21,14 @@ public class WorkorderBomOracleServiceImpl implements WorkorderBomOracleService{
 
     @Override
     public List<Map<String, Object>> initWorkorderBom() {
-        return workorderBomOracleMapper.initWorkorderBomInfo();
+        String erpCode = Constant.ERP_PROD_DODE;
+        return workorderBomOracleMapper.initWorkorderBomInfo(erpCode);
     }
 
     @Override
     public List<Map<String, Object>> initChangeWorkorderBom(String workorderNo) {
-        return workorderBomOracleMapper.initChangeWorkorderBomInfo(workorderNo);
+        String erpCode = Constant.ERP_PROD_DODE;
+        return workorderBomOracleMapper.initChangeWorkorderBomInfo(workorderNo, erpCode);
     }
 
 

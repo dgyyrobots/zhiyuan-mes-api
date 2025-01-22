@@ -55,4 +55,12 @@ public class TeamExcelVO {
     @ExcelProperty("班组人数")
     private Long personCount;
 
+    @ExcelProperty("生产设备名称")
+    private String machineryName;
+
+    @ExcelProperty("生产设备编码")
+    private String machineryCode;
+
+    @ExcelProperty("生产设备ID")
+    private Long machineryId;
 }

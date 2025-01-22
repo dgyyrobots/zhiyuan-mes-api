@@ -4,6 +4,8 @@ import java.util.*;
 
 import com.dofast.framework.common.pojo.PageResult;
 
+import com.dofast.module.wms.controller.admin.rtissueline.vo.RtIssueLineListVO;
+import com.dofast.module.wms.dal.dataobject.rtissueline.RtIssueLineDO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import com.dofast.module.wms.controller.admin.rtissue.vo.*;
@@ -24,7 +26,10 @@ public interface RtIssueConvert {
     RtIssueDO convert(RtIssueUpdateReqVO bean);
 
     RtIssueRespVO convert(RtIssueDO bean);
+
     RtIssueUpdateReqVO convert01(RtIssueDO bean);
+
+    RtIssueLineListVO conver02(RtIssueLineDO bean);;
 
     List<RtIssueRespVO> convertList(List<RtIssueDO> list);
 

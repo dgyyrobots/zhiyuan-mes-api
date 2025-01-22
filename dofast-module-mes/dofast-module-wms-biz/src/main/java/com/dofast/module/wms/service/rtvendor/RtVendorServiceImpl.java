@@ -83,6 +83,12 @@ public class RtVendorServiceImpl implements RtVendorService {
     }
 
     @Override
+    public RtVendorDO getRtVendor(String vendorCode){
+        return rtVendorMapper.selectOne(RtVendorDO::getVendorCode,vendorCode);
+    }
+
+
+    @Override
     public List<RtVendorDO> getRtVendorList(Collection<Long> ids) {
         return rtVendorMapper.selectBatchIds(ids);
     }

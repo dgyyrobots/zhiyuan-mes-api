@@ -13,6 +13,6 @@ public interface MdWorkstationOracleMapper {
     /**
      * 从ERP获取工作站信息
      */
-    List<Map<String, Object>> initWorkstation();
+    List<Map<String, Object>> initWorkstation(String erpCode);
 
 }

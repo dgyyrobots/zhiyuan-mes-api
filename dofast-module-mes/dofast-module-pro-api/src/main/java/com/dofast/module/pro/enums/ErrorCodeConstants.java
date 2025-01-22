@@ -91,5 +91,15 @@ public interface ErrorCodeConstants {
 
     ErrorCode FEEDBACK_MEMBER_NOT_EXISTS = new ErrorCode(717019, "报工班组人员不存在");
 
+    ErrorCode MATERIAL_STOCK_NOT_EXISTS = new ErrorCode(717020, "单据对应库存不存在");
+
+    ErrorCode ISSUE_NOT_EXISTS = new ErrorCode(717020, "单据对应领料单不存在");
+
+    ErrorCode PRODUCT_PRODUCE_NOT_EXISTS = new ErrorCode(717021, "产品产出记录不存在");
+
+    ErrorCode ITEM_CONSUME_NOT_EXISTS = new ErrorCode(717022, "物料消耗记录不存在");
+
+    ErrorCode CESS_DEFECT_NOT_EXISTS = new ErrorCode(717023, "工序异常缺陷名称不存在");
+
 
 }

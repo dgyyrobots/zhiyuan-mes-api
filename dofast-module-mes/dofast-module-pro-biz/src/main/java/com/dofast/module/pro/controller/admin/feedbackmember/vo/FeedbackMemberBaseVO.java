@@ -34,4 +34,6 @@ public class FeedbackMemberBaseVO {
     @Schema(description = "用户昵称", example = "赵六")
     private String nickName;
 
+
+
 }

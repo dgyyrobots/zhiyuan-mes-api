@@ -83,5 +83,9 @@ public class RtIssueBaseVO {
     @Schema(description = "更新者")
     private String updator;
 
+    @Schema(description = "任务编号")
+    private String taskCode;
+
+
     public Long getId(){return null;}
 }

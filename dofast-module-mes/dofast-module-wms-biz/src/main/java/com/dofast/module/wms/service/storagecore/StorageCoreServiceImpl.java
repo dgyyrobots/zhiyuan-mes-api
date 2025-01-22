@@ -5,15 +5,19 @@ import cn.hutool.core.collection.CollUtil;
 import com.dofast.framework.common.pojo.UserConstants;
 import com.dofast.framework.common.util.bean.BeanUtils;
 import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
+import com.dofast.module.wms.controller.admin.storagearea.vo.StorageAreaExportReqVO;
 import com.dofast.module.wms.controller.admin.transaction.vo.TransactionUpdateReqVO;
 import com.dofast.module.wms.convert.transaction.TransactionConvert;
 import com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedTxBean;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueTxBean;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeTxBean;
 import com.dofast.module.wms.dal.dataobject.itemrecpt.ItemRecptTxBean;
+import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
 import com.dofast.module.wms.dal.dataobject.productproduce.ProductProductTxBean;
 import com.dofast.module.wms.dal.dataobject.productrecpt.ProductRecptTxBean;
 import com.dofast.module.wms.dal.dataobject.productsalse.ProductSalseTxBean;
+import com.dofast.module.wms.dal.dataobject.rtissue.RtIssueDO;
 import com.dofast.module.wms.dal.dataobject.rtissue.RtIssueTxBean;
 import com.dofast.module.wms.dal.dataobject.rtsalse.RtSalseTxBean;
 import com.dofast.module.wms.dal.dataobject.rtvendor.RtVendorTxBean;
@@ -23,6 +27,7 @@ import com.dofast.module.wms.dal.dataobject.transaction.TransactionDO;
 import com.dofast.module.wms.dal.dataobject.transfer.TransferTxBean;
 import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
 import com.dofast.module.wms.enums.ErrorCodeConstants;
+import com.dofast.module.wms.service.materialstock.MaterialStockService;
 import com.dofast.module.wms.service.storagearea.StorageAreaService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import com.dofast.module.wms.service.transaction.TransactionService;
@@ -51,6 +56,10 @@ public class StorageCoreServiceImpl implements StorageCoreService{
 
     @Resource
     private StorageAreaService storageAreaService;
+
+    @Resource
+    private MaterialStockService materialStockService;
+
     @Override
     public void processItemRecpt(List<ItemRecptTxBean> lines) {
         String transactionType = Constant.TRANSACTION_TYPE_ITEM_RECPT;
@@ -247,12 +256,8 @@ public class StorageCoreServiceImpl implements StorageCoreService{
         }
     }
 
-
-
-
-
     @Override
-    public void processRtIssue(List<RtIssueTxBean> lines) {
+    public void processRtIssue(List<RtIssueTxBean> lines , RtIssueDO rtIssueDO) {
         if(CollUtil.isEmpty(lines)){
             throw exception(ErrorCodeConstants.RT_ISSUE_NO_LINE_PROCESS);
         }
@@ -267,16 +272,22 @@ public class StorageCoreServiceImpl implements StorageCoreService{
             transaction_out.setTransactionType(transactionType_out);
             BeanUtils.copyBeanProp(transaction_out,line);
 
-            //这里的出库事务默认从线边库出库到实际仓库
-            WarehouseDO warehouse = warehouseService.selectWmWarehouseByWarehouseCode(Constant.VIRTUAL_WH);
+            //这里的出库事务从当前物料的实际位置出库到用户选取的仓库
+            WarehouseDO warehouse = warehouseService.selectWmWarehouseByWarehouseCode(line.getWarehouseCode());
             transaction_out.setWarehouseId(warehouse.getId());
             transaction_out.setWarehouseCode(warehouse.getWarehouseCode());
             transaction_out.setWarehouseName(warehouse.getWarehouseName());
-           StorageLocationDO location = storageLocationService.selectWmStorageLocationByLocationCode(Constant.VIRTUAL_WS);
+           StorageLocationDO location = storageLocationService.selectWmStorageLocationByLocationCode(line.getLocationCode());
             transaction_out.setLocationId(location.getId());
             transaction_out.setLocationCode(location.getLocationCode());
             transaction_out.setLocationName(location.getLocationName());
-            StorageAreaDO area = storageAreaService.selectWmStorageAreaByAreaCode(Constant.VIRTUAL_WA);
+
+            StorageAreaExportReqVO exportReqVO = new StorageAreaExportReqVO();
+            exportReqVO.setAreaCode(line.getAreaCode());
+            exportReqVO.setLocationId(location.getId());
+            List<StorageAreaDO> areaList =  storageAreaService.getStorageAreaList(exportReqVO);
+            StorageAreaDO area = areaList.get(0);
+            //StorageAreaDO area = storageAreaService.selectWmStorageAreaByAreaCode(line.getAreaCode());
             transaction_out.setAreaId(area.getId());
             transaction_out.setAreaCode(area.getAreaCode());
             transaction_out.setAreaName(area.getAreaName());
@@ -288,10 +299,40 @@ public class StorageCoreServiceImpl implements StorageCoreService{
             TransactionUpdateReqVO transaction_in = new TransactionUpdateReqVO();
             transaction_in.setTransactionType(transactionType_in);
             BeanUtils.copyBeanProp(transaction_in,line);
+
+            // 追加实际转移的仓库位置
+            WarehouseDO warehouseIn = warehouseService.selectWmWarehouseByWarehouseCode(rtIssueDO.getWarehouseCode());
+            StorageLocationDO locationIn = storageLocationService.selectWmStorageLocationByLocationCode(rtIssueDO.getLocationCode());
+
+
+            //StorageAreaDO areaIn = storageAreaService.selectWmStorageAreaByAreaCode(rtIssueDO.getAreaCode());
+            StorageAreaExportReqVO exReqVO = new StorageAreaExportReqVO();
+            exReqVO.setAreaCode(line.getAreaCode());
+            exReqVO.setLocationId(location.getId());
+            List<StorageAreaDO> areaListIn =  storageAreaService.getStorageAreaList(exportReqVO);
+            StorageAreaDO areaIn = areaListIn.get(0);
+
+            transaction_in.setWarehouseId(warehouseIn.getId());
+            transaction_in.setWarehouseCode(warehouseIn.getWarehouseCode());
+            transaction_in.setWarehouseName(warehouseIn.getWarehouseName());
+            transaction_in.setLocationId(locationIn.getId());
+            transaction_in.setLocationCode(locationIn.getLocationCode());
+            transaction_in.setLocationName(locationIn.getLocationName());
+            transaction_in.setAreaId(areaIn.getId());
+            transaction_in.setAreaCode(areaIn.getAreaCode());
+            transaction_in.setAreaName(areaIn.getAreaName());
             transaction_in.setTransactionFlag(1);//库存增加
             transaction_in.setTransactionDate(LocalDateTime.now());
             //由于是新增的库存记录所以需要将查询出来的库存记录ID置为空
-            transaction_in.setMaterialStockId(null);
+            //transaction_in.setMaterialStockId(null);
+            MaterialStockExportReqVO materialStockDO = new MaterialStockExportReqVO();
+            materialStockDO.setItemCode(line.getItemCode());
+            materialStockDO.setBatchCode(line.getBatchCode());
+            List<MaterialStockDO> materialStockList = materialStockService.getMaterialStockList(materialStockDO);
+            if(!materialStockList.isEmpty()){
+                MaterialStockDO materialStock = materialStockList.get(0);
+                transaction_in.setMaterialStockId(materialStock.getId());
+            }
             //设置入库相关联的出库事务ID
             transaction_in.setRelatedTransactionId(transaction_out.getId());
 
@@ -453,8 +494,9 @@ public class StorageCoreServiceImpl implements StorageCoreService{
             TransactionDO transaction = new TransactionDO();
             transaction.setTransactionType(transactionType);
             BeanUtils.copyBeanProp(transaction,line);
-            BigDecimal quantity = line.getTransactionQuantity().negate();
-            transaction.setTransactionFlag( quantity.intValue()); //库存减少
+            BigDecimal quantity = line.getTransactionQuantity();
+            transaction.setTransactionFlag(-1); //库存减少
+            transaction.setTransactionQuantity(quantity);
             transaction.setStorageCheckFlag(false);//库存可以为负
             transaction.setTransactionDate(LocalDateTime.now());
 
@@ -505,7 +547,12 @@ public class StorageCoreServiceImpl implements StorageCoreService{
             transaction.setLocationId(location.getId());
             transaction.setLocationCode(location.getLocationCode());
             transaction.setLocationName(location.getLocationName());
-            StorageAreaDO area = storageAreaService.selectWmStorageAreaByAreaCode(line.getAreaCode());
+            StorageAreaExportReqVO exportReqVO = new StorageAreaExportReqVO();
+            exportReqVO.setAreaCode(line.getAreaCode());
+            exportReqVO.setLocationId(location.getId());
+            List<StorageAreaDO> areaList =  storageAreaService.getStorageAreaList(exportReqVO);
+            StorageAreaDO area = areaList.get(0);
+            //StorageAreaDO area = storageAreaService.selectWmStorageAreaByAreaCode(line.getAreaCode());
             transaction.setAreaId(area.getId());
             transaction.setAreaCode(area.getAreaCode());
             transaction.setAreaName(area.getAreaName());

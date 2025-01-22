@@ -143,4 +143,16 @@ public class FeedbackBaseVO {
     @Schema(description = "班组编码")
     private String teamCode;
 
+    @Schema(description = "缺陷Id")
+    private String defectId;
+
+    @Schema(description = "班组负责人")
+    private String principalName;
+
+    @Schema(description = "班组负责人Id")
+    private Long principalId;
+
+    @Schema(description = "班组类型")
+    private String shiftInfo;
+
 }

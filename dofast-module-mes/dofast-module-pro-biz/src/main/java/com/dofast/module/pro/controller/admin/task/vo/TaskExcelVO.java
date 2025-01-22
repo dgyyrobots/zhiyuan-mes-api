@@ -158,4 +158,12 @@ public class TaskExcelVO {
     @ExcelProperty( "报工状态")
     private String feedbackStatus;
 
+    @ExcelProperty("设备名称")
+    private String machineryName;
+
+    @ExcelProperty("设备编码")
+    private String machineryCode;
+
+    @ExcelProperty("设备Id")
+    private String machineryId;
 }

@@ -95,4 +95,13 @@ public class IssueLineExcelVO {
     @ExcelProperty("领料状态(Y/N)")
     private String status;
 
+    @ExcelProperty("供应商编码")
+    private String vendorCode;
+
+    @ExcelProperty("报工状态")
+    private String feedbackStatus;
+
+    @ExcelProperty("报工单号")
+    private String feedbackCode;
+
 }

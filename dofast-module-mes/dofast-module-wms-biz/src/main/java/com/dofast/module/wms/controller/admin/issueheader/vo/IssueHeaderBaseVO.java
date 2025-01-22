@@ -108,6 +108,14 @@ public class IssueHeaderBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "工序编号")
+    private String processCode;
+
+    @Schema(description = "工序名称")
+    private String processName;
+
+
+
     public Long getId(){
         return null;
     }

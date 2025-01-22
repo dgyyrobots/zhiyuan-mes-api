@@ -1,6 +1,7 @@
 package com.dofast.module.mes.service.mdworkshop;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.mes.dal.oracle.mdworkshop.MdWorkshopOracleMapper;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +18,8 @@ public class MdWorkshopOracleServiceImpl implements MdWorkshopOracleService{
 
     @Override
     public List<Map<String, Object>> initWorkshop(){
-        return mdWorkshopOracleMapper.initWorkShop();
+        String erpCode = Constant.ERP_PROD_DODE;
+        return mdWorkshopOracleMapper.initWorkShop(erpCode);
     }
 
 }

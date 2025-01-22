@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dofast.module.pro.dal.oracle.process.ProcessOracleMapper">
 
-    <select id="initProcess" resultType="java.util.HashMap">
+    <select id="initProcess" parameterType="java.lang.String" resultType="java.util.HashMap">
 
         -- 获取所有工序信息
         SELECT
@@ -14,7 +14,7 @@
                 AND a.oocq002 = b.oocql002
                 AND a.oocqent = b.oocqlent
         WHERE
-            oocqent = 100
+            oocqent = #{erpCode}
           AND OOCQL003 = 'zh_CN'
           AND oocq001 = '221'
           AND oocq002 LIKE 'AM%'

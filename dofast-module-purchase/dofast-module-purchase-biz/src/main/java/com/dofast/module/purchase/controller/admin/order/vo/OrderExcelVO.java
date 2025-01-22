@@ -59,4 +59,7 @@ public class OrderExcelVO {
     @ExcelProperty("流水号")
     private String serial;
 
+    @ExcelProperty("供应商编码")
+    private String supplierCode;
+
 }

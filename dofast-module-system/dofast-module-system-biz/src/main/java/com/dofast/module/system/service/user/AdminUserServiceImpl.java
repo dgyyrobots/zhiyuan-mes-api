@@ -8,6 +8,7 @@ import com.dofast.framework.common.enums.CommonStatusEnum;
 import com.dofast.framework.common.exception.ServiceException;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.util.collection.CollectionUtils;
+import com.dofast.framework.common.util.io.MinioUtil;
 import com.dofast.framework.datapermission.core.util.DataPermissionUtils;
 import com.dofast.module.infra.api.file.FileApi;
 import com.dofast.module.system.controller.admin.auth.vo.AuthNewLoginReqVO;
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
@@ -74,6 +76,10 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Resource
     private FileApi fileApi;
+
+    @Resource
+    private MinioUtil minioUtil;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -157,14 +163,16 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     @Override
-    public String updateUserAvatar(Long id, InputStream avatarFile) throws Exception {
+    public String updateUserAvatar(Long id, MultipartFile avatarFile) {
         validateUserExists(id);
         // 存储文件
-        String avatar = fileApi.createFile(IoUtil.readBytes(avatarFile));
+        //String avatar = fileApi.createFile(IoUtil.readBytes(avatarFile));
+        String avatar = minioUtil.uploadFileSingle("userAvatar" , "ammes", avatarFile);
+        //String url = minioUtil.getUploadObjectUrl("ammes", avatar, 3600);
         // 更新路径
         AdminUserDO sysUserDO = new AdminUserDO();
         sysUserDO.setId(id);
-        sysUserDO.setAvatar(avatar);
+        sysUserDO.setAvatar(avatar); // 用户头像绑定地址
         userMapper.updateById(sysUserDO);
         return avatar;
     }
@@ -463,5 +471,15 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     public List<AdminUserDO> getAllUserByMobile(String mobile) {
         return userMapper.selectAllByMobile(mobile);
+    }
+
+    @Override
+    public void createUserBatch(List<AdminUserDO> reqVOList){
+        userMapper.insertBatch(reqVOList);
+    }
+
+    @Override
+    public void updateUserBatch(List<AdminUserDO> reqVOList){
+        userMapper.updateBatch(reqVOList);
     }
 }

@@ -91,4 +91,15 @@ public class IssueTxBean extends BaseDO {
      * 生产工单编号
      */
     private String workorderCode;
+
+    /**
+     * 工序编码
+     */
+    private String processCode;
+
+    /**
+     * 工序名称
+     */
+    private String processName;
+
 }

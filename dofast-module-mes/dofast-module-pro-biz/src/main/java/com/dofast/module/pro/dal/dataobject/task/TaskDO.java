@@ -209,4 +209,19 @@ public class TaskDO extends BaseDO {
      */
     private String feedbackStatus;
 
+    // 虚拟字段
+    /**
+     * 设备名称
+     */
+    private String machineryName;
+
+    /**
+     * 设备编号
+     */
+    private String machineryCode;
+
+    /**
+     * 设备Id
+     */
+    private String machineryId;
 }

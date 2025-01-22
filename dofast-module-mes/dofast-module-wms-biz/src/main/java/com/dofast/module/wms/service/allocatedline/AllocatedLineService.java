@@ -67,4 +67,7 @@ public interface AllocatedLineService {
      */
     List<AllocatedLineDO> getAllocatedLineList(AllocatedLineExportReqVO exportReqVO);
 
+    void deleteAllocatedLineByHeaderId(Long headerId);
+
+    void createAllocatedBatch(List<AllocatedLineDO> allocatedLineDOList);
 }

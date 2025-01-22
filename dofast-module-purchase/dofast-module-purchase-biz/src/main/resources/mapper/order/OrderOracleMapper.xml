@@ -9,20 +9,20 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
-    <select id="initPurchaseGoods" resultType="java.util.HashMap">
-        SELECT distinct A.pmdldocno AS PO_NO,  B.pmdn001 AS GOODS_NUMBER , E.imaal003 AS GOODS_NAME, E.imaal004 AS GOODS_SPECS , B.pmdn006 AS COMPANY , B.pmdn007 AS QUANTITY, A.pmdlstus PROCESS_TYPE , A.pmdlcrtdt CREATE_TIME , pmdl004 AS SUPPLIER_CODE
+    <select id="initPurchaseGoods" parameterType="java.lang.String" resultType="java.util.HashMap">
+        SELECT distinct A.pmdldocno AS PO_NO,  B.pmdn001 AS GOODS_NUMBER , E.imaal003 AS GOODS_NAME, E.imaal004 AS GOODS_SPECS , B.pmdn006 AS COMPANY , B.pmdn007 AS QUANTITY, A.pmdlstus PROCESS_TYPE , A.pmdlcrtdt CREATE_TIME , pmdl004 AS SUPPLIER_CODE , B.pmdnseq as CONSEQUENCE
         FROM DSDATA.PMDL_T A
                  LEFT JOIN DSDATA.PMDN_T B ON A.pmdldocno = B.pmdndocno AND A.PMDLENT = B.PMDNENT AND A.PMDLSITE = B.PMDNSITE
                  LEFT JOIN DSDATA.PMDP_T C ON A.pmdldocno = C.pmdpdocno  AND A.PMDLENT = C.pmdpent
                  LEFT JOIN DSDATA.IMAA_T D ON B.pmdn001 =  D.imaa001 and b.PMDNENT = imaaent
                  left join DSDATA.IMAAL_T E ON B.pmdn001 = E.imaal001 and D.IMAA001 = E.IMAAL001 AND E.IMAALENT = A.PMDLENT
-        WHERE A.PMDLENT = 100 AND A.PMDLSITE = 'AM01' AND A.pmdlstus = 'Y' AND E.imaal002 ='zh_CN'
+        WHERE A.PMDLENT = #{erpCode} AND A.PMDLSITE = 'AM01' AND A.pmdlstus = 'Y' AND E.imaal002 ='zh_CN'
     </select>
 
-    <select id="initPurchaseOrder" resultType="java.util.HashMap">
-        SELECT distinct A.pmdldocno AS PO_NO
+    <select id="initPurchaseOrder" parameterType="java.lang.String" resultType="java.util.HashMap">
+        SELECT distinct A.pmdldocno AS PO_NO ,  pmdl004 AS SUPPLIER_CODE
         FROM DSDATA.PMDL_T A
-        WHERE A.PMDLENT = 100 AND A.PMDLSITE = 'AM01' AND A.pmdlstus = 'Y'
+        WHERE A.PMDLENT = #{erpCode} AND A.PMDLSITE = 'AM01' AND A.pmdlstus = 'Y'
     </select>
 
 

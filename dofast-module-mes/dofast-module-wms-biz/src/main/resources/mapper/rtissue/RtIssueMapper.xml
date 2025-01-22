@@ -25,6 +25,7 @@
         <result property="sourceDocLineId" column="source_doc_line_id"></result>
         <result property="transactionQuantity" column="transaction_quantity"></result>
         <result property="recptDate" column="recpt_date"></result>
+        <result property="vendorCode" column="vendor_code"></result>
     </resultMap>
 
     <select id="getTxBeans" parameterType="Long" resultMap="RtIssueTxBeanResult">
@@ -46,7 +47,8 @@
                ir.`rt_code` AS source_doc_code,
                irl.`id` AS source_doc_line_id,
                irl.quantity_rt AS transaction_quantity,
-               ir.rt_date as recptDate
+               ir.rt_date as recptDate,
+               irl.vendor_code
         FROM wms_rt_issue ir
                  LEFT JOIN wms_rt_issue_line irl
                            ON ir.id = irl.rt_id

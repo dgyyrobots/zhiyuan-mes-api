@@ -6,4 +6,5 @@ public interface FeedbackApi {
 
     FeedbackDTO getFeedBack(Long id);
 
+    FeedbackDTO getFeedBackByTaskCode(String taskCode);
 }

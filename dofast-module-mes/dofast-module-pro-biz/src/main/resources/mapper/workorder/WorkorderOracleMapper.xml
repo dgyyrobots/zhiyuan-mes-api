@@ -8,7 +8,7 @@
         代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
-    <select id="initWorkorder" resultType="java.util.HashMap" >
+    <select id="initWorkorder" parameterType="java.lang.String" resultType="java.util.HashMap" >
         SELECT
             distinct
             sfaadocno AS WORKORDER_CODE,
@@ -23,12 +23,12 @@
         FROM
             DSDATA.SFAA_T
         WHERE
-            sfaaent = 100
+            sfaaent = #{erpCode}
           AND sfaasite = 'AM01'
           AND sfaastus = 'F'
     </select>
 
-    <select id="initChangeWorkorder" resultType="java.util.HashMap" >
+    <select id="initChangeWorkorder" parameterType="java.lang.String" resultType="java.util.HashMap" >
         SELECT
             distinct
             sfkadocno AS WORKORDER_CODE,
@@ -41,7 +41,7 @@
         FROM
             DSDATA.SFKA_T A
         WHERE
-            sfkaent = 100
+            sfkaent =  #{erpCode}
           AND sfkasite = 'AM01'
           AND sfkadocno = 'AMGD01-202410003'
           --AND sfkacnfdt BETWEEN SYSDATE - INTERVAL '5' MINUTE AND SYSDATE

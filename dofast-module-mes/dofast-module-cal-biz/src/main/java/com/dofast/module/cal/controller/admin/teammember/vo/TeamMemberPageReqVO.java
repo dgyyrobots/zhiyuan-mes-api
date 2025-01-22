@@ -50,4 +50,7 @@ public class TeamMemberPageReqVO extends PageParam {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "班次")
+    private String shiftInfo;
+
 }

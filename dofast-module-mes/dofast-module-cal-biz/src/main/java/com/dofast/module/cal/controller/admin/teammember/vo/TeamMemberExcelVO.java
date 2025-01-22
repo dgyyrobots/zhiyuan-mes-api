@@ -52,4 +52,7 @@ public class TeamMemberExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @Schema(description = "班次")
+    private String shiftInfo;
+
 }

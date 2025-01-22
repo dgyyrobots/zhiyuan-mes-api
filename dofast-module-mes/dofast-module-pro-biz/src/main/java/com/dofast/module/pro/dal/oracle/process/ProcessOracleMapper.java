@@ -13,6 +13,6 @@ public interface ProcessOracleMapper {
     /**
      * 从ERP中获取工序信息
      */
-    List<Map<String, Object>> initProcess();
+    List<Map<String, Object>> initProcess(String erpCode);
 
 }

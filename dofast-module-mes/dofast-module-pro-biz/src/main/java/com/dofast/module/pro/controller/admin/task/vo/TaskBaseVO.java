@@ -159,4 +159,12 @@ public class TaskBaseVO {
     @Schema(description = "报工状态")
     private String feedbackStatus;
 
+    @Schema(description = "设备名称")
+    private String machineryName;
+
+    @Schema(description = "设备编码")
+    private String machineryCode;
+
+    @Schema(description = "设备Id")
+    private String machineryId;
 }

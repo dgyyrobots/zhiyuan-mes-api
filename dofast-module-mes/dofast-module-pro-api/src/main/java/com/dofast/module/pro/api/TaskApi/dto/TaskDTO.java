@@ -166,4 +166,23 @@ public class TaskDTO {
      */
     private String serial;
 
+    /**
+     * 报工状态
+     */
+    private String feedbackStatus;
+
+    /**
+     * 设备名称
+     */
+    private String machineryName;
+
+    /**
+     * 设备编号
+     */
+    private String machineryCode;
+
+    /**
+     * 设备Id
+     */
+    private String machineryId;
 }

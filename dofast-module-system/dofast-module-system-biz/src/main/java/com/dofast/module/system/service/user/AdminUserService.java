@@ -8,6 +8,7 @@ import com.dofast.module.system.controller.admin.user.vo.profile.UserProfileUpda
 import com.dofast.module.system.controller.admin.user.vo.user.*;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.module.system.dal.dataobject.user.AdminUserDO;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.InputStream;
@@ -65,7 +66,7 @@ public interface AdminUserService {
      * @param id         用户 id
      * @param avatarFile 头像文件
      */
-    String updateUserAvatar(Long id, InputStream avatarFile) throws Exception;
+    String updateUserAvatar(Long id, MultipartFile avatarFile);
 
     /**
      * 修改密码
@@ -222,4 +223,7 @@ public interface AdminUserService {
 
     List<AdminUserDO> getAllUserByMobile(String mobile);
 
+    void createUserBatch(List<AdminUserDO> reqVOList);
+
+    void updateUserBatch(List<AdminUserDO> reqVOList);
 }

@@ -1,5 +1,6 @@
 package com.dofast.module.wms.dal.dataobject.issueline;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.math.BigDecimal;
@@ -125,4 +126,20 @@ public class IssueLineDO extends BaseDO {
      * 单身领料状态
      */
     private String status;
+
+    /**
+     * 供应商编码
+     */
+    private String vendorCode;
+
+    /**
+     * 报工状态
+     */
+    private String feedbackStatus;
+
+    /**
+     * 报工单号
+     */
+    private String feedbackCode;
+
 }

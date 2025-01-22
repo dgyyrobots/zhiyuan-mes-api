@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.mes.dal.oracle.mdworkstation.MdWorkstationOracleMapper;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,8 @@ public class MdWorkstationOracleServiceImpl implements MdWorkstationOracleServic
 
     @Override
     public List<Map<String, Object>> initWorkstation(){
-        return mdWorkstationOracleMapper.initWorkstation();
+        String erpCode = Constant.ERP_PROD_DODE;
+        return mdWorkstationOracleMapper.initWorkstation(erpCode);
     }
 
 

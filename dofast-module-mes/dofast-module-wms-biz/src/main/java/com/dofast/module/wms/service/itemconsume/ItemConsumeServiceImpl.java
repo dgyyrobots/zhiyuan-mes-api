@@ -16,14 +16,21 @@ import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
 import com.dofast.module.pro.api.WorkorderApi.WorkorderApi;
 import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderDTO;
 import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineExportReqVO;
+import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderExportReqVO;
+import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
+import com.dofast.module.wms.convert.issueline.IssueLineConvert;
 import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
+import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
+import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeTxBean;
 import com.dofast.module.wms.dal.dataobject.itemconsumeline.ItemConsumeLineDO;
 import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
 import com.dofast.module.wms.dal.mysql.itemconsumeline.ItemConsumeLineMapper;
 import com.dofast.module.wms.dal.mysql.materialstock.MaterialStockMapper;
 import com.dofast.module.wms.service.feedline.FeedLineService;
+import com.dofast.module.wms.service.issueheader.IssueHeaderService;
+import com.dofast.module.wms.service.issueline.IssueLineService;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -79,6 +86,12 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
 
     @Resource
     private FeedLineService feedLineService;
+
+    @Resource
+    private IssueHeaderService issueHeaderService;
+
+    @Resource
+    private IssueLineService issueLineService;
 
     @Override
     public Long createItemConsume(ItemConsumeCreateReqVO createReqVO) {
@@ -263,8 +276,9 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
         // 根据当前的任务编号， 找寻Bom上料详情的物料信息
         FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
         exportReqVO.setTaskCode(feedback.getTaskCode());
+        exportReqVO.setFeedbackStatus("N"); // 获取当前未报工的上料详情
         List<FeedLineDO> feedLines = feedLineService.getFeedLineList(exportReqVO);
-        if(CollectionUtil.isEmpty(feedLines)){
+        if(feedLines.isEmpty()){
             return null; //如果没有找到Bom上料详情，则直接返回空
         }
         List<ItemConsumeLineDO> lines = new ArrayList<>();
@@ -278,7 +292,7 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
             line.setSpecification(feedLine.getSpecification());
             line.setUnitOfMeasure(feedLine.getUnitOfMeasure());
             line.setQuantityConsume(BigDecimal.valueOf(feedLine.getQuantity()));
-            line.setBatchCode(workorder.getBatchCode());
+            line.setBatchCode(feedLine.getBatchCode());
             line.setMaterialStockId(feedLine.getMaterialStockId());
             line.setLocationCode(feedLine.getLocationCode());
             line.setLocationId(feedLine.getLocationId());
@@ -289,6 +303,29 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
             lines.add(line);
         }
         itemConsumeLineMapper.insertBatch(lines);
+        // 更新领料单身信息, 绑定报工单号
+        IssueHeaderExportReqVO issueHeaderExportReqVO =   new IssueHeaderExportReqVO();
+        issueHeaderExportReqVO.setTaskCode(task.getTaskCode()); // 一个任务单绑定一个领料单
+        IssueHeaderDO issueHeader = Optional.ofNullable(issueHeaderService.getIssueHeaderList(issueHeaderExportReqVO).get(0)).orElse(null);
+        if(issueHeader != null){
+            IssueLineExportReqVO issueLineExportReqVO = new IssueLineExportReqVO();
+            issueLineExportReqVO.setIssueId(issueHeader.getId());
+            issueLineExportReqVO.setStatus("Y"); // 已上料
+            issueLineExportReqVO.setFeedbackStatus("N"); // 未报工
+            List<IssueLineDO> issueLines = issueLineService.getIssueLineList(issueLineExportReqVO);
+            // 更新上料详情
+            issueLines.forEach(issueLine -> {
+                issueLine.setFeedbackCode(feedback.getFeedbackCode()); // 绑定报工单号
+                issueLine.setFeedbackStatus("Y"); // 已报工
+            });
+            issueLineService.updateIssueLineBatch(issueLines);
+        }
+        // 更新上料详情
+        feedLines.forEach(feedLine -> {
+            feedLine.setFeedbackCode(feedback.getFeedbackCode()); // 绑定报工单号
+            feedLine.setFeedbackStatus("Y"); // 已报工
+        });
+        feedLineService.updateFeedLineBatch(feedLines);
 
         return itemConsume;
     }

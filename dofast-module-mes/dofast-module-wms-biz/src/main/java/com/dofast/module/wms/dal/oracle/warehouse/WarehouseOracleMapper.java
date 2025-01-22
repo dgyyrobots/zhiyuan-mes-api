@@ -10,8 +10,8 @@ import java.util.Map;
 @InterceptorIgnore(tenantLine = "true")
 public interface WarehouseOracleMapper {
 
-    List<Map<String, Object>> initLocationInfo();
+    List<Map<String, Object>> initLocationInfo(String erpCode);
 
-    List<Map<String, Object>> initAreaInfo();
+    List<Map<String, Object>> initAreaInfo(String erpCode);
 
 }

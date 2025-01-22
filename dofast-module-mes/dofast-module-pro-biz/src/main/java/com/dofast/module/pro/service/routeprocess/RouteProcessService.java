@@ -6,6 +6,7 @@ import com.dofast.module.pro.controller.admin.routeprocess.vo.*;
 import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
 import com.dofast.module.pro.dal.dataobject.routeprocess.RouteProcessDO;
 import com.dofast.framework.common.pojo.PageResult;
+import com.dofast.module.pro.dal.dataobject.task.TaskDO;
 
 /**
  * 工艺组成 Service 接口
@@ -106,5 +107,12 @@ public interface RouteProcessService {
      * @return 工艺组成列表
      */
     List<RouteProcessDO> getRouteProcessList(RouteProcessExportReqVO exportReqVO);
+
+    /**
+     * 校验是否为最后一道工序, 如果是, 则返回 true
+     * @return
+     */
+    boolean checkFinProcess(TaskDO taskDO);
+
 
 }

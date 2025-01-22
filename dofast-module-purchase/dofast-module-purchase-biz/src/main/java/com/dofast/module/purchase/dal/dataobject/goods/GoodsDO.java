@@ -1,12 +1,15 @@
 package com.dofast.module.purchase.dal.dataobject.goods;
 
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
 import com.dofast.framework.mybatis.core.dataobject.BaseDO;
+import org.apache.poi.hpsf.Decimal;
 
 /**
  * 采购商品明细 DO
@@ -51,7 +54,7 @@ public class GoodsDO extends BaseDO {
     /**
      * 采购数量
      */
-    private Integer quantity;
+    private BigDecimal quantity;
     /**
      * 税金
      */
@@ -79,7 +82,7 @@ public class GoodsDO extends BaseDO {
     /**
      * 入库数量
      */
-    private Integer receiveNum;
+    private BigDecimal receiveNum;
     /**
      * 入库单位
      */
@@ -100,5 +103,13 @@ public class GoodsDO extends BaseDO {
      * 母批次
      */
     private String parentBatchCode;
+    /**
+     * 项次
+     */
+    private String consequence;
 
+    /**
+     * ERP数量
+     */
+    private BigDecimal erpNum;
 }

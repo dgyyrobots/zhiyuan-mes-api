@@ -1,6 +1,8 @@
 package com.dofast.module.cal.dal.dataobject.teammember;
 
 import java.time.LocalDate;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -68,4 +70,8 @@ public class TeamMemberDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * 班次
+     */
+    private String shiftInfo;
 }

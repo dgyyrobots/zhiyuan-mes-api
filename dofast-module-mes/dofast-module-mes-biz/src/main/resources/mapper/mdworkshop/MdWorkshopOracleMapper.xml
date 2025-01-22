@@ -9,12 +9,12 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
     <!-- 编写查询语句 -->
-    <select id="initWorkShop" resultType="java.util.HashMap">
+    <select id="initWorkShop" parameterType="java.lang.String" resultType="java.util.HashMap">
         -- 获取所有车间信息
         -- 生成的ID后续要丢给工作站信息做绑定
         select distinct a.OOEF001 AS WORKSHOPCODE , B.OOEFL003 AS WORKSHOPNAME , a.OOEFSTUS AS DELETED from DSDATA.OOEF_T a
             left join DSDATA.OOEFL_T b on a.OOEF001 = B.OOEFL001
-            where b.ooefl002 = 'zh_CN' and b.OOEFL003 LIKE '%澳美-生产车间%' AND a.ooefent = 100 and a.OOEFSTUS = 'Y'
+            where b.ooefl002 = 'zh_CN' and b.OOEFL003 LIKE '%澳美-生产车间%' AND a.ooefent = #{erpCode} and a.OOEFSTUS = 'Y'
     </select>
 
 

@@ -12,4 +12,9 @@ import javax.validation.constraints.*;
 public class RtIssueCreateReqVO extends RtIssueBaseVO {
     @Schema(description = "退料单ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "26320")
     private Long id;
+    // 虚拟字段
+    // 上料信息
+    private List<Map<String, Object>> issuelineList;
+    // 退料信息
+    private List<Map<String, Object>> rtissuelineList;
 }

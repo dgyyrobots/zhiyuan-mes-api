@@ -10,4 +10,8 @@ public interface ProcessApi {
      * @return 生产工序
      */
     ProcessDTO getcess(Long id);
+
+    ProcessDTO getcess(String processCode);
+
+
 }
