@@ -142,4 +142,24 @@ public class IssueLineDO extends BaseDO {
      */
     private String feedbackCode;
 
+    /**
+     * 设备名称
+     */
+    private String machineryName;
+
+    /**
+     * 设备编码
+     */
+    private String machineryCode;
+
+    /**
+     * 设备Id
+     */
+    private String machineryId;
+
+    /**
+     * 条码编号
+     */
+    private Long barcodeNumber;
+
 }

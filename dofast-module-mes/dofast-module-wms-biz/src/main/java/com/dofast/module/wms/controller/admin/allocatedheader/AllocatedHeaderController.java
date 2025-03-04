@@ -1,6 +1,8 @@
 package com.dofast.module.wms.controller.admin.allocatedheader;
 
 import cn.hutool.core.collection.CollUtil;
+import com.dofast.module.cal.api.team.TeamApi;
+import com.dofast.module.cal.api.team.dto.TeamDTO;
 import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.api.ProcessApi.ProcessApi;
 import com.dofast.module.pro.api.ProcessApi.dto.ProcessDTO;
@@ -116,6 +118,9 @@ public class AllocatedHeaderController {
     @Resource
     private TaskApi taskApi;
 
+    @Resource
+    private TeamApi teamApi;
+
     @PostMapping("/create")
     @Operation(summary = "创建调拨单头")
     @PreAuthorize("@ss.hasPermission('wms:allocated-header:create')")
@@ -123,8 +128,15 @@ public class AllocatedHeaderController {
         System.out.println(createReqVO);
         // 校验当前的任务单是否已创建调拨单
         String taskCode = createReqVO.getTaskCode();
+        TaskDTO taskDTO = taskApi.getTask(taskCode);
+
         AllocatedHeaderExportReqVO exportReqVO = new AllocatedHeaderExportReqVO();
         exportReqVO.setTaskCode(taskCode);
+        LocalDate localDate = LocalDate.now();
+        String dateStr = localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        // 生成3位随机数
+        int random = (int) ((Math.random() * 9 + 1) * 100);
+        createReqVO.setAllocatedName(taskDTO.getProcessName() + "调拨单" + dateStr + random);
         List<AllocatedHeaderDO> allocatedHeaderList = allocatedHeaderService.getAllocatedHeaderList(exportReqVO);
         if(!allocatedHeaderList.isEmpty()){
             return error(ErrorCodeConstants.ALLOCATED_TASK_EXISTS);
@@ -355,7 +367,7 @@ public class AllocatedHeaderController {
                 map.put("sufficient", "inSufficient");
                 finList.add(map);
                 continue;
-            }minio
+            }
             MaterialStockDO item = stockList.get(0);
             BigDecimal onhand = Optional.ofNullable((item.getQuantityOnhand())).orElse(BigDecimal.ZERO);*/
             /*if (onhand.compareTo(quantity) >= 0) {
@@ -411,6 +423,7 @@ public class AllocatedHeaderController {
      * 执行调拨
      *
      * @return
+     *
      */
     @PreAuthorize("@ss.hasPermission('wms:issue-header:update')")
     @Transactional
@@ -518,6 +531,13 @@ public class AllocatedHeaderController {
         }
         ProcessDTO reqDTO = processApi.getcess(taskDTO.getProcessCode());
 
+        // 班组编码
+        String attr1 = taskDTO.getAttr1();
+        TeamDTO teamDTO = teamApi.getTeamByCode(attr1);
+        String machineryCode = teamDTO.getMachineryCode();
+        String machineryName = teamDTO.getMachineryName();
+        Long machineryId =  teamDTO.getMachineryId();
+
         // TODO 追加ERP调拨单接口
         // 追加领料单信息
         IssueHeaderDO issueHeaderDO = new IssueHeaderDO();
@@ -551,6 +571,11 @@ public class AllocatedHeaderController {
         issueHeaderDO.setIssueName(updateReqVO.getAllocatedCode());
         issueHeaderDO.setProcessCode(reqDTO.getProcessCode());
         issueHeaderDO.setProcessName(reqDTO.getProcessName());
+
+        issueHeaderDO.setMachineryId(machineryId);
+        issueHeaderDO.setMachineryCode(machineryCode);
+        issueHeaderDO.setMachineryName(machineryName);
+
         IssueHeaderCreateReqVO issueHeader = IssueHeaderConvert.INSTANCE.convert02(issueHeaderDO);
         issueHeaderService.createIssueHeader(issueHeader);
 

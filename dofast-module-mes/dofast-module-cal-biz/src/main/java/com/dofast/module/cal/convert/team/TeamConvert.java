@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.dofast.framework.common.pojo.PageResult;
 
+import com.dofast.module.cal.api.team.dto.TeamDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import com.dofast.module.cal.controller.admin.team.vo.*;
@@ -24,6 +25,8 @@ public interface TeamConvert {
     TeamDO convert(TeamUpdateReqVO bean);
 
     TeamRespVO convert(TeamDO bean);
+
+    TeamDTO convert01(TeamDO bean);
 
     List<TeamRespVO> convertList(List<TeamDO> list);
 

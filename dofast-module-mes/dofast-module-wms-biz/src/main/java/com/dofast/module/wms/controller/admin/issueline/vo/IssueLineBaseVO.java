@@ -22,7 +22,6 @@ public class IssueLineBaseVO {
     private Long materialStockId;
 
     @Schema(description = "产品物料ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "12707")
-    @NotNull(message = "产品物料ID不能为空")
     private Long itemId;
 
     @Schema(description = "产品物料编码")
@@ -97,4 +96,19 @@ public class IssueLineBaseVO {
 
     @Schema(description = "报工单号")
     private String feedbackCode;
+
+    @Schema(description = "生产设备名称")
+    private String machineryName;
+
+    @Schema(description = "生产设备编码")
+    private String machineryCode;
+
+    @Schema(description = "生产设备ID")
+    private String machineryId;
+
+    @Schema(description = "条码编号")
+    private Long barcodeNumber;
+
+
+
 }

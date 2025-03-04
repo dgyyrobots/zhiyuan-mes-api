@@ -44,6 +44,14 @@ public interface ToolService {
     ToolDO getTool(Long id);
 
     /**
+     * 获得工装夹具清单
+     *
+     * @param toolCode 制版编号
+     * @return 工装夹具清单
+     */
+    ToolDO getTool(String toolCode);
+
+    /**
      * 获得工装夹具清单列表
      *
      * @param ids 编号

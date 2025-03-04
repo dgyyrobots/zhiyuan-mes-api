@@ -18,4 +18,7 @@ public class FeedbackCreateReqVO extends FeedbackBaseVO {
 
     @Schema(description = "报工班组成员列表")
     private List<Map<String, Object>> feedbackMemberList;
+
+    @Schema(description = "报工缺陷项列表")
+    private List<Map<String, Object>> processDefectList;
 }

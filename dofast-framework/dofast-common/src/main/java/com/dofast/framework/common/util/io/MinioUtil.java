@@ -3,6 +3,7 @@ package com.dofast.framework.common.util.io;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.dofast.framework.common.util.date.DateUtils;
 import com.dofast.framework.common.util.spring.SpringUtils;
 import io.minio.*;
@@ -134,7 +135,7 @@ public class MinioUtil {
      * @param multipartFile
      * @return
      */
-    @SneakyThrows(Exception.class)
+    /*@SneakyThrows(Exception.class)
     public String uploadFileSingle(String prefix , String bucketName, MultipartFile multipartFile) {
         if (!bucketExists(bucketName)) {
             createBucket(bucketName);
@@ -142,10 +143,17 @@ public class MinioUtil {
 
         String originalFilename = multipartFile.getOriginalFilename();
         String extension = FilenameUtils.getExtension(originalFilename);
-        String name = originalFilename.substring(0,originalFilename.lastIndexOf("."));
+        // 生成5位随机数
+        String number = RandomUtil.randomNumbers(5);
+        // 先判断originalFilename是否含有".", 没有就使用默认的userBlob加上5位随机数
+        String name = null;
+        if (originalFilename.contains(".")) {
+            name = Optional.ofNullable(originalFilename.substring(0,originalFilename.lastIndexOf("."))).orElse("userBlob"+number);
+        }else{
+            name = "userBlob"+number;
+        }
 
-        String fileName = prefix + "_" + name + "_" + IdUtil.simpleUUID() + "." + extension;
-        InputStream in = null;
+        String fileName = prefix + "_" + name + "_" + IdUtil.simpleUUID() + "." + extension;InputStream in = null;
         try {
             in = multipartFile.getInputStream();
             minioClient.putObject(PutObjectArgs.builder()
@@ -167,6 +175,65 @@ public class MinioUtil {
         }
         // 只返回文件名，而不是完整的URL
         return fileName;
+    }*/
+
+    @SneakyThrows(Exception.class)
+    public String uploadFileSingle(String prefix, String bucketName, MultipartFile multipartFile) {
+        // 参数校验
+        if (multipartFile == null || multipartFile.isEmpty()) {
+            throw new IllegalArgumentException("上传文件为空, 请检查!");
+        }
+
+        if (!bucketExists(bucketName)) {
+            createBucket(bucketName);
+        }
+
+        // 文件名处理
+        String originalFilename = StringUtils.defaultString(multipartFile.getOriginalFilename(), "");
+        String extension = StringUtils.defaultIfBlank(FilenameUtils.getExtension(originalFilename), "");
+        String baseName = buildBaseName(originalFilename);
+
+        // 构建文件名
+        String fileName = buildFileName(prefix, baseName, extension);
+
+        // 文件上传
+        uploadToMinio(bucketName, fileName, multipartFile);
+        return fileName;
+    }
+
+    private String buildBaseName(String originalFilename) {
+        String number = RandomUtil.randomNumbers(5);
+        int lastDotIndex = originalFilename.lastIndexOf('.');
+
+        if (lastDotIndex == -1) {
+            return "userBlob" + number;
+        }
+
+        String namePart = originalFilename.substring(0, lastDotIndex);
+        return StringUtils.isNotBlank(namePart) ? namePart : "userBlob" + number;
+    }
+
+    private String buildFileName(String prefix, String baseName, String extension) {
+        return String.join("_",
+                prefix,
+                baseName,
+                IdUtil.simpleUUID()
+        ) + "." + extension;
+    }
+
+    private void uploadToMinio(String bucketName, String fileName, MultipartFile file) {
+        try (InputStream in = file.getInputStream()) {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(fileName)
+                            .stream(in, file.getSize(), -1)
+                            .contentType(StringUtils.defaultString(file.getContentType(), "application/octet-stream"))
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("上传MinIO失败", e);
+        }
     }
 
     /**

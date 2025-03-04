@@ -5,6 +5,9 @@ import cn.hutool.core.collection.CollUtil;
 import com.dofast.framework.common.pojo.UserConstants;
 import com.dofast.framework.common.util.bean.BeanUtils;
 import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.tm.convert.tool.ToolConvert;
+import com.dofast.module.tm.dal.dataobject.tool.ToolDO;
+import com.dofast.module.tm.service.tool.ToolService;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
 import com.dofast.module.wms.controller.admin.storagearea.vo.StorageAreaExportReqVO;
 import com.dofast.module.wms.controller.admin.transaction.vo.TransactionUpdateReqVO;
@@ -39,6 +42,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.dofast.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.dofast.module.wms.enums.ErrorCodeConstants.*;
@@ -59,6 +63,9 @@ public class StorageCoreServiceImpl implements StorageCoreService{
 
     @Resource
     private MaterialStockService materialStockService;
+
+    @Resource
+    private ToolService toolService;
 
     @Override
     public void processItemRecpt(List<ItemRecptTxBean> lines) {
@@ -137,6 +144,18 @@ public class StorageCoreServiceImpl implements StorageCoreService{
         String transactionType_in = Constant.TRANSACTION_TYPE_ITEM_ISSUE_IN;
         for(int i=0;i<lines.size();i++){
             IssueTxBean line = lines.get(i);
+            // 电铸板没有保存批次号且不在库存表内, 通过批次号过滤
+            if(line.getBatchCode() == null){
+                String toolCode =  line.getItemCode();
+                ToolDO toolDO = Optional.ofNullable(toolService.getTool(toolCode)).orElse(new ToolDO());
+                if(toolDO.getQuantity() < 1 || toolDO.getQuantityAvail() < 1){
+                    throw exception(ErrorCodeConstants.TOOL_NOT_ENOUGH);
+                }
+                toolDO.setQuantity(toolDO.getQuantity() - 1);
+                toolDO.setQuantityAvail(toolDO.getQuantityAvail() - 1);
+                toolService.updateTool(ToolConvert.INSTANCE.convert01(toolDO));
+                continue;
+            }
             //这里先构造一条原库存减少的事务
             TransactionUpdateReqVO transaction_out = new TransactionUpdateReqVO();
             BeanUtils.copyBeanProp(transaction_out, line);
@@ -248,7 +267,7 @@ public class StorageCoreServiceImpl implements StorageCoreService{
             transaction_in.setAreaId(line.getInAreaId());
             transaction_in.setAreaCode(line.getInAreaCode());
             transaction_in.setAreaName(line.getInAreaName());
-
+            transaction_in.setRecptStatus("N");
             //设置入库相关联的出库事务ID
             transaction_in.setRelatedTransactionId(transaction_out.getId());
             transactionService.processTransaction(transaction_in);

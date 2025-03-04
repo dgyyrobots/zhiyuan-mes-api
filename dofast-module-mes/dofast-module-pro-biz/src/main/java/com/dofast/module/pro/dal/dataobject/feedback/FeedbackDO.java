@@ -208,4 +208,9 @@ public class FeedbackDO extends BaseDO {
      * 班组类型
      */
     private String shiftInfo;
+
+    /**
+     * 来源编码
+     */
+    private String originCode;
 }

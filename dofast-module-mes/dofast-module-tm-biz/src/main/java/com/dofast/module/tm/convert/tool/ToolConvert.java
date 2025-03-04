@@ -25,6 +25,8 @@ public interface ToolConvert {
 
     ToolRespVO convert(ToolDO bean);
 
+    ToolUpdateReqVO convert01(ToolDO bean);
+
     List<ToolRespVO> convertList(List<ToolDO> list);
 
     PageResult<ToolRespVO> convertPage(PageResult<ToolDO> page);

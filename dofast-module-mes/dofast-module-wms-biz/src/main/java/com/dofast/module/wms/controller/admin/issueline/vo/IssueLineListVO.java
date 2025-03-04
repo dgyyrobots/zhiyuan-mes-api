@@ -66,4 +66,13 @@ public class IssueLineListVO {
     private String feedbackStatus;
 
     private String feedbackCode;
+
+    private String machineryName;
+
+    private String machineryCode;
+
+    private String machineryId;
+
+    private Long barcodeNumber;
+
 }

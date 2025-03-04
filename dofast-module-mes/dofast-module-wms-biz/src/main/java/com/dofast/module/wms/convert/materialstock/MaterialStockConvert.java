@@ -27,6 +27,8 @@ public interface MaterialStockConvert {
 
     MaterialStockRespVO convert(MaterialStockDO bean);
 
+    MaterialStockUpdateReqVO convert02(MaterialStockDO bean);
+
     List<MaterialStockRespVO> convertList(List<MaterialStockDO> list);
 
     PageResult<MaterialStockRespVO> convertPage(PageResult<MaterialStockDO> page);

@@ -58,7 +58,9 @@ public class warehouseJob implements JobHandler {
             String isLineWarehouse = Optional.ofNullable((String) localMap.get("IS_LINE_WAREHOUSE")).orElse("N"); // Y-线边仓 N-仓库
             // 校验当前线边仓信息是否存在, 基于库区的编码进行校验
             boolean flag = !"Y".equals((String) localMap.get("LOCATION_DELETED"));
-            StorageLocationDO location = storageLocationMapper.selectOne(StorageLocationDO::getLocationCode, (String) localMap.get("LOCATION_CODE") , StorageLocationDO::getDeleted, flag);
+            System.out.println(localMap.get("LOCATION_CODE") + " , " + flag);
+            // ERP的数据存在相同的库区编码, 追加库区名称比对
+            StorageLocationDO location = storageLocationMapper.selectOne(StorageLocationDO::getLocationCode, localMap.get("LOCATION_CODE") ,StorageLocationDO::getLocationName, localMap.get("LOCATION_NAME"), StorageLocationDO::getDeleted, flag);
             // 根据是否为线边仓判断处理逻辑
             if (location != null) {
                 location.setLocationName((String) localMap.get("LOCATION_NAME")); // 更新库区名称
@@ -89,7 +91,7 @@ public class warehouseJob implements JobHandler {
         }
         for (Map<String, Object> areaMap : areaList) {
             // 获取当前库区信息
-            StorageLocationDO location = storageLocationMapper.selectOne(StorageLocationDO::getLocationCode, (String) areaMap.get("LOCATION_CODE"));
+            StorageLocationDO location = storageLocationMapper.selectOne(StorageLocationDO::getLocationCode, areaMap.get("LOCATION_CODE") , StorageLocationDO::getLocationName, areaMap.get("LOCATION_NAME"));
             Long locationId = 0L; // 库区ID
             if (location != null) {
                 locationId = location.getId();

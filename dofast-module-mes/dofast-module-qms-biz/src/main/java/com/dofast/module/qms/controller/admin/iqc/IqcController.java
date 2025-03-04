@@ -198,4 +198,55 @@ public class IqcController {
         ExcelUtils.write(response, "来料检验单.xls", "数据", IqcExcelVO.class, datas);
     }
 
+    //
+    @PutMapping("/updateIqcAdjuncts")
+    @Operation(summary = "更新生产工单")
+    @PreAuthorize("@ss.hasPermission('qms:iqc:update')")
+    public CommonResult<Boolean> updateIqcAdjuncts( @RequestBody IqcUpdateReqVO updateReqVO) {
+        IqcDO iqc = iqcService.getIqc(updateReqVO.getId());
+        if(iqc == null){
+            return success(true);
+        }
+
+        String url = updateReqVO.getAdjuncts();
+        if(url==null){
+            return success(true);
+        }
+        // 将url基于","进行拆分
+        String[] urls = url.split(",");
+        if (urls.length == 0) {
+            return success(true);
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < urls.length; i++) {
+            String currentUrl = urls[i].trim();
+
+            if (currentUrl.isEmpty()) {
+                continue;
+            }
+            // 如果需要去掉路径部分，只保留文件名
+            String[] parts = currentUrl.split("/");
+            // 校验当前parts是否包含%, 若包含只保留%前信息
+            if( parts[parts.length - 1].contains("%")) {
+                parts[parts.length - 1] = parts[parts.length - 1].substring(0, parts[parts.length - 1].indexOf("%"));
+                if(parts[parts.length - 1].contains("?")){
+                    parts[parts.length - 1] = parts[parts.length - 1].substring(0, parts[parts.length - 1].indexOf("?"));
+                }
+            }
+            String finName = parts[parts.length - 1];
+            System.out.println(finName);
+            sb.append(finName);
+            // 校验当前url是否为最后一个
+            if (i != urls.length - 1) {
+                sb.append(",");
+            }
+        }
+        String adjuncts = Optional.ofNullable(sb.toString()).orElse("");
+        if( adjuncts!="") {
+            iqc.setAdjuncts(adjuncts);
+        }
+        iqcService.updateIqc(IqcConvert.INSTANCE.convert01(iqc));
+        return success(true);
+    }
+
 }

@@ -50,7 +50,7 @@ public interface ErrorCodeConstants {
     ErrorCode FEEDBACK_NOT_APPROVED = new ErrorCode(715003, "报工未通过");
     ErrorCode WORKORDER_NOT_EXIST = new ErrorCode(716003, "一键报工的工单不存在");
     ErrorCode FEEDBACK_TASK_NOT_EXISTS = new ErrorCode(716003, "当前报工单未选择任务单！");
-
+    ErrorCode FEEDBACK_NOT_SAME = new ErrorCode(716003, "请选择相同任务单下的报工单");
 
     ErrorCode TASK_UPDATE_COUNT=new ErrorCode(717001,"更新生产任务的生产数量失败");
 
@@ -93,6 +93,8 @@ public interface ErrorCodeConstants {
 
     ErrorCode MATERIAL_STOCK_NOT_EXISTS = new ErrorCode(717020, "单据对应库存不存在");
 
+    ErrorCode MATERIAL_STOCK_NOT_RECEPT = new ErrorCode(717020, "存在未入库单据, 请先入库!");
+
     ErrorCode ISSUE_NOT_EXISTS = new ErrorCode(717020, "单据对应领料单不存在");
 
     ErrorCode PRODUCT_PRODUCE_NOT_EXISTS = new ErrorCode(717021, "产品产出记录不存在");
@@ -101,5 +103,6 @@ public interface ErrorCodeConstants {
 
     ErrorCode CESS_DEFECT_NOT_EXISTS = new ErrorCode(717023, "工序异常缺陷名称不存在");
 
+    ErrorCode FEEDBACK_DEFECT_NOT_EXISTS = new ErrorCode(717024, "报工缺陷不存在");
 
 }

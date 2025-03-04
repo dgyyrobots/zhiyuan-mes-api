@@ -86,6 +86,15 @@ public class IndexController {
         return success(IndexConvert.INSTANCE.convert(index));
     }
 
+    @GetMapping("/getByProcessCode")
+    @Operation(summary = "获得检测项")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('qms:index:query')")
+    public CommonResult<List<IndexRespVO>> getIndex(@RequestParam("processCode") String processCode) {
+        List<IndexDO> indexList = indexService.getIndexByProcessCode(processCode);
+        return success(IndexConvert.INSTANCE.convertList(indexList));
+    }
+
     @GetMapping("/list")
     @Operation(summary = "获得检测项列表")
     @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")

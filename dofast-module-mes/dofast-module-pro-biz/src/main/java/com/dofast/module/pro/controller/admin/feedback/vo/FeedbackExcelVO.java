@@ -152,4 +152,7 @@ public class FeedbackExcelVO {
     @ExcelProperty("班组类型")
     private String shiftInfo;
 
+    @ExcelProperty("来源编码")
+    private String originCode;
+
 }

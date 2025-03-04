@@ -183,4 +183,9 @@ public class OqcDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * 附件
+     */
+    private String adjuncts;
+    
 }

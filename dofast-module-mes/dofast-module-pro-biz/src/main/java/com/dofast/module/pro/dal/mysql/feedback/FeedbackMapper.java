@@ -60,6 +60,7 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
                 .betweenIfPresent(FeedbackDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(FeedbackDO::getDefectId, reqVO.getDefectId())
                 .eqIfPresent(FeedbackDO::getShiftInfo, reqVO.getShiftInfo())
+                .eqIfPresent(FeedbackDO::getOriginCode, reqVO.getOriginCode())
                 .orderByDesc(FeedbackDO::getId));
     }
 
@@ -105,6 +106,7 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
                 .betweenIfPresent(FeedbackDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(FeedbackDO::getDefectId, reqVO.getDefectId())
                 .eqIfPresent(FeedbackDO::getShiftInfo, reqVO.getShiftInfo())
+                .eqIfPresent(FeedbackDO::getOriginCode, reqVO.getOriginCode())
                 .orderByDesc(FeedbackDO::getId));
     }
 

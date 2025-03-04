@@ -148,4 +148,7 @@ public class FeedbackExportReqVO {
     @Schema(description = "班组类型")
     private String shiftInfo;
 
+    @Schema(description = "来源编码")
+    private String originCode;
+
 }

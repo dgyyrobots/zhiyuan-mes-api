@@ -44,5 +44,11 @@ public class RouteBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "产品编号")
+    private String productCode;
+
+    @Schema(description = "文件")
+    private String file;
+
     public Long getId(){return null;}
 }

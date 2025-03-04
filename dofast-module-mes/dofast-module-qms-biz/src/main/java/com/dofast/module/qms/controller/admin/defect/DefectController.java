@@ -75,6 +75,16 @@ public class DefectController {
         return success(DefectConvert.INSTANCE.convert(defect));
     }
 
+    @GetMapping("/getByCode")
+    @Operation(summary = "获得工序异常缺陷名称")
+    @Parameter(name = "processCode", description = "工序编号", required = true, example = "AM0001")
+    @PreAuthorize("@ss.hasPermission('qms:defect:query')")
+    public CommonResult<List<DefectRespVO>> getcessDefect(@RequestParam("processCode") String processCode) {
+        List<DefectDO> list = defectService.getDefectByCode(processCode);
+        return success(DefectConvert.INSTANCE.convertList(list));
+    }
+
+
     @GetMapping("/list")
     @Operation(summary = "获得常见缺陷列表")
     @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")

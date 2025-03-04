@@ -23,7 +23,6 @@ public class AllocatedHeaderBaseVO {
     private String allocatedCode;
 
     @Schema(description = "调拨单名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "赵六")
-    @NotNull(message = "调拨单名称不能为空")
     private String allocatedName;
 
     @Schema(description = "工作站ID", example = "2914")

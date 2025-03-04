@@ -64,4 +64,8 @@ public class IndexDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * 工序编码
+     */
+    private String processCode;
 }

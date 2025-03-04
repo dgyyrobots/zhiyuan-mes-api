@@ -49,4 +49,7 @@ public class DefectExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("工序编码")
+    private String processCode;
+
 }

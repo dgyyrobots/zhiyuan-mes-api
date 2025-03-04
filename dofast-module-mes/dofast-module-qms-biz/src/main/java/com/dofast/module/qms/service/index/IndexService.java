@@ -58,6 +58,13 @@ public interface IndexService {
 
     /**
      * 获得检测项列表
+     * @param processCode
+     * @return
+     */
+    List<IndexDO> getIndexByProcessCode(String processCode);
+
+    /**
+     * 获得检测项列表
      *
      * @param ids 编号
      * @return 检测项列表

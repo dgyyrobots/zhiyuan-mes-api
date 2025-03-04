@@ -143,4 +143,7 @@ public class OqcExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("附件")
+    private String adjuncts;
+
 }

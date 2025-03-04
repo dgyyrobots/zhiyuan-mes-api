@@ -140,8 +140,8 @@ public class AllocatedLineController {
                 allocatedRecordDO.setItemCode((String) detail.get("itemCode"));
                 allocatedRecordDO.setItemName((String) detail.get("itemName"));
                 allocatedRecordDO.setSpecification((String) detail.get("specification"));
-                Integer itemId = (Integer) detail.get("itemId");
-                allocatedRecordDO.setItemId(itemId.longValue());
+                String itemIdStr = Optional.ofNullable((String) detail.get("itemId")).orElse("0");
+                allocatedRecordDO.setItemId(Long.valueOf(itemIdStr));
                 allocatedRecordDO.setBatchCode((String) detail.get("batchCode"));
                 allocatedRecordDO.setWarehouseCode((String) detail.get("warehouseCode"));
                 allocatedRecordDO.setWarehouseName((String) detail.get("warehouseName"));

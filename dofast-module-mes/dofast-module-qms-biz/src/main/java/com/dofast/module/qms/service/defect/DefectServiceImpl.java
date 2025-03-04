@@ -65,6 +65,11 @@ public class DefectServiceImpl implements DefectService {
     }
 
     @Override
+    public List<DefectDO> getDefectByCode(String processCode){
+        return defectMapper.selectList(DefectDO::getProcessCode, processCode);
+    }
+
+    @Override
     public List<DefectDO> getDefectList(Collection<Long> ids) {
         return defectMapper.selectBatchIds(ids);
     }

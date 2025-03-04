@@ -23,7 +23,6 @@ public class IssueHeaderBaseVO {
     private String issueCode;
 
     @Schema(description = "领料单名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "王五")
-    @NotNull(message = "领料单名称不能为空")
     private String issueName;
 
     @Schema(description = "工作站ID", example = "27847")
@@ -108,14 +107,20 @@ public class IssueHeaderBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "设备名称")
+    private String machineryName;
+
+    @Schema(description = "设备编码")
+    private String machineryCode;
+
+    @Schema(description = "设备ID")
+    private Long machineryId;
+
     @Schema(description = "工序编号")
     private String processCode;
 
     @Schema(description = "工序名称")
     private String processName;
-
-
-
     public Long getId(){
         return null;
     }

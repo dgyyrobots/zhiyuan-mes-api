@@ -44,6 +44,9 @@ public class IndexBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "工序编码")
+    private String processCode;
+
     public Long getId(){
         return null;
     }

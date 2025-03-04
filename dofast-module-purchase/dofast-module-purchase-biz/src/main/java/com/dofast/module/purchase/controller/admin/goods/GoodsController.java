@@ -15,6 +15,8 @@ import com.dofast.module.purchase.dal.mysql.goods.GoodsMapper;
 import com.dofast.module.purchase.dal.mysql.order.PurchaseOrderMapper;
 import com.dofast.module.purchase.enums.ErrorCodeConstants;
 import com.dofast.module.purchase.service.order.OrderService;
+import com.dofast.module.tm.dal.dataobject.tool.ToolDO;
+import com.dofast.module.tm.service.tool.ToolService;
 import com.dofast.module.wms.api.MaterialStockApi.MaterialStockERPAPI;
 import com.dofast.module.wms.api.StorageAreaApi.StorageAreaApi;
 import com.dofast.module.wms.api.StorageAreaApi.dto.StorageAreaDTO;
@@ -24,6 +26,7 @@ import com.dofast.module.wms.api.WarehosueApi.WarehouseApi;
 import com.dofast.module.wms.api.WarehosueApi.dto.WarehouseDTO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockRespVO;
+import com.dofast.module.wms.controller.admin.storagearea.vo.StorageAreaExportReqVO;
 import com.dofast.module.wms.controller.admin.transaction.vo.TransactionUpdateReqVO;
 import com.dofast.module.wms.convert.materialstock.MaterialStockConvert;
 import com.dofast.module.wms.dal.dataobject.itemrecpt.ItemRecptTxBean;
@@ -130,6 +133,9 @@ public class GoodsController {
     @Resource
     private FeedbackApi feedbackApi;
 
+    @Resource
+    private ToolService toolService;
+
     @PostMapping("/create")
     @Operation(summary = "创建采购商品明细")
     @PreAuthorize("@ss.hasPermission('purchase:goods:create')")
@@ -141,7 +147,7 @@ public class GoodsController {
     @Operation(summary = "更新采购商品明细")
     @PreAuthorize("@ss.hasPermission('purchase:goods:update')")
     public CommonResult<Boolean> updateGoods(@Valid @RequestBody GoodsUpdateReqVO updateReqVO) {
-        if(updateReqVO.getReceiveTime()==null){
+        if (updateReqVO.getReceiveTime() == null) {
             // 若入库时间为空，则默认当前时间
             updateReqVO.setReceiveTime(LocalDateTime.now());
         }
@@ -194,6 +200,25 @@ public class GoodsController {
                     goodsUpdateReqVO.setStatus(1);
                     goodsService.updateGoods(goodsUpdateReqVO);
                 }
+            }
+        }
+        return success(true);
+    }
+
+    @PutMapping("/batchUpdateReceiveStatus")
+    @Operation(summary = "更新采购商品明细")
+    @PreAuthorize("@ss.hasPermission('purchase:goods:update')")
+    public CommonResult<Boolean> batchUpdateReceiveStatus(@Valid @RequestBody String poNo) {
+        // 根据采购单号获取单身信息
+        GoodsExportReqVO exportReqVO = new GoodsExportReqVO();
+        exportReqVO.setPoNo(poNo);
+        List<GoodsDO> result = goodsService.getGoodsList(exportReqVO);
+        // 未入库 =》 已入库
+        for (GoodsDO good : result) {
+            Integer status = good.getStatus();
+            if (status == 0) {
+                good.setStatus(1);
+                goodsService.updateGoods(GoodsConvert.INSTANCE.convert01(good));
             }
         }
         return success(true);
@@ -262,7 +287,7 @@ public class GoodsController {
     @PostMapping("/wareHousing")
     public String wareHousing(@RequestBody Map<String, Object> params) {
         // 根据当前的入库单号获取入库单详情, 做入库操作
-       String poNo = params.get("poNo").toString();
+        String poNo = params.get("poNo").toString();
         Integer wareHouseId = (Integer) params.get("warehouseId");
         Integer locationId = (Integer) params.get("locationId");
         Integer areaId = (Integer) params.get("areaId");
@@ -278,7 +303,7 @@ public class GoodsController {
         List<Map<String, Object>> goodsMapList = new ArrayList<>();
         for (GoodsDO goodsDO : goodsList) {
             BigDecimal receiveNum = goodsDO.getReceiveNum() == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(goodsDO.getReceiveNum()));
-            if (receiveNum.compareTo(BigDecimal.ZERO) == 0){
+            if (receiveNum.compareTo(BigDecimal.ZERO) == 0) {
                 continue;
             }
             Map<String, Object> goodsMap = new HashMap<>();
@@ -308,12 +333,12 @@ public class GoodsController {
             return wareHouseingResult;
         }*/
 
-         List<ItemRecptTxBean> transactionList = new ArrayList<>();
+        List<ItemRecptTxBean> transactionList = new ArrayList<>();
         // 将数据库的数据追加到库存现有量中
         for (GoodsDO goodsDO : goodsList) {
 
             BigDecimal receiveNum = goodsDO.getReceiveNum() == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(goodsDO.getReceiveNum()));
-            if (receiveNum.compareTo(BigDecimal.ZERO) == 0){
+            if (receiveNum.compareTo(BigDecimal.ZERO) == 0) {
                 continue;
             }
             String batchCode = goodsDO.getBatchCode(); // 子批次号
@@ -379,8 +404,12 @@ public class GoodsController {
         String itemCode = "";
         String batchCode = "";
         String method = (String) params.get("method");
+        boolean toolFlag = false;
+        String recpt = Optional.ofNullable((String) params.get("recpt")).orElse("");
 
-        switch(type){
+        MaterialStockRespVO toolResponse = new MaterialStockRespVO();
+
+        switch (type) {
             case "purchase":
                 GoodsDO orderDO = goodsService.getGoods(id);
                 itemCode = orderDO.getGoodsNumber();
@@ -393,13 +422,38 @@ public class GoodsController {
                 break;
             case "eject":
                 break;
+            case "tool":
+                ToolDO toolDO = toolService.getTool(id.longValue());
+                if(toolDO.getQuantityAvail() < 1){
+                    return error(ErrorCodeConstants.TOOL_NOT_ENOUGH);
+                }
+                toolResponse.setId(toolDO.getId().longValue());
+                toolResponse.setItemCode(toolDO.getToolCode());
+                toolResponse.setItemName(toolDO.getToolName());
+                toolResponse.setQuantityOnhand(BigDecimal.ONE);
+                toolResponse.setUnitOfMeasure("张");
+                StorageLocationDO locationDO = storageLocationService.getStorageLocation("AM007");
+                StorageAreaExportReqVO exportReqVO = new StorageAreaExportReqVO();
+                exportReqVO.setLocationId(locationDO.getId());
+                StorageAreaDO areaDO = storageAreaService.getStorageAreaList(exportReqVO).get(0);
+                toolResponse.setLocationId(locationDO.getId());
+                toolResponse.setWarehouseId(locationDO.getWarehouseId());
+                toolResponse.setAreaId(areaDO.getId());
+                toolFlag = true;
+                break;
+        }
+
+        if (toolFlag) {
+            return success(toolResponse);
         }
 
         // 根据单号不同获取对应库存信息
         MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
         exportReqVO.setItemCode(itemCode);
         exportReqVO.setBatchCode(batchCode);
-        exportReqVO.setRecptStatus("Y");
+        if (recpt != "N" && recpt != "") {
+            exportReqVO.setRecptStatus("Y");
+        }
         List<MaterialStockDO> materialStock = materialStockService.getMaterialStockList(exportReqVO);
         if (materialStock.isEmpty()) {
             return error(ErrorCodeConstants.MATERIAL_NOT_WAREHOUSE);
@@ -476,7 +530,7 @@ public class GoodsController {
             updateCount = updateCount.add(quantity);
 
             // 校验当前的单据是否已入库
-            if(parent.getStatus() == 2){
+            if (parent.getStatus() == 2) {
                 // 当前单据已入库
                 // 获取库存信息, 修改当前已入库数量
                 MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
@@ -572,6 +626,26 @@ public class GoodsController {
     public CommonResult<GoodsRespVO> getPurchaseBarCode(@RequestParam("id") Integer id) {
         GoodsDO goods = goodsService.getGoods(id);
         return success(GoodsConvert.INSTANCE.convert(goods));
+    }
+
+
+    @GetMapping("/checkConfig")
+    @Operation(summary = "获得采购商品明细")
+    @Parameter(name = "poNo", description = "编号", required = true, example = "AMCG001-001")
+    public CommonResult<List<GoodsDO>> checkConfig(@RequestParam("poNo") String poNo) {
+        GoodsExportReqVO exportReqVO = new GoodsExportReqVO();
+        exportReqVO.setPoNo(poNo);
+        List<GoodsDO> goodsList = goodsService.getGoodsList(exportReqVO);
+        if (goodsList.isEmpty()) {
+            return error(ErrorCodeConstants.GOODS_NOT_EXISTS);
+        }
+        // 判定当前goodsList列表中的每一项是否都配置了收货数量与收货单位
+        for (GoodsDO goodsDO : goodsList) {
+            if (goodsDO.getReceiveNum() == null || goodsDO.getUnitOfMeasure() == null) {
+                return error(ErrorCodeConstants.GOODS_NOT_CONFIG);
+            }
+        }
+        return success(goodsList);
     }
 
 

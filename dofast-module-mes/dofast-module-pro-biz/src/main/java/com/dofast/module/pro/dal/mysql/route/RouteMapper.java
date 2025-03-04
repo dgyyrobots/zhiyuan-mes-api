@@ -31,6 +31,8 @@ public interface RouteMapper extends BaseMapperX<RouteDO> {
                 .eqIfPresent(RouteDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(RouteDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(RouteDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(RouteDO::getProductCode, reqVO.getProductCode())
+                .eqIfPresent(RouteDO::getFile, reqVO.getFile())
                 .betweenIfPresent(RouteDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(RouteDO::getId));
     }
@@ -47,6 +49,7 @@ public interface RouteMapper extends BaseMapperX<RouteDO> {
                 .eqIfPresent(RouteDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(RouteDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(RouteDO::getProductCode, reqVO.getProductCode())
+                .eqIfPresent(RouteDO::getFile, reqVO.getFile())
                 .betweenIfPresent(RouteDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(RouteDO::getId));
     }

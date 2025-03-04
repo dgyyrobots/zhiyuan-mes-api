@@ -147,10 +147,24 @@ public class IssueHeaderDO extends BaseDO {
     private Integer attr4;
 
     /**
+     * 设备名称
+     */
+    private String machineryName;
+
+    /**
+     * 设备编码
+     */
+    private String machineryCode;
+
+    /**
+     * 设备Id
+     */
+    private Long machineryId;
+
+    /**
      * 工序编码
      */
     private String processCode;
-
 
     /**
      * 工序名称

@@ -25,6 +25,9 @@ public interface IqcConvert {
 
     IqcRespVO convert(IqcDO bean);
 
+    IqcUpdateReqVO convert01 (IqcDO bean);
+
+
     List<IqcRespVO> convertList(List<IqcDO> list);
 
     PageResult<IqcRespVO> convertPage(PageResult<IqcDO> page);

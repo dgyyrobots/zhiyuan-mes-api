@@ -25,17 +25,21 @@
             A.INAB002 AS AREA_CODE,
             A.INAB003 AS AREA_NAME,
             B.INAA001 AS LOCATION_CODE,
+            C.INAYL003 AS LOCATION_NAME,
             A.INAB006 AS AREA_DELETED
         FROM
             DSDATA.INAB_T A
                 LEFT JOIN DSDATA.INAA_T B ON a.inab001 = b.inaa001
                 AND a.INABENT = b.inaaent
                 AND a.inabsite = b.inaasite
+                LEFT JOIN DSDATA.INAYL_T C ON B.INAA001 = C.INAYL001
+                AND B.inaaent = C.INAYLENT
         WHERE
             A.INAB003 IS NOT NULL
             AND A.INAB006 = 'Y'
             AND A.INABENT = #{erpCode}
             AND A.INABSITE = 'AM01'
+            AND C.INAYL002 = 'zh_CN'
     </select>
 
 </mapper>

@@ -127,4 +127,6 @@ public class OqcExportReqVO {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "附件")
+    private String adjuncts;
 }

@@ -105,6 +105,15 @@ public class IssueHeaderExportReqVO {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "设备名称")
+    private String machineryName;
+
+    @Schema(description = "设备编码")
+    private String machineryCode;
+
+    @Schema(description = "设备ID")
+    private Long machineryId;
+
     @Schema(description = "工序编号")
     private String processCode;
 

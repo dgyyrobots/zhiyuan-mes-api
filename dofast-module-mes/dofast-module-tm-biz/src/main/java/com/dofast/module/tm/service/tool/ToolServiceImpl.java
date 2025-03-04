@@ -65,6 +65,11 @@ public class ToolServiceImpl implements ToolService {
     }
 
     @Override
+    public ToolDO getTool(String toolCode){
+        return toolMapper.selectOne(ToolDO::getToolCode, toolCode);
+    }
+
+    @Override
     public List<ToolDO> getToolList(Collection<Long> ids) {
         return toolMapper.selectBatchIds(ids);
     }

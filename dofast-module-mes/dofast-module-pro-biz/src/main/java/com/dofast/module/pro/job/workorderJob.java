@@ -5,8 +5,10 @@ import com.dofast.module.mes.dal.dataobject.mditem.MdItemDO;
 import com.dofast.module.mes.dal.dataobject.mdproductbom.MdProductBomDO;
 import com.dofast.module.mes.dal.mysql.mditem.MdItemMapper;
 import com.dofast.module.mes.dal.mysql.mdproductbom.MdProductBomMapper;
+import com.dofast.module.pro.dal.dataobject.route.RouteDO;
 import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
 import com.dofast.module.pro.dal.dataobject.workorderbom.WorkorderBomDO;
+import com.dofast.module.pro.dal.mysql.route.RouteMapper;
 import com.dofast.module.pro.dal.mysql.workorder.WorkorderMapper;
 import com.dofast.module.pro.dal.mysql.workorderbom.WorkorderBomMapper;
 import com.dofast.module.pro.service.workorder.WorkorderOracleService;
@@ -41,6 +43,8 @@ public class workorderJob implements JobHandler {
     @Resource
     private WorkorderBomMapper workorderBomMapper;
 
+    @Resource
+    private RouteMapper routeMapper;
 
     @Override
     public String execute(String param) throws Exception {
@@ -59,6 +63,19 @@ public class workorderJob implements JobHandler {
 
             // 校验当前工单信息是否存在
             WorkorderDO query = workorderMapper.selectOne(WorkorderDO::getWorkorderCode, workorderCode);
+
+            // 根据产品编号-工艺编号确认工艺路线
+            // 根据工艺路线获取对应的工艺附件
+            String finRouteCode = productCode + "-" + routeCode; // 工艺路线编号
+            RouteDO queryRoute = Optional.ofNullable(routeMapper.selectOne(RouteDO::getRouteCode, finRouteCode)).orElse(null);
+            String file = null; // 工艺附件
+            if (queryRoute != null) {
+                file = queryRoute.getFile();
+            }
+
+            if(file!=null){
+                System.out.println("工艺路线附件: " + file);
+            }
             if (query == null) {
                 // 新增工单信息
                 WorkorderDO workorderDO = new WorkorderDO();
@@ -77,7 +94,7 @@ public class workorderJob implements JobHandler {
                     workorderDO.setProductSpc(Optional.ofNullable(itemDO.getSpecification()).orElse("")); // 产品类型
                 }
                 BigDecimal quantity = (BigDecimal) workOrder.get("QUANTITY");
-                if(quantity == null){
+                if (quantity == null) {
                     continue;
                 }
                 workorderDO.setQuantity(quantity.doubleValue()); // 数量
@@ -86,9 +103,18 @@ public class workorderJob implements JobHandler {
                 workorderDO.setRequestDate(timestamp.toLocalDateTime()); // 需求日期
                 workorderDO.setStatus("CONFIRMED"); // 工单状态-ERP获取的数据都不允许修改
                 workorderDO.setSourceCode(Optional.ofNullable((String) workOrder.get("SOURCE_CODE")).orElse("")); // 来源单据
+                if (file != null) {
+                    workorderDO.setAdjuncts(file); // 工艺附件
+                }
                 addWorkorder.add(workorderDO);
             } else {
                 // 更新工单信息
+                // 校验工单Adjuncts字段是否包含了当前的附件
+                if (file != null) {
+                    if (query.getAdjuncts() != null && !query.getAdjuncts().contains(file)) {
+                        query.setAdjuncts(query.getAdjuncts() + "," + file);
+                    }
+                }
                 query.setWorkorderCode(workorderCode);
                 query.setOrderSource((String) workOrder.get("ORDER_SOURCE")); //来源信息-已修改数据字典
                 query.setClientCode((String) workOrder.get("CLIENT_CODE")); // 客户编号
@@ -131,7 +157,7 @@ public class workorderJob implements JobHandler {
             String bomCode = (String) workOrderBom.get("ITEM_CODE"); // BOM编号
 
             // 基于工单号获取工单ID
-             WorkorderDO queryWorkorderId = workorderMapper.selectOne(WorkorderDO::getWorkorderCode, workorderNo);
+            WorkorderDO queryWorkorderId = workorderMapper.selectOne(WorkorderDO::getWorkorderCode, workorderNo);
             if (queryWorkorderId == null) {
                 System.out.println("工单号不存在!工单号: " + workorderNo);
                 continue;
@@ -183,8 +209,6 @@ public class workorderJob implements JobHandler {
         return "成功!";
 
         // 开始初始化变更工单BOM信息
-
-
 
 
     }

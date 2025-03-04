@@ -39,6 +39,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.IOException;
 
@@ -117,6 +119,13 @@ public class IssueHeaderController {
             return error(ErrorCodeConstants.ISSUE_HEADER_TASK_EXISTS);
         }
 
+        TaskDTO taskDTO = taskApi.getTask(taskCode);
+        LocalDate localDate = LocalDate.now();
+        String dateStr = localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        // 生成3位随机数
+        int random = (int) ((Math.random() * 9 + 1) * 100);
+        createReqVO.setIssueName(taskDTO.getProcessName() + "领料单" + dateStr + random);
+
         ProcessDTO processDTO = processApi.getcess(createReqVO.getProcessCode());
         createReqVO.setProcessName(processDTO.getProcessName());
 
@@ -162,6 +171,19 @@ public class IssueHeaderController {
             updateReqVO.setAreaCode(area.getAreaCode());
             updateReqVO.setAreaName(area.getAreaName());
         }
+        issueHeaderService.updateIssueHeader(updateReqVO);
+        return success(true);
+    }
+
+    @PutMapping("/updateMachinery")
+    @Operation(summary = "更新生产领料单头")
+    @PreAuthorize("@ss.hasPermission('wms:issue-header:update')")
+    public CommonResult<Boolean> updateMachinery(@Valid @RequestBody IssueHeaderUpdateReqVO updateReqVO) {
+        // 根据设备编码获取设备信息, 并更新当前的领料单头
+        String machineryCode = updateReqVO.getMachineryCode();
+        DvMachineryDTO machineryDTO = dvMachineryApi.getMachineryInfo(machineryCode);
+        updateReqVO.setMachineryId(machineryDTO.getId());
+        updateReqVO.setMachineryName(machineryDTO.getMachineryName());
         issueHeaderService.updateIssueHeader(updateReqVO);
         return success(true);
     }
@@ -259,8 +281,8 @@ public class IssueHeaderController {
         }
 
         // 基于当前领料单对应的任务单获取设备信息
-        TaskDTO task = taskApi.getTask(header.getTaskId());
-        /*DvMachineryDTO dvMachineryDTO =  dvMachineryApi.getMachineryInfo(task.getMachineryCode());
+        /*TaskDTO task = taskApi.getTask(header.getTaskId());
+        DvMachineryDTO dvMachineryDTO =  dvMachineryApi.getMachineryInfo(task.getMachineryCode());
         dvMachineryDTO.setStatus("WORKING"); //扫码上料视为生产中
         dvMachineryApi.updateMachineryInfo(dvMachineryDTO);*/
         issuLineMapper.updateBatch(lines);

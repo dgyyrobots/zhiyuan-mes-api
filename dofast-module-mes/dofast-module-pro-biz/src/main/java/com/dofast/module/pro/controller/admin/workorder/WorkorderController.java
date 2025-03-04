@@ -131,12 +131,8 @@ public class WorkorderController {
             if (currentUrl.isEmpty()) {
                 continue;
             }
-            // 校验当前url是否包含"?", "/"特殊字符
-            //String finName = Optional.ofNullable(urls[i].substring(urls[i].lastIndexOf("/") + 1, urls[i].indexOf("?"))).orElse(urls[i]);
-
             // 如果需要去掉路径部分，只保留文件名
             String[] parts = currentUrl.split("/");
-            // parts 可能为： uploadFile_AMGYD-03_5a0ceaffa19c4571b501fa8e4a250a46.png%3FX-Amz-Algorithm%3DAWS4-HMAC-SHA256%26X-Amz-Credential%3Dadmin%252F20250109%252Fus-east-1%252Fs3%252Faws4_request%26X-Amz-Date%3D20250109T035950Z%26X-Amz-Expires%3D604800%26X-Amz-SignedHeaders%3Dhost%26X-Amz-Signature%3D23f4c36b7bccc63b9a661c3e4d62e18c8a545a0f02d7be9179933019e8b49980?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=admin%2F20250109%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250109T040210Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=c25e401d033dc17c56ed52688690ad4d328e38104d93f99e7e0402ad8fc77f25,http://172.18.12.250:9000/ammes/uploadFile_AMGYD-03_8e6432c179d14a04a368d05683665e08.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=admin%2F20250109%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250109T040210Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=458aa07fb3e75f099b5c53b4733a54d76fb6f0d82b12ed5b0109968f79c32c7c
             // 校验当前parts是否包含%, 若包含只保留%前信息
             if( parts[parts.length - 1].contains("%")) {
                 parts[parts.length - 1] = parts[parts.length - 1].substring(0, parts[parts.length - 1].indexOf("%"));

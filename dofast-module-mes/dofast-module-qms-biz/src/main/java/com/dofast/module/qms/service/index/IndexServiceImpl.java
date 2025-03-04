@@ -86,6 +86,18 @@ public class IndexServiceImpl implements IndexService {
         return indexMapper.selectById(id);
     }
 
+    /**
+     * 获得检测项列表
+     * @param processCode
+     * @return
+     */
+    @Override
+    public List<IndexDO> getIndexByProcessCode(String processCode){
+        return indexMapper.selectList(IndexDO::getProcessCode,processCode);
+    }
+
+
+
     @Override
     public List<IndexDO> getIndexList(Collection<Long> ids) {
         return indexMapper.selectBatchIds(ids);

@@ -5,6 +5,7 @@ import java.util.*;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
+import com.dofast.module.qms.dal.dataobject.iqc.IqcDO;
 import com.dofast.module.qms.dal.dataobject.oqc.OqcDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.qms.controller.admin.oqc.vo.*;
@@ -58,6 +59,7 @@ public interface OqcMapper extends BaseMapperX<OqcDO> {
                 .eqIfPresent(OqcDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(OqcDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(OqcDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(OqcDO::getAdjuncts, reqVO.getAdjuncts())
                 .orderByDesc(OqcDO::getId));
     }
 
@@ -99,6 +101,7 @@ public interface OqcMapper extends BaseMapperX<OqcDO> {
                 .eqIfPresent(OqcDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(OqcDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(OqcDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(OqcDO::getAdjuncts, reqVO.getAdjuncts())
                 .orderByDesc(OqcDO::getId));
     }
 

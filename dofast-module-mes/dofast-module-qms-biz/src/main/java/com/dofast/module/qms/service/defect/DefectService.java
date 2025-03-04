@@ -43,6 +43,15 @@ public interface DefectService {
      */
     DefectDO getDefect(Long id);
 
+
+    /**
+     * 获得常见缺陷
+     *
+     * @param processCode 工序编号
+     * @return 常见缺陷
+     */
+    List<DefectDO> getDefectByCode(String processCode);
+
     /**
      * 获得常见缺陷列表
      *

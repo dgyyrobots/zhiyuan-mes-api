@@ -46,6 +46,10 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(IssueLineDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 .eqIfPresent(IssueLineDO::getFeedbackCode, reqVO.getFeedbackCode())
+                .eqIfPresent(IssueLineDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(IssueLineDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(IssueLineDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(IssueLineDO::getBarcodeNumber, reqVO.getBarcodeNumber())
                 .orderByDesc(IssueLineDO::getId));
     }
 
@@ -83,6 +87,10 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(IssueLineDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 .eqIfPresent(IssueLineDO::getFeedbackCode, reqVO.getFeedbackCode())
+                .eqIfPresent(IssueLineDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(IssueLineDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(IssueLineDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(IssueLineDO::getBarcodeNumber, reqVO.getBarcodeNumber())
                 .orderByDesc(IssueLineDO::getId));
     }
 
@@ -116,6 +124,10 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(IssueLineDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 .eqIfPresent(IssueLineDO::getFeedbackCode, reqVO.getFeedbackCode())
+                .eqIfPresent(IssueLineDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(IssueLineDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(IssueLineDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(IssueLineDO::getBarcodeNumber, reqVO.getBarcodeNumber())
                 .orderByDesc(IssueLineDO::getId));
     }
 

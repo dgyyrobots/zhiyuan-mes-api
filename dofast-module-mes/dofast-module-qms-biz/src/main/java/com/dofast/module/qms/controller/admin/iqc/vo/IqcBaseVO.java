@@ -134,6 +134,9 @@ public class IqcBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "附件")
+    private String adjuncts;
+
     public Long getId(){
         return null;
     }

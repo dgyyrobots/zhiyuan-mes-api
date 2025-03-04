@@ -102,6 +102,12 @@
             <version>1.7.3-snapshot</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-tm-biz</artifactId>
+            <version>1.7.3-snapshot</version>
+            <scope>compile</scope>
+        </dependency>
 
 
     </dependencies>

@@ -1,12 +1,20 @@
 package com.dofast.module.wms.controller.admin.issueline;
 
 import com.dofast.framework.common.util.string.StrUtils;
+import com.dofast.framework.web.core.util.WebFrameworkUtils;
+import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
+import com.dofast.module.system.api.user.AdminUserApi;
+import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
+import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeaderExportReqVO;
+import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
 import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
+import com.dofast.module.wms.service.issueheader.IssueHeaderService;
 import com.dofast.module.wms.service.storagearea.StorageAreaService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import com.dofast.module.wms.service.warehouse.WarehouseService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -14,15 +22,19 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
+import com.dofast.module.wms.enums.ErrorCodeConstants;
 
 import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.IOException;
 
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.pojo.CommonResult;
+import static com.dofast.framework.common.pojo.CommonResult.error;
 import static com.dofast.framework.common.pojo.CommonResult.success;
 
 import com.dofast.framework.excel.core.util.ExcelUtils;
@@ -34,6 +46,7 @@ import com.dofast.module.wms.controller.admin.issueline.vo.*;
 import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import com.dofast.module.wms.convert.issueline.IssueLineConvert;
 import com.dofast.module.wms.service.issueline.IssueLineService;
+import org.springframework.web.servlet.View;
 
 @Tag(name = "仓储管理 - 生产领料单行")
 @RestController
@@ -45,6 +58,9 @@ public class IssueLineController {
     private IssueLineService issueLineService;
 
     @Resource
+    private IssueHeaderService issueHeaderService;
+
+    @Resource
     private WarehouseService warehouseService;
 
     @Resource
@@ -53,10 +69,26 @@ public class IssueLineController {
     @Resource
     private StorageAreaService storageAreaService;
 
+    @Resource
+    private AdminUserApi adminUserApi;
+
     @PostMapping("/create")
     @Operation(summary = "创建生产领料单行")
     @PreAuthorize("@ss.hasPermission('wms:issue-line:create')")
     public CommonResult<Long> createIssueLine(@Valid @RequestBody IssueLineCreateReqVO createReqVO) {
+
+        // 获取当前单身信息
+        IssueHeaderDO issueHeaderDO = issueHeaderService.getIssueHeader(createReqVO.getIssueId());
+        if(issueHeaderDO.getMachineryCode() != null){
+            createReqVO.setMachineryCode(issueHeaderDO.getMachineryCode());
+        }
+        if(issueHeaderDO.getMachineryName() != null){
+            createReqVO.setMachineryName(issueHeaderDO.getMachineryName());
+        }
+        if(issueHeaderDO.getMachineryId() != null){
+            createReqVO.setMachineryId(String.valueOf(issueHeaderDO.getMachineryId()));
+        }
+
         if(StrUtils.isNotNull(createReqVO.getWarehouseId())){
             WarehouseDO warehouseDO = warehouseService.getWarehouse(createReqVO.getWarehouseId());
             createReqVO.setWarehouseCode(warehouseDO.getWarehouseCode());
@@ -66,12 +98,21 @@ public class IssueLineController {
             StorageLocationDO storageLocationDO = storageLocationService.getStorageLocation(createReqVO.getLocationId());
             createReqVO.setLocationCode(storageLocationDO.getLocationCode());
             createReqVO.setLocationName(storageLocationDO.getLocationName());
+
+            // 追加校验, 无法添加非库存的数据
+            String processCode = issueHeaderDO.getProcessCode();
+            if(processCode !=storageLocationDO.getProcessCode() &&  !"AM007".equals(storageLocationDO.getProcessCode())){
+                return error(ErrorCodeConstants.ISSUE_HEADER_NO_PROCESS);
+            }
         }
         if(StrUtils.isNotNull(createReqVO.getAreaId())){
             StorageAreaDO storageAreaDO = storageAreaService.getStorageArea(createReqVO.getAreaId());
             createReqVO.setAreaCode(storageAreaDO.getAreaCode());
             createReqVO.setAreaName(storageAreaDO.getAreaName());
         }
+
+
+
         return success(issueLineService.createIssueLine(createReqVO));
     }
 
@@ -130,6 +171,16 @@ public class IssueLineController {
     @PreAuthorize("@ss.hasPermission('wms:issue-line:query')")
     public CommonResult<PageResult<IssueLineRespVO>> getIssueLinePage(@Valid IssueLinePageReqVO pageVO) {
         PageResult<IssueLineDO> pageResult = issueLineService.getIssueLinePage(pageVO);
+        List<IssueLineDO> voList = pageResult.getList();
+        // 循环列表, 每一列数据的创建人为id, 去用户表转换为用户昵称
+        for (IssueLineDO vo : voList) {
+            AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(Long.valueOf(vo.getCreator()));
+            adminUserRespDTO.getNickname();
+            vo.setCreator(adminUserRespDTO.getNickname());
+        }
+        System.out.println(voList);
+        System.out.println(pageResult);
+
         return success(IssueLineConvert.INSTANCE.convertPage(pageResult));
     }
 

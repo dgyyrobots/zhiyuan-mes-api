@@ -3,8 +3,11 @@ package com.dofast.module.pro.controller.admin.route;
 import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.controller.admin.routeproduct.vo.RouteProductExportReqVO;
 import com.dofast.module.pro.controller.admin.routeproduct.vo.RouteProductRespVO;
+import com.dofast.module.pro.controller.admin.workorder.vo.WorkorderUpdateReqVO;
 import com.dofast.module.pro.convert.routeproduct.RouteProductConvert;
+import com.dofast.module.pro.convert.workorder.WorkorderConvert;
 import com.dofast.module.pro.dal.dataobject.routeproduct.RouteProductDO;
+import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
 import com.dofast.module.pro.enums.ErrorCodeConstants;
 import com.dofast.module.pro.service.routeprocess.RouteProcessService;
 import com.dofast.module.pro.service.routeproduct.RouteProductService;
@@ -152,6 +155,52 @@ public class RouteController {
             routeCode.add(map);
         }
         return success(routeCode);
+    }
+
+    @PutMapping("/updateFile")
+    @Operation(summary = "更新工艺路线")
+    @PreAuthorize("@ss.hasPermission('pro:route:update')")
+    public CommonResult<Boolean> updateFile( @RequestBody RouteUpdateReqVO updateReqVO) {
+        RouteDO route = routeService.getRoute(updateReqVO.getRouteCode());
+        if(route == null){
+            return success(true);
+        }
+        String url = updateReqVO.getFile();
+        if(url==null){
+            return success(true);
+        }
+        // 将url基于","进行拆分
+        String[] urls = url.split(",");
+        if (urls.length == 0) {
+            return success(true);
+        }
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < urls.length; i++) {
+            String currentUrl = urls[i].trim();
+            if (currentUrl.isEmpty()) {
+                continue;
+            }
+            String[] parts = currentUrl.split("/");
+            if( parts[parts.length - 1].contains("%")) {
+                parts[parts.length - 1] = parts[parts.length - 1].substring(0, parts[parts.length - 1].indexOf("%"));
+                if(parts[parts.length - 1].contains("?")){
+                    parts[parts.length - 1] = parts[parts.length - 1].substring(0, parts[parts.length - 1].indexOf("?"));
+                }
+            }
+            String finName = parts[parts.length - 1];
+            System.out.println(finName);
+            sb.append(finName);
+            // 校验当前url是否为最后一个
+            if (i != urls.length - 1) {
+                sb.append(",");
+            }
+        }
+        String file = Optional.ofNullable(sb.toString()).orElse("");
+        if( file!="") {
+            route.setFile(file);
+        }
+        routeService.updateRoute(RouteConvert.INSTANCE.convert01(route));
+        return success(true);
     }
 
 

@@ -44,6 +44,12 @@
             <version>${revision}</version>
         </dependency>
 
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-cal-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <!-- 业务组件 -->
         <dependency>
             <groupId>vip.huizhizao</groupId>
@@ -79,6 +85,12 @@
         <dependency>
             <groupId>vip.huizhizao</groupId>
             <artifactId>dofast-module-cmms-api</artifactId>
+            <version>1.7.3-snapshot</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-tm-biz</artifactId>
             <version>1.7.3-snapshot</version>
             <scope>compile</scope>
         </dependency>

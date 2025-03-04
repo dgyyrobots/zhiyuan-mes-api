@@ -69,4 +69,5 @@ public class RouteDO extends BaseDO {
      */
     private String productCode;
 
+    private String file;
 }

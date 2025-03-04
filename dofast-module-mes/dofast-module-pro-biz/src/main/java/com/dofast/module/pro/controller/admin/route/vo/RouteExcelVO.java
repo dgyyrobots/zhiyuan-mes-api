@@ -46,6 +46,12 @@ public class RouteExcelVO {
     @ExcelProperty("预留字段4")
     private Integer attr4;
 
+    @ExcelProperty("产品编号")
+    private String productCode;
+
+    @ExcelProperty("文件")
+    private String file;
+
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 

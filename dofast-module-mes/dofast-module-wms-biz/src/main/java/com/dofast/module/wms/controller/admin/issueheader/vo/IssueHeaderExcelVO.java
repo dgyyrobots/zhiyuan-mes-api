@@ -110,6 +110,15 @@ public class IssueHeaderExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @Schema(description = "设备名称")
+    private String machineryName;
+
+    @Schema(description = "设备编码")
+    private String machineryCode;
+
+    @Schema(description = "设备ID")
+    private Long machineryId;
+
     @ExcelProperty("工序编号")
     private String processCode;
 

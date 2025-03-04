@@ -23,6 +23,8 @@ public interface RouteConvert {
 
     RouteDO convert(RouteUpdateReqVO bean);
 
+    RouteUpdateReqVO convert01 (RouteDO bean);
+
     RouteRespVO convert(RouteDO bean);
 
     List<RouteRespVO> convertList(List<RouteDO> list);

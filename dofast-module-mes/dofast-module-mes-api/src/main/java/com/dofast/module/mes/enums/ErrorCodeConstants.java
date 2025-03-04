@@ -63,5 +63,6 @@ public interface   ErrorCodeConstants {
 
     ErrorCode INTERFACE_LOG_NOT_EXISTS = new ErrorCode(430001, "接口操作日志不存在");
 
+    ErrorCode ELECTROPLATE_LOG_NOT_EXISTS = new ErrorCode(430004, "制版房记录不存在");
 
 }

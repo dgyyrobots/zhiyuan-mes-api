@@ -137,18 +137,21 @@ public class TaskServiceImpl implements TaskService {
 //        pageResult.setList(pageResult.getList().stream().filter(v -> v.getStartTime().isBefore(LocalDateTime.MAX)).collect(Collectors.toList()));
 
         // 2024-11-13改
+        // 获取当前用户信息
         AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
         // 获取当前用户所在的班组
         TeamMemberExportReqVO req = new TeamMemberExportReqVO();
         req.setUserId(adminUserRespDTO.getId());
         List<TeamMemberDO> memberDO = teamMemberService.getTeamMemberList(req);
-        if(memberDO.isEmpty()){
-            return null;
+        if (memberDO.isEmpty()) {
+            return PageResult.empty();
         }
-        TeamDO team =  teamService.getTeam(memberDO.get(0).getTeamId());
+        TeamDO team = teamService.getTeam(memberDO.get(0).getTeamId());
+        if (team == null) {
+            return PageResult.empty();
+        }
         // 根据班组编码查询派工信息
-        PageResult<TaskDO> pageResult  = taskMapper.getTaskByTeamCode(pageReqVO, team.getTeamCode());
-        return pageResult;
+        return taskMapper.getTaskByTeamCode(pageReqVO, team.getTeamCode());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.dofast.module.qms.dal.dataobject.ipqc;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.*;
 import java.util.*;
 import java.math.BigDecimal;
@@ -194,4 +195,8 @@ public class IpqcDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * 附件
+     */
+    private String adjuncts;
 }

@@ -32,7 +32,6 @@ public class ToolBaseVO {
     private String spec;
 
     @Schema(description = "工装夹具类型ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "27166")
-    @NotNull(message = "工装夹具类型ID不能为空")
     private Long toolTypeId;
 
     @Schema(description = "工装夹具类型编码")
@@ -42,7 +41,6 @@ public class ToolBaseVO {
     private String toolTypeName;
 
     @Schema(description = "是否单独编码管理", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "是否单独编码管理不能为空")
     private String codeFlag;
 
     @Schema(description = "数量", requiredMode = Schema.RequiredMode.REQUIRED)

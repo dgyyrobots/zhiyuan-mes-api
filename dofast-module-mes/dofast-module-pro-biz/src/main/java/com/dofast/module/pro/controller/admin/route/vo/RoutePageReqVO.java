@@ -46,4 +46,11 @@ public class RoutePageReqVO extends PageParam {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "产品编号")
+    private String productCode;
+
+    @Schema(description = "文件")
+    private String file;
+
+
 }

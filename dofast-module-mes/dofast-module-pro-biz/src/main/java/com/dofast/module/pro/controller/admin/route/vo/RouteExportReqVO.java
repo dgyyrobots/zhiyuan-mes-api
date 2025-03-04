@@ -46,4 +46,9 @@ public class RouteExportReqVO {
 
     @Schema(description = "产品编号")
     private String productCode;
+
+    @Schema(description = "文件")
+    private String file;
+
+
 }

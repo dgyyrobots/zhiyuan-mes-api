@@ -76,7 +76,7 @@ public interface ErrorCodeConstants {
     ErrorCode ISSUE_HEADER_NEED_PROCESS_LINE = new ErrorCode(621005, "没有需要处理的领料单行");
     ErrorCode ISSUE_HEADER_TASK_EXISTS = new ErrorCode(621006, "没有需要处理的领料单行");
     ErrorCode ISSUE_HEADER_NOT_FEEDBACK_EXISTS = new ErrorCode(621007, "当前领料单身存在未报工数据!");
-
+    ErrorCode ISSUE_HEADER_NO_PROCESS = new ErrorCode(621001, "无法领用非当前工序线边仓的物料, 请检查领料单信息!");
 
     ErrorCode ALLOCATED_HEADER_NEED_PROCESS_LINE = new ErrorCode(621006, "没有需要处理的调拨单行");
     ErrorCode RT_ISSUE_LINE_NOT_EXISTS = new ErrorCode(622001, "生产退料单行不存在");
@@ -126,5 +126,11 @@ public interface ErrorCodeConstants {
     ErrorCode ALLOCATED_TASK_EXISTS = new ErrorCode(6310001, "当前任务单号已开立调拨单号");
 
     ErrorCode ALLOCATED_TASK_NOT_EXISTS = new ErrorCode(6310001, "当前调拨单不存在任务单");
+
+    ErrorCode ELECTROFORM_HEADER_NOT_EXISTS = new ErrorCode(6320001, "制版房领料单头不存在");
+
+    ErrorCode ELECTROFORM_LINE_NOT_EXISTS = new ErrorCode(6320002, "制版房领料单身不存在");
+
+    ErrorCode TOOL_NOT_ENOUGH = new ErrorCode(6320003, "电铸板库存不足, 请先生产!");
 
 }
