@@ -369,7 +369,7 @@ public class MaterialStockERPAPI {
         pmdsInfo.put("pmds006", mesDocNo);
         pmdsInfo.put("pmds002", "00000");
         pmdsInfo.put("pmds007", supplierCode);// 后续询问供应商如何获取
-        pmdsInfo.put("details", details);
+        pmdsInfo.put("detail", details);
         List<Map<String, Object>> pmdsInfoList = new ArrayList<>();
         pmdsInfoList.add(pmdsInfo);
         return pmdsInfoList;

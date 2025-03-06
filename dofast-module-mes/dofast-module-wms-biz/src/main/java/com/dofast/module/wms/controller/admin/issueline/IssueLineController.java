@@ -101,7 +101,7 @@ public class IssueLineController {
 
             // 追加校验, 无法添加非库存的数据
             String processCode = issueHeaderDO.getProcessCode();
-            if(processCode !=storageLocationDO.getProcessCode() &&  !"AM007".equals(storageLocationDO.getProcessCode())){
+            if(!processCode.equals(storageLocationDO.getProcessCode()) &&  !"AM007".equals(storageLocationDO.getProcessCode())){
                 return error(ErrorCodeConstants.ISSUE_HEADER_NO_PROCESS);
             }
         }
@@ -110,9 +110,6 @@ public class IssueLineController {
             createReqVO.setAreaCode(storageAreaDO.getAreaCode());
             createReqVO.setAreaName(storageAreaDO.getAreaName());
         }
-
-
-
         return success(issueLineService.createIssueLine(createReqVO));
     }
 

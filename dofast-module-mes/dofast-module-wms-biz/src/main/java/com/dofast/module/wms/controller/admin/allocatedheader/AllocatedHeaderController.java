@@ -1,5 +1,6 @@
 package com.dofast.module.wms.controller.admin.allocatedheader;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.dofast.module.cal.api.team.TeamApi;
 import com.dofast.module.cal.api.team.dto.TeamDTO;
@@ -16,6 +17,7 @@ import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderCreateRe
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderUpdateReqVO;
 import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineListVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
+import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockUpdateReqVO;
 import com.dofast.module.wms.convert.issueheader.IssueHeaderConvert;
 import com.dofast.module.wms.dal.dataobject.allocatedline.AllocatedLineDO;
 import com.dofast.module.wms.dal.dataobject.allocatedrecord.AllocatedRecordDO;
@@ -129,6 +131,9 @@ public class AllocatedHeaderController {
         // 校验当前的任务单是否已创建调拨单
         String taskCode = createReqVO.getTaskCode();
         TaskDTO taskDTO = taskApi.getTask(taskCode);
+        if (taskDTO == null) {
+            return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
+        }
 
         AllocatedHeaderExportReqVO exportReqVO = new AllocatedHeaderExportReqVO();
         exportReqVO.setTaskCode(taskCode);
@@ -520,6 +525,15 @@ public class AllocatedHeaderController {
         AllocatedRecordExportReqVO param = new AllocatedRecordExportReqVO();
         param.setAllocatedId(allocatedId);
         List<AllocatedRecordDO> bomList = allocatedRecordService.getAllocatedRecordList(param);
+        // 将对应库存入库状态改为已入库
+        for (AllocatedRecordDO bom : bomList) {
+            MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
+            exportReqVO.setItemCode(bom.getItemCode());
+            exportReqVO.setBatchCode(bom.getBatchCode());
+            List<MaterialStockDO> materialStock = materialStockService.getMaterialStockList(exportReqVO);
+            materialStock.get(0).setRecptStatus("Y");
+            materialStockService.updateMaterialStock(BeanUtil.toBean(materialStock.get(0), MaterialStockUpdateReqVO.class));
+        }
         // 更新单头信息
         reqVO.setStatus(Constant.ORDER_STATUS_FINISHED);
         AllocatedHeaderUpdateReqVO updateReqVO = AllocatedHeaderConvert.INSTANCE.convert01(reqVO);
@@ -533,10 +547,18 @@ public class AllocatedHeaderController {
 
         // 班组编码
         String attr1 = taskDTO.getAttr1();
+        if(attr1 == null){
+            return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
+        }
         TeamDTO teamDTO = teamApi.getTeamByCode(attr1);
-        String machineryCode = teamDTO.getMachineryCode();
-        String machineryName = teamDTO.getMachineryName();
-        Long machineryId =  teamDTO.getMachineryId();
+        String machineryCode = null;
+        String machineryName = null;
+        Long machineryId =  null;
+        if(teamDTO!=null){
+            machineryCode = teamDTO.getMachineryCode();
+            machineryName = teamDTO.getMachineryName();
+            machineryId =  teamDTO.getMachineryId();
+        }
 
         // TODO 追加ERP调拨单接口
         // 追加领料单信息
@@ -580,10 +602,10 @@ public class AllocatedHeaderController {
         issueHeaderService.createIssueHeader(issueHeader);
 
         // 追加单身信息
-        List<IssueLineDO> addList = new ArrayList<>();
+        /*List<IssueLineDO> addList = new ArrayList<>();
         List<IssueLineDO> editList = new ArrayList<>();
         // 基于单头ID, bomList更新对应单身信息
-        /*if (!bomList.isEmpty()) {
+        if (!bomList.isEmpty()) {
             IssueHeaderDO queryIssueHeaderDO = issueHeaderMapper.selectOne(IssueHeaderDO::getIssueCode, issueCode, IssueHeaderDO::getWorkorderId, updateReqVO.getWorkorderId());
             for (AllocatedLineDO allocatedline : bomList) {
                 // 基于物料料号与单头Id校验单身信息是否存在

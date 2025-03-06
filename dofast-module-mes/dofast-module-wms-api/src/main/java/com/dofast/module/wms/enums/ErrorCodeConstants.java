@@ -79,12 +79,14 @@ public interface ErrorCodeConstants {
     ErrorCode ISSUE_HEADER_NO_PROCESS = new ErrorCode(621001, "无法领用非当前工序线边仓的物料, 请检查领料单信息!");
 
     ErrorCode ALLOCATED_HEADER_NEED_PROCESS_LINE = new ErrorCode(621006, "没有需要处理的调拨单行");
+    ErrorCode ALLOCATED_HEADER_NEED_TASK_TEAM = new ErrorCode(621006, "当前任务单尚未派工, 请先排产!");
     ErrorCode RT_ISSUE_LINE_NOT_EXISTS = new ErrorCode(622001, "生产退料单行不存在");
     ErrorCode RT_ISSUE_NOT_EXISTS = new ErrorCode(622002, "生产退料单头不存在");
     ErrorCode RT_ISSUE_CODE_EXISTS = new ErrorCode(622003, "退料单编号已存在");
     ErrorCode RT_ISSUE_NEED_MAT = new ErrorCode(622004, "请选择要退料的物资");
     ErrorCode RT_ISSUE_NO_LINE_PROCESS = new ErrorCode(622005, "没有需要处理的退料单行");
     ErrorCode RT_ISSUE_HAS_FEEDBACK = new ErrorCode(622006, "当前任务已报工, 无法进行退料操作!");
+
 
     ErrorCode SN_NOT_EXISTS = new ErrorCode(623001, "SN码不存在");
 
