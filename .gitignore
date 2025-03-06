@@ -34,7 +34,7 @@ nbproject/private/
 build/*
 nbbuild/
 dist/
-sql/
+sql/*
 nbdist/
 .nb-gradle/
 
