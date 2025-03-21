@@ -151,4 +151,13 @@ public class FeedbackExportReqVO {
     @Schema(description = "来源编码")
     private String originCode;
 
+    @Schema(description = "设备Id")
+    private Long machineryId;
+
+    @Schema(description = "设备名称")
+    private String machineryName;
+
+    @Schema(description = "设备编码")
+    private String machineryCode;
+
 }

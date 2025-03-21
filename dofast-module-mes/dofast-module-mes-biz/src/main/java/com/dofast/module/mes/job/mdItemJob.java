@@ -32,7 +32,6 @@ public class mdItemJob implements JobHandler {
     public String execute(String param) throws Exception {
         // 获取ERP所有物料信息
         List<Map<String, Object>> result = mdItemOracleService.initMdItemInfo();
-        System.out.println("获取的ERP物料条目: " + result.size());
         List<MdItemDO> itemsToInsert = new ArrayList<>(); // 待插入数据
         List<MdItemDO> itemsToUp = new ArrayList<>(); // 待更新数据
         // 根据ERP物料数据校验MES中是否存在

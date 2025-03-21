@@ -2,6 +2,7 @@ package com.dofast.module.wms.controller.admin.issueline;
 
 import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.framework.web.core.util.WebFrameworkUtils;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
 import com.dofast.module.system.api.user.AdminUserApi;
 import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
@@ -79,7 +80,7 @@ public class IssueLineController {
 
         // 获取当前单身信息
         IssueHeaderDO issueHeaderDO = issueHeaderService.getIssueHeader(createReqVO.getIssueId());
-        if(issueHeaderDO.getMachineryCode() != null){
+       /* if(issueHeaderDO.getMachineryCode() != null){
             createReqVO.setMachineryCode(issueHeaderDO.getMachineryCode());
         }
         if(issueHeaderDO.getMachineryName() != null){
@@ -88,9 +89,15 @@ public class IssueLineController {
         if(issueHeaderDO.getMachineryId() != null){
             createReqVO.setMachineryId(String.valueOf(issueHeaderDO.getMachineryId()));
         }
-
+*/
         if(StrUtils.isNotNull(createReqVO.getWarehouseId())){
+
             WarehouseDO warehouseDO = warehouseService.getWarehouse(createReqVO.getWarehouseId());
+            //2025-03-13 追加校验当前扫码物料是否在虚拟线边仓
+            if(warehouseDO.getWarehouseCode().equals(Constant.VIRTUAL_WH)){
+                return error(ErrorCodeConstants.ISSUE_LINE_VIRTUAL_WH);
+            }
+
             createReqVO.setWarehouseCode(warehouseDO.getWarehouseCode());
             createReqVO.setWarehouseName(warehouseDO.getWarehouseName());
         }
@@ -105,6 +112,7 @@ public class IssueLineController {
                 return error(ErrorCodeConstants.ISSUE_HEADER_NO_PROCESS);
             }
         }
+
         if(StrUtils.isNotNull(createReqVO.getAreaId())){
             StorageAreaDO storageAreaDO = storageAreaService.getStorageArea(createReqVO.getAreaId());
             createReqVO.setAreaCode(storageAreaDO.getAreaCode());
@@ -140,8 +148,8 @@ public class IssueLineController {
     @Operation(summary = "删除生产领料单行")
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('wms:issue-line:delete')")
-    public CommonResult<Boolean> deleteIssueLine(@RequestParam("id") Long id) {
-        issueLineService.deleteIssueLine(id);
+    public CommonResult<Boolean> deleteIssueLine(@RequestParam("id") ArrayList<Long> ids) {
+        issueLineService.batchDeleteIssueLine(ids);
         return success(true);
     }
 
@@ -191,6 +199,19 @@ public class IssueLineController {
         // 导出 Excel
         List<IssueLineExcelVO> datas = IssueLineConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "生产领料单行.xls", "数据", IssueLineExcelVO.class, datas);
+    }
+
+    @PutMapping("/updateEnable")
+    @Operation(summary = "更新生产领料单行")
+    @PreAuthorize("@ss.hasPermission('wms:issue-line:update')")
+    public CommonResult<Boolean> updateEnable( @RequestBody ArrayList<Long> ids) {
+        List<IssueLineDO>  lineList =  issueLineService.getIssueLineList(ids);
+        for(IssueLineDO line : lineList){
+            String flag = "true".equals(line.getEnableFlag()) ? "false" : "true";
+            line.setEnableFlag(flag);
+        }
+        issueLineService.updateIssueLineBatch(lineList);
+        return success(true);
     }
 
 }

@@ -75,4 +75,5 @@ public class IssueLineListVO {
 
     private Long barcodeNumber;
 
+    private String enableFlag;
 }

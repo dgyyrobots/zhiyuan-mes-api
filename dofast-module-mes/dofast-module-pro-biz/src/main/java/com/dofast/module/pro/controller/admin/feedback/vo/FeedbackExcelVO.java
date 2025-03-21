@@ -155,4 +155,13 @@ public class FeedbackExcelVO {
     @ExcelProperty("来源编码")
     private String originCode;
 
+    @ExcelProperty("设备Id")
+    private Long machineryId;
+
+    @ExcelProperty("设备名称")
+    private String machineryName;
+
+    @ExcelProperty("设备编码")
+    private String machineryCode;
+
 }

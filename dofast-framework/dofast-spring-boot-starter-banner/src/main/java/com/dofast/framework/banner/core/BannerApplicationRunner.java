@@ -36,6 +36,7 @@ public class BannerApplicationRunner implements ApplicationRunner {
             if (isNotPresent("com.dofast.module.report.framework.security.config.SecurityConfiguration")) {
                 System.out.println("[报表模块 dofast-module-report - 已禁用][参考 https://doc.huizhizao.vip/report/ 开启]");
             }
+
             // 工作流
             if (isNotPresent("com.dofast.framework.flowable.config.DofastFlowableConfiguration")) {
                 System.out.println("[工作流模块 dofast-module-bpm - 已禁用][参考 https://doc.huizhizao.vip/bpm/ 开启]");

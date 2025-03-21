@@ -84,4 +84,10 @@ public class ToolExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("母版/工作版")
+    private String template;
+
+    @ExcelProperty("正/反")
+    private String positiveOrNegative;
+
 }

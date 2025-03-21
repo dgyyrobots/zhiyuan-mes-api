@@ -50,7 +50,6 @@ public class mdWorkShopJob implements JobHandler {
         List<MdWorkshopDO> workshopToUp = new ArrayList<>(); // 待更新的车间信息
         // 循环车间信息
         for (Map<String, Object> workshop : workshopList) {
-            System.out.println(workshop);
             // 循环工作站信息
             String workshopCode = (String) workshop.get("WORKSHOPCODE");
             // 判定MES中是否存在车间信息
@@ -92,7 +91,6 @@ public class mdWorkShopJob implements JobHandler {
         // ERP中工作站不绑定线边仓, 库区, 库位关系
         // 由MES进行管控
         for (Map<String, Object> workstation : workstationList) {
-            System.out.println(workstation);
             // 判定MES中是否存在工作站信息
             String workstationCode = (String) workstation.get("WORKSTATIONCODE");
             MdWorkstationDO exist = mdWorkstationMapper.selectOne(MdWorkstationDO::getWorkstationCode, workstationCode);

@@ -78,4 +78,10 @@ public class ToolBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "母版/工作版")
+    private String template;
+
+    @Schema(description = "正/反")
+    private String positiveOrNegative;
+
 }

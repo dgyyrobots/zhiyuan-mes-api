@@ -37,10 +37,10 @@ public class warehouseJob implements JobHandler {
      */
     @Override
     public String execute(String param) throws Exception {
-        // 根据ERP初始化仓库-库位信息
+        // 根据ERP初始化仓库-库区信息
         List<Map<String, Object>> localList = warehouseOracleService.initLocationInfo();
 
-        // 根据ERP初始化库位-库区信息
+        // 根据ERP初始化库位-库位信息
         List<Map<String, Object>> areaList = warehouseOracleService.initAreaInfo();
 
         if (localList.isEmpty()) {
@@ -58,7 +58,6 @@ public class warehouseJob implements JobHandler {
             String isLineWarehouse = Optional.ofNullable((String) localMap.get("IS_LINE_WAREHOUSE")).orElse("N"); // Y-线边仓 N-仓库
             // 校验当前线边仓信息是否存在, 基于库区的编码进行校验
             boolean flag = !"Y".equals((String) localMap.get("LOCATION_DELETED"));
-            System.out.println(localMap.get("LOCATION_CODE") + " , " + flag);
             // ERP的数据存在相同的库区编码, 追加库区名称比对
             StorageLocationDO location = storageLocationMapper.selectOne(StorageLocationDO::getLocationCode, localMap.get("LOCATION_CODE") ,StorageLocationDO::getLocationName, localMap.get("LOCATION_NAME"), StorageLocationDO::getDeleted, flag);
             // 根据是否为线边仓判断处理逻辑

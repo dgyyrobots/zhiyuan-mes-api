@@ -115,7 +115,6 @@ public class routeJob implements JobHandler {
             }
         }
         if (!addRouteList.isEmpty()) {
-            System.out.println(addRouteList);
             routeMapper.insertBatch(addRouteList);
         }
         if (!editRouteList.isEmpty()) {
@@ -151,7 +150,6 @@ public class routeJob implements JobHandler {
         // 构建工艺路线
         List<Map<String, Object>> finRouteList = new ArrayList<>();
         finProcessMap.forEach((key, value) -> {
-            System.out.println("唯一标识码: " + key + ", 当前包含的列表条目: " + value.size());
             //if (value.size() > 1) {
                 System.out.println("构筑工艺路线, 唯一标识码: " + key);
                 List<String> route = buildRoute(value);
@@ -166,13 +164,7 @@ public class routeJob implements JobHandler {
                     }
                     routeInfo.put("sequenceLine", sequenceList);
                     finRouteList.add(routeInfo);
-                    System.out.println("唯一标识构筑完成!: " + key);
-                } else {
-                    System.out.println("唯一标识构筑失败: " + key);
                 }
-            /*} else {
-                System.out.println("当前唯一标识符为唯一参数, 独立视为工艺路线: " + key);
-            }*/
         });
 
 
@@ -180,7 +172,6 @@ public class routeJob implements JobHandler {
         for (Map<String, Object> routeInfo : finRouteList) {
             List<String> route = (List<String>) routeInfo.get("routeLine");
             List<Long> sequenceList =  (List<Long>) routeInfo.get("sequenceLine");
-            System.out.println("工艺路线: " + String.join(" -> ", route));
             // 开始校验当前唯一标识码下的工艺路线是否存在
             for (int i = 0; i < route.size(); i++) {
                 String processCode = route.get(i); // 当前工序编码

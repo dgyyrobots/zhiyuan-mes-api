@@ -1,6 +1,8 @@
 package com.dofast.module.tm.dal.dataobject.tool;
 
 import java.time.LocalDate;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -107,5 +109,15 @@ public class ToolDO extends BaseDO {
      * 预留字段4
      */
     private Integer attr4;
+
+    /**
+     * 母版/工作版
+     */
+    private String template;
+
+    /**
+     * 正/反
+     */
+    private String positiveOrNegative;
 
 }

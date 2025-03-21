@@ -38,6 +38,8 @@ public interface ToolMapper extends BaseMapperX<ToolDO> {
                 .eqIfPresent(ToolDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(ToolDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(ToolDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(ToolDO::getTemplate, reqVO.getTemplate())
+                .eqIfPresent(ToolDO::getPositiveOrNegative, reqVO.getPositiveOrNegative())
                 .betweenIfPresent(ToolDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(ToolDO::getId));
     }
@@ -63,6 +65,8 @@ public interface ToolMapper extends BaseMapperX<ToolDO> {
                 .eqIfPresent(ToolDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(ToolDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(ToolDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(ToolDO::getTemplate, reqVO.getTemplate())
+                .eqIfPresent(ToolDO::getPositiveOrNegative, reqVO.getPositiveOrNegative())
                 .betweenIfPresent(ToolDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(ToolDO::getId));
     }

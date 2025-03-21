@@ -39,7 +39,6 @@ public class mdProductBomJob implements JobHandler {
         List<MdProductBomDO> updateList = new ArrayList<>();
 
         for (Map<String, Object> productBom : productBomList) {
-            System.out.println(productBom);
             // 获取当前产成品对应的物料ID
             MdItemDO product = mdItemMapper.selectOne(MdItemDO::getItemCode, productBom.get("ITEM_ID"));
             if (product == null) {
@@ -47,7 +46,6 @@ public class mdProductBomJob implements JobHandler {
             }
             // 校验当前产品料号是否存在
             MdProductBomDO query = mdProductBomMapper.selectOne(MdProductBomDO::getItemId, product.getId(), MdProductBomDO::getBomItemCode, productBom.get("BOM_ITEM_CODE"), MdProductBomDO::getQuantity, productBom.get("BOM_QUANTITY"));
-            System.out.println(query);
             if (query == null) {
                 // 插入产品BOM信息
                 MdProductBomDO mdProductBomDO = new MdProductBomDO();

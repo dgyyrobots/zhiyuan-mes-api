@@ -118,4 +118,17 @@ public class FeedLineExcelVO {
     @ExcelProperty("报工单号")
     private String feedbackCode;
 
+    @ExcelProperty("生产设备名称")
+    private String machineryName;
+
+    @ExcelProperty("生产设备编码")
+    private String machineryCode;
+
+    @ExcelProperty("生产设备ID")
+    private String machineryId;
+
+    @ExcelProperty("条码编号")
+    private Long barcodeNumber;
+
+
 }

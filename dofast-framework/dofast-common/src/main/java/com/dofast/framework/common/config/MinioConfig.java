@@ -4,6 +4,8 @@ import io.minio.MinioClient;
 import io.minio.Result;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +24,8 @@ import java.util.List;
 
 @Configuration
 @Slf4j
+@Getter
+@Setter
 public class MinioConfig {
 
     @Value("${minio.endpoint}")

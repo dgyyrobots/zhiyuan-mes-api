@@ -125,11 +125,9 @@ public class changeOrderJob implements JobHandler {
                 // 基于工单号获取工单ID
                 WorkorderDO queryWorkorderId = workorderMapper.selectOne(WorkorderDO::getWorkorderCode, workorderNo);
                 if (queryWorkorderId == null) {
-                    System.out.println("变更工单号不存在!工单号: " + workorderNo);
                     continue;
                 }
                 // 校验当前工单BOM信息是否存在
-                System.out.println("校验当前工单BOM信息是否存在!工单Id: " + queryWorkorderId.getId() + ", BOM编号: " + bomCode);
                 WorkorderBomDO queryBom = workorderBomMapper.selectOne(WorkorderBomDO::getWorkorderId, queryWorkorderId.getId(), WorkorderBomDO::getItemCode, bomCode);
                 if (queryBom == null) {
                     return "变更工单BOM信息不存在!工单号: " + workorderNo + ", BOM编号: " + bomCode;
@@ -195,31 +193,20 @@ public class changeOrderJob implements JobHandler {
 
             // 构建工艺路线
             List<Map<String, Object>> finRouteList = new ArrayList<>();
-            System.out.println("finProcessMap: " + finProcessMap.toString());
             finProcessMap.forEach((key, value) -> {
-                System.out.println("唯一标识码: " + key + ", 当前包含的列表条目: " + value.size());
                 //if (value.size() > 0) {
-                System.out.println("构筑工艺路线, 唯一标识码: " + key);
                 List<String> route = buildRoute(value);
                 if (route != null && !route.isEmpty()) {
                     Map<String, Object> routeInfo = new HashMap<>();
                     routeInfo.put("routeCode", key);
                     routeInfo.put("routeLine", route);
                     finRouteList.add(routeInfo);
-                    System.out.println("唯一标识构筑完成!: " + key);
-                    System.out.println("工艺路线AAAAAAAAAAAAAAAAAAAAAAA" + String.join(" -> ", route));
-                } else {
-                    System.out.println("唯一标识构筑失败: " + key);
                 }
-                //} else {
-                //System.out.println("当前唯一标识符为唯一参数, 独立视为工艺路线: " + key);
-                // }
             });
 
             // 构建工艺路线信息
             for (Map<String, Object> routeInfo : finRouteList) {
                 List<String> route = (List<String>) routeInfo.get("routeLine");
-                System.out.println("工艺路线: " + String.join(" -> ", route));
 
                 // 校验当前工艺唯一标识是否存在
                 RouteDO updateRoute = Optional.ofNullable(routeMapper.selectOne(RouteDO::getRouteCode, routeInfo.get("routeCode"))).orElse(null);

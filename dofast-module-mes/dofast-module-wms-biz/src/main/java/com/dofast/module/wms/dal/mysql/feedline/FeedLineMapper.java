@@ -53,6 +53,10 @@ public interface FeedLineMapper extends BaseMapperX<FeedLineDO> {
                 .eqIfPresent(FeedLineDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(FeedLineDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 .eqIfPresent(FeedLineDO::getFeedbackCode, reqVO.getFeedbackCode())
+                .eqIfPresent(FeedLineDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(FeedLineDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(FeedLineDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(FeedLineDO::getBarcodeNumber, reqVO.getBarcodeNumber())
                 .orderByDesc(FeedLineDO::getId));
     }
 
@@ -91,6 +95,10 @@ public interface FeedLineMapper extends BaseMapperX<FeedLineDO> {
                 .eqIfPresent(FeedLineDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(FeedLineDO::getFeedbackStatus, reqVO.getFeedbackStatus())
                 .eqIfPresent(FeedLineDO::getFeedbackCode, reqVO.getFeedbackCode())
+                .eqIfPresent(FeedLineDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(FeedLineDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(FeedLineDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(FeedLineDO::getBarcodeNumber, reqVO.getBarcodeNumber())
                 .orderByDesc(FeedLineDO::getId));
     }
 

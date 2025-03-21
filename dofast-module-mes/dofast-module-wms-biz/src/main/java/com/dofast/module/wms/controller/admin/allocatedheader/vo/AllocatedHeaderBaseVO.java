@@ -98,5 +98,8 @@ public class AllocatedHeaderBaseVO {
     @Schema(description = "生产任务名称", example = "张三")
     private String taskName;
 
+    @Schema(description = "绑定工单标识", example = "Y")
+    private String bindWorkorder;
+
 
 }

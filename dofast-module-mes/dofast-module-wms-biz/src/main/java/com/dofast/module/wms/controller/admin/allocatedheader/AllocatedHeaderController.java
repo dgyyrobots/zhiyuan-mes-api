@@ -14,6 +14,7 @@ import com.dofast.module.wms.controller.admin.allocatedline.vo.AllocatedLineExpo
 import com.dofast.module.wms.controller.admin.allocatedline.vo.AllocatedLineRespVO;
 import com.dofast.module.wms.controller.admin.allocatedrecord.vo.AllocatedRecordExportReqVO;
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderCreateReqVO;
+import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderExportReqVO;
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderUpdateReqVO;
 import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineListVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
@@ -126,26 +127,41 @@ public class AllocatedHeaderController {
     @PostMapping("/create")
     @Operation(summary = "创建调拨单头")
     @PreAuthorize("@ss.hasPermission('wms:allocated-header:create')")
-    public CommonResult<Long> createAllocatedHeader(@Valid @RequestBody AllocatedHeaderCreateReqVO createReqVO) {
+    public CommonResult<Long> createAllocatedHeader(@RequestBody AllocatedHeaderCreateReqVO createReqVO) {
         System.out.println(createReqVO);
-        // 校验当前的任务单是否已创建调拨单
-        String taskCode = createReqVO.getTaskCode();
-        TaskDTO taskDTO = taskApi.getTask(taskCode);
-        if (taskDTO == null) {
-            return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
-        }
+        // String类型的true转为boolean类型的true
+        boolean bindWorkorder = Boolean.parseBoolean(createReqVO.getBindWorkorder());
 
         AllocatedHeaderExportReqVO exportReqVO = new AllocatedHeaderExportReqVO();
-        exportReqVO.setTaskCode(taskCode);
         LocalDate localDate = LocalDate.now();
         String dateStr = localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         // 生成3位随机数
         int random = (int) ((Math.random() * 9 + 1) * 100);
-        createReqVO.setAllocatedName(taskDTO.getProcessName() + "调拨单" + dateStr + random);
-        List<AllocatedHeaderDO> allocatedHeaderList = allocatedHeaderService.getAllocatedHeaderList(exportReqVO);
+        if(bindWorkorder){
+            // 校验当前的任务单是否已创建调拨单
+            String taskCode = createReqVO.getTaskCode();
+            TaskDTO taskDTO = taskApi.getTask(taskCode);
+            if (taskDTO == null) {
+                return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
+            }
+
+            // 班组编码
+            String attr1 = taskDTO.getAttr1();
+            if(attr1 == null){
+                return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
+            }
+            exportReqVO.setTaskCode(taskCode);
+
+            createReqVO.setAllocatedName(taskDTO.getProcessName() + "调拨单" + dateStr + random);
+        }else{
+            createReqVO.setAllocatedName("调拨单" + dateStr + random);
+        }
+
+        // 2025-3-18 调拨改为可分批次调拨, 无需管控在一张调拨单内
+        /*List<AllocatedHeaderDO> allocatedHeaderList = allocatedHeaderService.getAllocatedHeaderList(exportReqVO);
         if(!allocatedHeaderList.isEmpty()){
             return error(ErrorCodeConstants.ALLOCATED_TASK_EXISTS);
-        }
+        }*/
         return success(allocatedHeaderService.createAllocatedHeader(createReqVO));
     }
 
@@ -435,10 +451,20 @@ public class AllocatedHeaderController {
     @PutMapping("/{allocatedId}")
     @Operation(summary = "执行调拨")
     public CommonResult execute(@PathVariable Long allocatedId) {
-        Map<String, Object> params = new HashMap<>(); // 用于回传ERP接口
-        params.put("allocatedId", allocatedId);
+
         // 查询调拨单头
         AllocatedHeaderDO allocated = allocatedHeaderService.getAllocatedHeader(allocatedId);
+        boolean bindWorkorder = Boolean.parseBoolean(allocated.getBindWorkorder());
+        if(bindWorkorder){
+            TaskDTO taskDTO = taskApi.getTask(allocated.getTaskId());
+            if (taskDTO == null) {
+                return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
+            }
+        }
+
+        Map<String, Object> params = new HashMap<>(); // 用于回传ERP接口
+        params.put("allocatedId", allocatedId);
+
         // ERP暂时没有仓库, 只有库区与库位暂时不传递仓库信息
         params.put("inLocationId" , allocated.getLocationId());
         params.put("inLocationCode", allocated.getLocationCode());
@@ -455,10 +481,7 @@ public class AllocatedHeaderController {
         param.setAllocatedFlag("N"); // 未执行的调拨单身
         List<AllocatedRecordDO> lines = allocatedRecordService.getAllocatedRecordList(param);
 
-        if(lines.isEmpty()){
-            return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_PROCESS_LINE);
-        }
-        if (CollUtil.isEmpty(lines)) {
+        if(lines.isEmpty() || CollUtil.isEmpty(lines)){
             return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_PROCESS_LINE);
         }
         List<Map<String, Object>> erpRequestList = new ArrayList<>(); // 用于回传ERP接口
@@ -522,6 +545,20 @@ public class AllocatedHeaderController {
         if(!reqVO.getStatus().equals(Constant.ORDER_STATUS_CONFIRMED)){
             return error(ErrorCodeConstants.ALLOCATED_LINE_STATUS_ERROR);
         }
+
+        boolean bindWorkorder = Boolean.parseBoolean(reqVO.getBindWorkorder());
+        if(bindWorkorder){
+            TaskDTO taskDTO = taskApi.getTask(reqVO.getTaskId());
+            if (taskDTO == null) {
+                return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
+            }
+            // 班组编码
+            String attr1 = taskDTO.getAttr1();
+            if(attr1 == null){
+                return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
+            }
+        }
+
         AllocatedRecordExportReqVO param = new AllocatedRecordExportReqVO();
         param.setAllocatedId(allocatedId);
         List<AllocatedRecordDO> bomList = allocatedRecordService.getAllocatedRecordList(param);
@@ -539,10 +576,57 @@ public class AllocatedHeaderController {
         AllocatedHeaderUpdateReqVO updateReqVO = AllocatedHeaderConvert.INSTANCE.convert01(reqVO);
         allocatedHeaderService.updateAllocatedHeader(updateReqVO);
         Long headId = updateReqVO.getId();
+
+
+
+
+       /* TeamDTO teamDTO = teamApi.getTeamByCode(attr1);
+        String machineryCode = null;
+        String machineryName = null;
+        Long machineryId =  null;
+        if(teamDTO!=null){
+            machineryCode = teamDTO.getMachineryCode();
+            machineryName = teamDTO.getMachineryName();
+            machineryId =  teamDTO.getMachineryId();
+        }*/
+        // TODO 追加ERP调拨单接口
+        return success(true);
+    }
+
+    /**
+     * 追加领料单信息
+     *
+     * @param allocatedId
+     * @return
+     */
+    @GetMapping("/createIssue")
+    @Operation(summary = "更新调拨单头")
+    @PreAuthorize("@ss.hasPermission('wms:allocated-header:create')")
+    public CommonResult<Boolean> createIssue(@RequestParam("id") Long allocatedId) {
+        AllocatedHeaderDO reqVO = allocatedHeaderService.getAllocatedHeader(allocatedId);
+        if(!Boolean.parseBoolean(reqVO.getBindWorkorder())){
+            return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_BIND_WORKORDER);
+        }
+
+        // 若当前领料单状态不是已完成 , 则提示错误
+        if(!reqVO.getStatus().equals(Constant.ORDER_STATUS_FINISHED)){
+            return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_NOT_FINISHED);
+        }
+
         TaskDTO taskDTO = taskApi.getTask(reqVO.getTaskCode());
         if (taskDTO == null) {
             return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
         }
+
+        // 校验当前任务单是否创建领料单, 若已创建则进行友好提示
+        IssueHeaderExportReqVO exportReqVO = new IssueHeaderExportReqVO();
+
+        exportReqVO.setTaskId(reqVO.getTaskId());
+        List<IssueHeaderDO> issueHeaderList = issueHeaderService.getIssueHeaderList(exportReqVO);
+        if(issueHeaderList!=null && !issueHeaderList.isEmpty()){
+            return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_NOT_CREATE_ISSUE);
+        }
+
         ProcessDTO reqDTO = processApi.getcess(taskDTO.getProcessCode());
 
         // 班组编码
@@ -560,37 +644,36 @@ public class AllocatedHeaderController {
             machineryId =  teamDTO.getMachineryId();
         }
 
-        // TODO 追加ERP调拨单接口
         // 追加领料单信息
         IssueHeaderDO issueHeaderDO = new IssueHeaderDO();
         issueHeaderDO.setStatus(Constant.ORDER_STATUS_PREPARE);
-        issueHeaderDO.setWorkorderId(updateReqVO.getWorkorderId());
-        issueHeaderDO.setWorkorderCode(updateReqVO.getWorkorderCode());
-        issueHeaderDO.setClientCode(updateReqVO.getClientCode());
-        issueHeaderDO.setClientName(updateReqVO.getClientName());
-        issueHeaderDO.setClientId(updateReqVO.getClientId());
-        issueHeaderDO.setWarehouseId(updateReqVO.getWarehouseId());
-        issueHeaderDO.setWarehouseCode(updateReqVO.getWarehouseCode());
-        issueHeaderDO.setWarehouseName(updateReqVO.getWarehouseName());
-        issueHeaderDO.setLocationId(updateReqVO.getLocationId());
-        issueHeaderDO.setLocationCode(updateReqVO.getLocationCode());
-        issueHeaderDO.setLocationName(updateReqVO.getLocationName());
-        issueHeaderDO.setAreaId(updateReqVO.getAreaId());
-        issueHeaderDO.setAreaCode(updateReqVO.getAreaCode());
-        issueHeaderDO.setAreaName(updateReqVO.getAreaName());
+        issueHeaderDO.setWorkorderId(reqVO.getWorkorderId());
+        issueHeaderDO.setWorkorderCode(reqVO.getWorkorderCode());
+        issueHeaderDO.setClientCode(reqVO.getClientCode());
+        issueHeaderDO.setClientName(reqVO.getClientName());
+        issueHeaderDO.setClientId(reqVO.getClientId());
+        issueHeaderDO.setWarehouseId(reqVO.getWarehouseId());
+        issueHeaderDO.setWarehouseCode(reqVO.getWarehouseCode());
+        issueHeaderDO.setWarehouseName(reqVO.getWarehouseName());
+        issueHeaderDO.setLocationId(reqVO.getLocationId());
+        issueHeaderDO.setLocationCode(reqVO.getLocationCode());
+        issueHeaderDO.setLocationName(reqVO.getLocationName());
+        issueHeaderDO.setAreaId(reqVO.getAreaId());
+        issueHeaderDO.setAreaCode(reqVO.getAreaCode());
+        issueHeaderDO.setAreaName(reqVO.getAreaName());
         issueHeaderDO.setIssueDate(LocalDateTime.now());
-        issueHeaderDO.setTaskId(updateReqVO.getTaskId());
-        issueHeaderDO.setTaskCode(updateReqVO.getTaskCode());
-        issueHeaderDO.setWorkstationCode(updateReqVO.getWorkstationCode());
-        issueHeaderDO.setWorkstationName(updateReqVO.getWorkstationName());
-        issueHeaderDO.setWorkstationId(updateReqVO.getWorkstationId());
+        issueHeaderDO.setTaskId(reqVO.getTaskId());
+        issueHeaderDO.setTaskCode(reqVO.getTaskCode());
+        issueHeaderDO.setWorkstationCode(reqVO.getWorkstationCode());
+        issueHeaderDO.setWorkstationName(reqVO.getWorkstationName());
+        issueHeaderDO.setWorkstationId(reqVO.getWorkstationId());
         // 获取当前日期
         LocalDate currentDate = LocalDate.now();
         // 定义日期格式
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         String issueCode = "ISSUE" + currentDate.format(formatter) + ThreadLocalRandom.current().nextInt(100, 1000);
         issueHeaderDO.setIssueCode(issueCode);
-        issueHeaderDO.setIssueName(updateReqVO.getAllocatedCode());
+        issueHeaderDO.setIssueName(reqVO.getAllocatedCode());
         issueHeaderDO.setProcessCode(reqDTO.getProcessCode());
         issueHeaderDO.setProcessName(reqDTO.getProcessName());
 
@@ -601,66 +684,10 @@ public class AllocatedHeaderController {
         IssueHeaderCreateReqVO issueHeader = IssueHeaderConvert.INSTANCE.convert02(issueHeaderDO);
         issueHeaderService.createIssueHeader(issueHeader);
 
-        // 追加单身信息
-        /*List<IssueLineDO> addList = new ArrayList<>();
-        List<IssueLineDO> editList = new ArrayList<>();
-        // 基于单头ID, bomList更新对应单身信息
-        if (!bomList.isEmpty()) {
-            IssueHeaderDO queryIssueHeaderDO = issueHeaderMapper.selectOne(IssueHeaderDO::getIssueCode, issueCode, IssueHeaderDO::getWorkorderId, updateReqVO.getWorkorderId());
-            for (AllocatedLineDO allocatedline : bomList) {
-                // 基于物料料号与单头Id校验单身信息是否存在
-                String itemCode = allocatedline.getItemCode();
-                IssueLineDO line = issueLineMapper.selectOne(IssueLineDO::getItemCode, itemCode, IssueLineDO::getIssueId, headId);
-                if (line == null) {
-                    // 新增单头信息
-                    IssueLineDO issueLineDO = new IssueLineDO();
-                    issueLineDO.setIssueId(headId);
-                    issueLineDO.setItemId(allocatedline.getItemId());
-                    issueLineDO.setItemCode(itemCode);
-                    issueLineDO.setItemName(allocatedline.getItemName());
-                    issueLineDO.setSpecification(allocatedline.getSpecification());
-                    issueLineDO.setQuantityIssued(BigDecimal.valueOf(allocatedline.getQuantityAllocated()));
-                    issueLineDO.setUnitOfMeasure(allocatedline.getUnitOfMeasure());
-                    issueLineDO.setBatchCode(allocatedline.getBatchCode());
-                    issueLineDO.setWarehouseId(reqVO.getWarehouseId());
-                    issueLineDO.setWarehouseCode(reqVO.getWarehouseCode());
-                    issueLineDO.setWarehouseName(reqVO.getWarehouseName());
-                    issueLineDO.setLocationId(reqVO.getLocationId());
-                    issueLineDO.setLocationCode(reqVO.getLocationCode());
-                    issueLineDO.setLocationName(reqVO.getLocationName());
-                    issueLineDO.setAreaId(reqVO.getAreaId());
-                    issueLineDO.setAreaCode(reqVO.getAreaCode());
-                    issueLineDO.setAreaName(reqVO.getAreaName());
-                    addList.add(issueLineDO);
-                } else {
-                    // 修改单头信息
-                    line.setItemName(allocatedline.getItemName());
-                    line.setItemId(allocatedline.getItemId());
-                    line.setSpecification(allocatedline.getSpecification());
-                    line.setQuantityIssued(BigDecimal.valueOf(allocatedline.getQuantityAllocated()));
-                    line.setUnitOfMeasure(allocatedline.getUnitOfMeasure());
-                    line.setBatchCode(allocatedline.getBatchCode());
-                    line.setWarehouseId(reqVO.getWarehouseId());
-                    line.setWarehouseCode(reqVO.getWarehouseCode());
-                    line.setWarehouseName(reqVO.getWarehouseName());
-                    line.setLocationId(reqVO.getLocationId());
-                    line.setLocationCode(reqVO.getLocationCode());
-                    line.setLocationName(reqVO.getLocationName());
-                    line.setAreaId(reqVO.getAreaId());
-                    line.setAreaCode(reqVO.getAreaCode());
-                    line.setAreaName(reqVO.getAreaName());
-                    editList.add(line);
-                }
-            }
-            if (!addList.isEmpty()) {
-                issueLineMapper.insertBatch(addList);
-            }
-            if (!editList.isEmpty()) {
-                issueLineMapper.updateBatch(editList);
-            }
-        }*/
+
         return success(true);
     }
+
 
 
 }

@@ -38,6 +38,8 @@ public class SecurityConfiguration {
                 .antMatchers("/auth/logout").permitAll()
                 // 3. 人脸识别相关接口, 允许匿名访问
                 .antMatchers("/user/profile/get-face-image/*").permitAll()
+                // 4. 允许访问
+                .antMatchers("/report/go-view/data/generate").permitAll()
                 // last. 兜底规则，必须认证
                 .and().authorizeRequests()
                 .anyRequest().authenticated();

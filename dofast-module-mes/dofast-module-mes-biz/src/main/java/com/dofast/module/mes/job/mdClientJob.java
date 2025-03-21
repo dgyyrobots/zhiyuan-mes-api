@@ -43,7 +43,6 @@ public class mdClientJob implements JobHandler {
             String vendorAddress = (String) vendors.get(i).get("ADDRESS"); // 供应商地址
             String vendorTel = (String) vendors.get(i).get("PHONE"); // 供应商联系电话
             // 校验当前供应商编码是否已经存在
-            System.out.println(vendorCode);
             MdVendorDO vendorInfo = mdVendorMapper.selectOne(MdVendorDO::getVendorCode, vendorCode, MdVendorDO::getVendorNick, vendorName);
             if (vendorInfo == null) {
                 MdVendorDO add = new MdVendorDO();
@@ -71,7 +70,6 @@ public class mdClientJob implements JobHandler {
             String clientAddress = (String) clients.get(i).get("ADDRESS"); // 客户地址
             String clientTel = (String) clients.get(i).get("PHONE"); // 客户联系电话
             // 校验当前客户编码是否已经存在
-            System.out.println("client:" + clientCode);
             MdClientDO clientInfo = mdClientMapper.selectOne(MdClientDO::getClientCode, clientCode, MdClientDO::getClientNick, clientName, MdClientDO::getClientName, clientFullName);
             if (clientInfo == null) {
                 MdClientDO add = new MdClientDO();

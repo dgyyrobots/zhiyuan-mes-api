@@ -1,5 +1,6 @@
 package com.dofast.module.wms.controller.admin.issueheader;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.module.cmms.api.dvmachinery.DvMachineryApi;
@@ -9,11 +10,18 @@ import com.dofast.module.pro.api.ProcessApi.dto.ProcessDTO;
 import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeaderExportReqVO;
+import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeaderUpdateReqVO;
+import com.dofast.module.wms.controller.admin.allocatedrecord.vo.AllocatedRecordExportReqVO;
 import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineListVO;
+import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
+import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockUpdateReqVO;
+import com.dofast.module.wms.convert.allocatedheader.AllocatedHeaderConvert;
 import com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedHeaderDO;
+import com.dofast.module.wms.dal.dataobject.allocatedrecord.AllocatedRecordDO;
 import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueTxBean;
 import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
+import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
 import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
@@ -206,7 +214,21 @@ public class IssueHeaderController {
         param.setStatus("Y");
         param.setFeedbackStatus("N");
         List<IssueLineDO> feedBacklines = issueLineService.selectList(param); // 当前领料单下已上料未报工的单身信息
-        if(!feedBacklines.isEmpty()){
+
+        param.setStatus("N");
+        param.setFeedbackStatus("N");
+        List<IssueLineDO> noFeedBacklines = issueLineService.selectList(param); // 当前领料单下未上料未报工的单身信息
+
+        if(!noFeedBacklines.isEmpty() && !feedBacklines.isEmpty()){
+            for (IssueLineDO noFeedBackline : noFeedBacklines) {
+                for (IssueLineDO feedBackline : feedBacklines) {
+                    if(noFeedBackline.getMachineryCode().equals(feedBackline.getMachineryCode())){
+                        // 两者中存在相同机台设备, 禁止出库
+                        return error(ErrorCodeConstants.ISSUE_HEADER_NOT_FEEDBACK_EXISTS);
+                    }
+                }
+            }
+        }else if(!feedBacklines.isEmpty()){
             return error(ErrorCodeConstants.ISSUE_HEADER_NOT_FEEDBACK_EXISTS);
         }
 
@@ -247,6 +269,10 @@ public class IssueHeaderController {
             lineDO.setVendorCode(issueLine.getVendorCode());
             lineDO.setStatus("Y");
             lineDO.setFeedbackStatus("N"); // 追加报工状态
+            lineDO.setMachineryCode(issueLine.getMachineryCode());
+            lineDO.setMachineryName(issueLine.getMachineryName());
+            lineDO.setMachineryId(issueLine.getMachineryId());
+            lineDO.setBarcodeNumber(issueLine.getBarcodeNumber());
             createReqVOList.add(lineDO);
         }
         feedLineService.insertBatch(createReqVOList);
@@ -347,4 +373,23 @@ public class IssueHeaderController {
         ExcelUtils.write(response, "生产领料单头.xls", "数据", IssueHeaderExcelVO.class, datas);
     }
 
+
+
+    /**
+     * 完成领料
+     * @param allocatedId
+     * @return
+     */
+    @GetMapping("/finsh")
+    @Operation(summary = "更新调拨单头")
+    @PreAuthorize("@ss.hasPermission('wms:allocated-header:update')")
+    public CommonResult<Boolean> finshIssueHeader(@RequestParam("id") Long allocatedId) {
+        IssueHeaderDO issueHeader = issueHeaderService.getIssueHeader(allocatedId);
+        if(!issueHeader.getStatus().equals(Constant.ORDER_STATUS_CONFIRMED)){
+            return error(ErrorCodeConstants.ISSUE_HEADER_NO_ISSUE);
+        }
+        issueHeader.setStatus(Constant.ORDER_STATUS_FINISHED);
+        issueHeaderService.updateIssueHeader(IssueHeaderConvert.INSTANCE.convert01(issueHeader));
+        return success(true);
+    }
 }

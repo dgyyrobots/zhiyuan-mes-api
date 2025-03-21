@@ -112,4 +112,7 @@ public class IssueLineExportReqVO {
     @Schema(description = "条码编号")
     private Long barcodeNumber;
 
+    @Schema(description = "启用标识")
+    private String enableFlag;
+
 }

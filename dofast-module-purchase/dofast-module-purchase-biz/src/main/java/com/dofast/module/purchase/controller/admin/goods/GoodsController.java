@@ -265,6 +265,7 @@ public class GoodsController {
     @PreAuthorize("@ss.hasPermission('purchase:goods:query')")
     public CommonResult<List<GoodsRespVO>> getGoodsAllList(@Valid GoodsDO goodsDO) {
         GoodsExportReqVO exportReqVO = new GoodsExportReqVO();
+        goodsDO.setStatus(1);
         BeanUtils.copyProperties(goodsDO, exportReqVO);
         List<GoodsDO> pageResult = goodsService.getGoodsList(exportReqVO);
         return success(GoodsConvert.INSTANCE.convertList(pageResult));

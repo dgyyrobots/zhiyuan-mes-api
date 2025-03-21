@@ -101,4 +101,8 @@ public class AllocatedHeaderExcelVO {
     @ExcelProperty("生产任务名称")
     private String taskName;
 
+    @ExcelProperty("绑定工单标识")
+    private String bindWorkorder;
+
+
 }

@@ -1,7 +1,12 @@
 package com.dofast.module.wms.controller.admin.allocatedline;
 
+import com.dofast.module.pro.api.TaskApi.TaskApi;
+import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
 import com.dofast.module.wms.controller.admin.allocatedrecord.vo.AllocatedRecordExportReqVO;
+import com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedHeaderDO;
 import com.dofast.module.wms.dal.dataobject.allocatedrecord.AllocatedRecordDO;
+import com.dofast.module.wms.enums.ErrorCodeConstants;
+import com.dofast.module.wms.service.allocatedheader.AllocatedHeaderService;
 import com.dofast.module.wms.service.allocatedrecord.AllocatedRecordService;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +28,7 @@ import java.io.IOException;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.pojo.CommonResult;
 
+import static com.dofast.framework.common.pojo.CommonResult.error;
 import static com.dofast.framework.common.pojo.CommonResult.success;
 
 import com.dofast.framework.excel.core.util.ExcelUtils;
@@ -48,6 +54,12 @@ public class AllocatedLineController {
     @Resource
     private AllocatedRecordService allocatedRecordService;
 
+    @Resource
+    private AllocatedHeaderService allocatedHeaderService;
+
+    @Resource
+    private TaskApi taskApi;
+
     @PostMapping("/create")
     @Operation(summary = "创建调拨单身")
     @PreAuthorize("@ss.hasPermission('wms:allocated-line:create')")
@@ -59,6 +71,20 @@ public class AllocatedLineController {
     @Operation(summary = "更新调拨单身")
     @PreAuthorize("@ss.hasPermission('wms:allocated-line:update')")
     public CommonResult<Boolean> updateAllocatedLine(@Valid @RequestBody AllocatedLineUpdateReqVO updateReqVO) {
+        AllocatedHeaderDO allocatedHeaderDO = allocatedHeaderService.getAllocatedHeader(updateReqVO.getAllocatedId());
+
+        boolean bindWorkorder = Boolean.parseBoolean(allocatedHeaderDO.getBindWorkorder());
+        if(bindWorkorder){
+            TaskDTO taskDTO = taskApi.getTask(allocatedHeaderDO.getTaskId());
+            if (taskDTO == null) {
+                return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
+            }
+            // 班组编码
+            String attr1 = taskDTO.getAttr1();
+            if(attr1 == null){
+                return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
+            }
+        }
         allocatedLineService.updateAllocatedLine(updateReqVO);
         return success(true);
     }
@@ -115,6 +141,23 @@ public class AllocatedLineController {
     //@PreAuthorize("@ss.hasPermission('wms:allocated-line:create')")
     public CommonResult<Long> updateLine(@Valid @RequestBody Map<String, Object> requestmap) {
         Integer headerId = (Integer) requestmap.get("headerId");
+
+        AllocatedHeaderDO allocatedHeaderDO = allocatedHeaderService.getAllocatedHeader(Long.valueOf(headerId));
+
+
+        boolean bindWorkorder = Boolean.parseBoolean(allocatedHeaderDO.getBindWorkorder());
+        if(bindWorkorder){
+            TaskDTO taskDTO = taskApi.getTask(allocatedHeaderDO.getTaskId());
+            if (taskDTO == null) {
+                return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
+            }
+            // 班组编码
+            String attr1 = taskDTO.getAttr1();
+            if(attr1 == null){
+                return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
+            }
+        }
+
         List<Map<String, Object>> detailList = (List<Map<String, Object>>) requestmap.get("bomList");
 
         // 比对recordList与detailList, 若存在相同的则进行修改, 不存在则新增

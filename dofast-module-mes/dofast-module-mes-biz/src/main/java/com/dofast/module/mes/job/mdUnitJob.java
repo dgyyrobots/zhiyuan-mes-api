@@ -76,7 +76,6 @@ public class mdUnitJob implements JobHandler {
         }
         // 单位换算
         if (converseInfo.size() > 0) {
-            System.out.println("单位换算信息条目:" + converseInfo.size());
             for (Map<String, Object> map : converseInfo) {
                 String measurecode = (String) map.get("MEASURECODE");
                 String conversecode = (String) map.get("CONVERCODE");
@@ -88,7 +87,6 @@ public class mdUnitJob implements JobHandler {
                 List<MdUnitConverseDO> converList = mdUnitConverseService.getMdUnitConverseList(conver);*/
                 if (converInfo !=null) {
                     // 已存在, 修改当前单位信息
-                    System.out.println("单位换算已存在" + converInfo);
                     converInfo.setOriginCount((BigDecimal) map.get("ORIGINCOUNT")); // 原单位数量
                     converInfo.setConverseCount((BigDecimal) map.get("CONVERCOUNT")); // 转换单位数量
                     converseToUp.add(converInfo);

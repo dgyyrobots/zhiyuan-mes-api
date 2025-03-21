@@ -165,4 +165,49 @@ public class FeedbackDTO {
      */
     private String erpBatchCode;
 
+    /**
+     * 班组编码
+     */
+    private String teamCode;
+
+    /**
+     * 缺陷Id
+     */
+    private String defectId;
+
+    /**
+     * 班组负责人
+     */
+    private String principalName;
+
+    /**
+     * 班组负责人Id
+     */
+    private Long principalId;
+
+    /**
+     * 班组类型
+     */
+    private String shiftInfo;
+
+    /**
+     * 来源编码
+     */
+    private String originCode;
+
+    /**
+     * 设备Id
+     */
+    private Long machineryId;
+
+    /**
+     * 设备名称
+     */
+    private String machineryName;
+
+    /**
+     * 设备编码
+     */
+    private String machineryCode;
+
 }

@@ -130,4 +130,6 @@ public class AllocatedHeaderDO extends BaseDO {
     private String remark;
 
     private  String taskName;
+
+    private String bindWorkorder;
 }

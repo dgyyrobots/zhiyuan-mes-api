@@ -18,8 +18,11 @@ public class SecurityConfiguration {
 
             @Override
             public void customize(ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry) {
-                //积木报表
+                // 积木报表
                 registry.antMatchers("/jmreport/**").permitAll();
+                // Goview
+                registry.antMatchers("/report/**").permitAll();
+
             }
 
         };

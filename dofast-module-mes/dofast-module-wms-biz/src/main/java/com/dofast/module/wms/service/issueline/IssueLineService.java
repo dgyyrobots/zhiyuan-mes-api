@@ -36,6 +36,9 @@ public interface IssueLineService {
      */
     void deleteIssueLine(Long id);
     public int deleteByIssueHeaderId(Long issueId);
+
+    void batchDeleteIssueLine(Collection<Long> ids);
+
     /**
      * 获得生产领料单行
      *

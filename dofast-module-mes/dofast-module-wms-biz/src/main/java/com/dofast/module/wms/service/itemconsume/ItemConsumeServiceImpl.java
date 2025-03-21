@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.dofast.framework.common.pojo.UserConstants;
 import com.dofast.module.mes.api.WorkStationAPi.WorkStationApi;
 import com.dofast.module.mes.api.WorkStationAPi.dto.WorkStationDTO;
+import com.dofast.module.pro.api.FeedbackApi.FeedbackApi;
 import com.dofast.module.pro.api.FeedbackApi.dto.FeedbackDTO;
 import com.dofast.module.pro.api.ProcessApi.ProcessApi;
 import com.dofast.module.pro.api.ProcessApi.dto.ProcessDTO;
@@ -93,6 +94,9 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
     @Resource
     private IssueLineService issueLineService;
 
+    @Resource
+    private FeedbackApi feedbackApi;
+
     @Override
     public Long createItemConsume(ItemConsumeCreateReqVO createReqVO) {
         // 插入
@@ -180,6 +184,7 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
         itemConsume.setConsumeDate(LocalDateTime.now());
         itemConsume.setStatus(UserConstants.ORDER_STATUS_PREPARE);
         itemConsumeMapper.insert(itemConsume);
+        System.out.println("Generated ItemConsume ID: " + itemConsume.getId());
 
         //生成行信息
         //先获取当前生产的产品在此道工序中配置的物料BOM
@@ -274,12 +279,69 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
             return  null; //如果本道工序没有配置BOM物料，则直接返回空
         }*/
         // 根据当前的任务编号， 找寻Bom上料详情的物料信息
+
+        // 更新领料单身信息, 绑定报工单号
+        IssueHeaderExportReqVO issueHeaderExportReqVO =   new IssueHeaderExportReqVO();
+        issueHeaderExportReqVO.setTaskCode(task.getTaskCode()); // 一个任务单绑定一个领料单
+        IssueHeaderDO issueHeader = Optional.ofNullable(issueHeaderService.getIssueHeaderList(issueHeaderExportReqVO).get(0)).orElse(null);
+        if(issueHeader != null){
+            IssueLineExportReqVO issueLineExportReqVO = new IssueLineExportReqVO();
+            issueLineExportReqVO.setIssueId(issueHeader.getId());
+            issueLineExportReqVO.setStatus("Y"); // 已上料
+            issueLineExportReqVO.setFeedbackStatus("N"); // 未报工
+            issueLineExportReqVO.setMachineryId(String.valueOf(feedback.getMachineryId()));
+            List<IssueLineDO> issueLines = issueLineService.getIssueLineList(issueLineExportReqVO);
+            if(!issueLines.isEmpty()){
+                // 更新上料详情
+                issueLines.forEach(issueLine -> {
+                    issueLine.setFeedbackCode(feedback.getFeedbackCode()); // 绑定报工单号
+                    issueLine.setFeedbackStatus("Y"); // 已报工
+                });
+                issueLineService.updateIssueLineBatch(issueLines);
+                // 校验当前报工单对应领料单, 机台信息是否存在已启用信息
+                // 基于启用信息绑定物料
+                IssueLineExportReqVO ReqVO = new IssueLineExportReqVO();
+                ReqVO.setMachineryId(String.valueOf(feedback.getMachineryId()));
+                ReqVO.setEnableFlag("true"); // 已启用
+                ReqVO.setIssueId(issueHeader.getId());
+                List<IssueLineDO> doubleCheckLines = issueLineService.getIssueLineList(ReqVO);
+                if(!doubleCheckLines.isEmpty()){
+                    // 开始追加关联关系
+                    doubleCheckLines.forEach(issueLine -> {
+                        StringBuffer feedBackStr = new StringBuffer();
+                        feedBackStr.append(issueLine.getFeedbackCode()).append(",").append(feedback.getFeedbackCode());
+                        issueLine.setFeedbackCode(feedBackStr.toString()); // 绑定报工单号
+                    });
+                    issueLineService.updateIssueLineBatch(doubleCheckLines);
+                }
+            }else{
+                // 校验当前报工单对应领料单, 机台信息是否存在已启用信息
+                // 基于启用信息绑定物料
+                IssueLineExportReqVO ReqVO = new IssueLineExportReqVO();
+                ReqVO.setMachineryId(String.valueOf(feedback.getMachineryId()));
+                ReqVO.setEnableFlag("true"); // 已启用
+                ReqVO.setIssueId(issueHeader.getId());
+                List<IssueLineDO> doubleCheckLines = issueLineService.getIssueLineList(ReqVO);
+                if(!doubleCheckLines.isEmpty()){
+                    // 开始追加关联关系
+                    doubleCheckLines.forEach(issueLine -> {
+                        StringBuffer feedBackStr = new StringBuffer();
+                        feedBackStr.append(issueLine.getFeedbackCode()).append(",").append(feedback.getFeedbackCode());
+                        issueLine.setFeedbackCode(feedBackStr.toString()); // 绑定报工单号
+                    });
+                    issueLineService.updateIssueLineBatch(doubleCheckLines);
+                }
+            }
+        }
+
         FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
         exportReqVO.setTaskCode(feedback.getTaskCode());
         exportReqVO.setFeedbackStatus("N"); // 获取当前未报工的上料详情
+        exportReqVO.setMachineryId(String.valueOf(feedback.getMachineryId())); // 追加设备Id进行卡控
         List<FeedLineDO> feedLines = feedLineService.getFeedLineList(exportReqVO);
         if(feedLines.isEmpty()){
-            return null; //如果没有找到Bom上料详情，则直接返回空
+            //如果没有找到Bom上料详情，则直接返回空
+            return null;
         }
         List<ItemConsumeLineDO> lines = new ArrayList<>();
         for (FeedLineDO feedLine: feedLines) {
@@ -303,23 +365,7 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
             lines.add(line);
         }
         itemConsumeLineMapper.insertBatch(lines);
-        // 更新领料单身信息, 绑定报工单号
-        IssueHeaderExportReqVO issueHeaderExportReqVO =   new IssueHeaderExportReqVO();
-        issueHeaderExportReqVO.setTaskCode(task.getTaskCode()); // 一个任务单绑定一个领料单
-        IssueHeaderDO issueHeader = Optional.ofNullable(issueHeaderService.getIssueHeaderList(issueHeaderExportReqVO).get(0)).orElse(null);
-        if(issueHeader != null){
-            IssueLineExportReqVO issueLineExportReqVO = new IssueLineExportReqVO();
-            issueLineExportReqVO.setIssueId(issueHeader.getId());
-            issueLineExportReqVO.setStatus("Y"); // 已上料
-            issueLineExportReqVO.setFeedbackStatus("N"); // 未报工
-            List<IssueLineDO> issueLines = issueLineService.getIssueLineList(issueLineExportReqVO);
-            // 更新上料详情
-            issueLines.forEach(issueLine -> {
-                issueLine.setFeedbackCode(feedback.getFeedbackCode()); // 绑定报工单号
-                issueLine.setFeedbackStatus("Y"); // 已报工
-            });
-            issueLineService.updateIssueLineBatch(issueLines);
-        }
+
         // 更新上料详情
         feedLines.forEach(feedLine -> {
             feedLine.setFeedbackCode(feedback.getFeedbackCode()); // 绑定报工单号

@@ -123,8 +123,8 @@ public class AuthController {
             return null;
         }
         // 基于头像名称获取访问地址
-        String finUrl =  minioUtil.getUploadObjectUrl("ammes", user.getAvatar(), 3600);
-        user.setAvatar(finUrl);
+        /*String finUrl =  minioUtil.getUploadObjectUrl("ammes", user.getAvatar(), 3600);
+        user.setAvatar(finUrl);*/
 
         // 获得角色列表
         Set<Long> roleIds = permissionService.getUserRoleIdsFromCache(getLoginUserId(), singleton(CommonStatusEnum.ENABLE.getStatus()));

@@ -162,4 +162,9 @@ public class IssueLineDO extends BaseDO {
      */
     private Long barcodeNumber;
 
+    /**
+     * 启用标识
+     */
+    private String enableFlag;
+
 }

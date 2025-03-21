@@ -77,6 +77,12 @@
             <groupId>vip.huizhizao</groupId>
             <artifactId>dofast-spring-boot-starter-excel</artifactId>
         </dependency>
+        <dependency>
+            <groupId>vip.huizhizao</groupId>
+            <artifactId>dofast-module-system-biz</artifactId>
+            <version>1.7.3-snapshot</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 </project>

@@ -26,7 +26,7 @@ public class ItemConsumeDO extends BaseDO {
     /**
      * 记录ID
      */
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Long id;
     /**
      * 生产工单ID

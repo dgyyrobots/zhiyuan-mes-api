@@ -21,4 +21,8 @@ public class FeedbackCreateReqVO extends FeedbackBaseVO {
 
     @Schema(description = "报工缺陷项列表")
     private List<Map<String, Object>> processDefectList;
+
+    @Schema(description = "入库位置")
+    private Map<String, Object> warehouseInfo;
+
 }

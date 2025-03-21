@@ -159,11 +159,9 @@ public class workorderJob implements JobHandler {
             // 基于工单号获取工单ID
             WorkorderDO queryWorkorderId = workorderMapper.selectOne(WorkorderDO::getWorkorderCode, workorderNo);
             if (queryWorkorderId == null) {
-                System.out.println("工单号不存在!工单号: " + workorderNo);
                 continue;
             }
             // 校验当前工单BOM信息是否存在
-            System.out.println("校验当前工单BOM信息是否存在!工单Id: " + queryWorkorderId.getId() + ", BOM编号: " + bomCode);
             WorkorderBomDO queryBom = workorderBomMapper.selectOne(WorkorderBomDO::getWorkorderId, queryWorkorderId.getId(), WorkorderBomDO::getItemCode, bomCode);
             if (queryBom == null) {
                 // 新增工单BOM信息
@@ -173,7 +171,6 @@ public class workorderJob implements JobHandler {
                 // 根据当前物料料号获取物料ID
                 MdItemDO itemDO = itemMapper.selectOne(MdItemDO::getItemCode, bomCode);
                 if (itemDO == null) {
-                    System.out.println("BOM料号不存在!BOM料号: " + bomCode);
                     continue;
                 }
                 workorderBomDO.setItemId(itemDO.getId()); // 物料ID

@@ -8,6 +8,7 @@ import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedHeaderDO;
 import com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedTxBean;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueTxBean;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.*;
 
@@ -47,6 +48,7 @@ public interface AllocatedHeaderMapper extends BaseMapperX<AllocatedHeaderDO> {
                 .eqIfPresent(AllocatedHeaderDO::getStatus, reqVO.getStatus())
                 .eqIfPresent(AllocatedHeaderDO::getRemark, reqVO.getRemark())
                 .eqIfPresent(AllocatedHeaderDO::getTaskName, reqVO.getTaskName())
+                .eqIfPresent(AllocatedHeaderDO::getBindWorkorder, reqVO.getBindWorkorder())
                 .betweenIfPresent(AllocatedHeaderDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(AllocatedHeaderDO::getId));
     }
@@ -80,6 +82,7 @@ public interface AllocatedHeaderMapper extends BaseMapperX<AllocatedHeaderDO> {
                 .eqIfPresent(AllocatedHeaderDO::getRemark, reqVO.getRemark())
                 .eqIfPresent(AllocatedHeaderDO::getTaskName, reqVO.getTaskName())
                 .betweenIfPresent(AllocatedHeaderDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(AllocatedHeaderDO::getBindWorkorder, reqVO.getBindWorkorder())
                 .orderByDesc(AllocatedHeaderDO::getId));
     }
 

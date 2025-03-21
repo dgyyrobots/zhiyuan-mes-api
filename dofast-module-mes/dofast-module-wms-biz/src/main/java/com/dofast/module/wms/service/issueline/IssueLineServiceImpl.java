@@ -63,6 +63,11 @@ public class IssueLineServiceImpl implements IssueLineService {
         return issueLineMapper.deleteByIssueHeaderId(issueId);
     }
 
+    @Override
+    public void batchDeleteIssueLine(Collection<Long> ids) {
+        issueLineMapper.deleteBatchIds(ids);
+    }
+
     private void validateIssueLineExists(Long id) {
         if (issueLineMapper.selectById(id) == null) {
             throw exception(ISSUE_LINE_NOT_EXISTS);

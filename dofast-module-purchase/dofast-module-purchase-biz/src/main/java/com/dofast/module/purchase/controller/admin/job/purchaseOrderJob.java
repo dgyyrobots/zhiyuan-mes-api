@@ -106,7 +106,6 @@ public class purchaseOrderJob implements JobHandler {
                 BigDecimal consequence = new BigDecimal(purchaseGoods.get("CONSEQUENCE") != null ? String.valueOf(purchaseGoods.get("CONSEQUENCE")) : "-1");
 
                 BigDecimal itemNum = purchaseGoods.get("QUANTITY").equals(null)? new BigDecimal(0) : (BigDecimal) purchaseGoods.get("QUANTITY");
-                System.out.println("当前参数如下: purchaseId: "+ orderId + "; itemCode: "+ itemCode+" ;poNo: " + orderDO.getPoNo());
                 String conStr = consequence.equals(-1)? "" : String.valueOf(consequence);
                 GoodsExportReqVO exr = new   GoodsExportReqVO();
                 exr.setGoodsNumber(itemCode);

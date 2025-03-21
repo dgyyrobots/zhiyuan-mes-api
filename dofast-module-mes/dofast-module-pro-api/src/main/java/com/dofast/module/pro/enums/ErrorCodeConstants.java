@@ -97,6 +97,8 @@ public interface ErrorCodeConstants {
 
     ErrorCode ISSUE_NOT_EXISTS = new ErrorCode(717020, "单据对应领料单不存在");
 
+    ErrorCode TASK_NOT_RECEPT = new ErrorCode(717020, "任务单对应领料单存在未上料单据, 请先上料!");
+
     ErrorCode PRODUCT_PRODUCE_NOT_EXISTS = new ErrorCode(717021, "产品产出记录不存在");
 
     ErrorCode ITEM_CONSUME_NOT_EXISTS = new ErrorCode(717022, "物料消耗记录不存在");

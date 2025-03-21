@@ -139,9 +139,10 @@ public class DofastWebSecurityConfigurerAdapter {
                 // 1.4 设置 App API 无需认证
                 .antMatchers(buildAppApi("/**")).permitAll()
                 // 1.5 验证码captcha 允许匿名访问
-
-                .antMatchers("/captcha/get", "/captcha/check", "/report/go-view/project/get","/dian3/order/get", "/dian3/order/receive").permitAll()
+                .antMatchers("/captcha/get", "/captcha/check", "/report/go-view/project/get","/dian3/order/get", "/dian3/order/receive", "/report/go-view/data/generate", "/report/go-view/data/check/**").permitAll()
                 .antMatchers("/captcha/get", "/captcha/check").permitAll()
+                // 追加看板二维码生成
+                //.antMatchers("/report/go-view/code/generate", "/report/go-view/code/check/**").permitAll()
 
                 // 1.6 webSocket 允许匿名访问
                 .antMatchers("/websocket/message").permitAll()

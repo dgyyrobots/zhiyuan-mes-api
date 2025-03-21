@@ -61,6 +61,9 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
                 .eqIfPresent(FeedbackDO::getDefectId, reqVO.getDefectId())
                 .eqIfPresent(FeedbackDO::getShiftInfo, reqVO.getShiftInfo())
                 .eqIfPresent(FeedbackDO::getOriginCode, reqVO.getOriginCode())
+                .eqIfPresent(FeedbackDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(FeedbackDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(FeedbackDO::getMachineryCode, reqVO.getMachineryCode())
                 .orderByDesc(FeedbackDO::getId));
     }
 
@@ -107,6 +110,9 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
                 .eqIfPresent(FeedbackDO::getDefectId, reqVO.getDefectId())
                 .eqIfPresent(FeedbackDO::getShiftInfo, reqVO.getShiftInfo())
                 .eqIfPresent(FeedbackDO::getOriginCode, reqVO.getOriginCode())
+                .eqIfPresent(FeedbackDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(FeedbackDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(FeedbackDO::getMachineryCode, reqVO.getMachineryCode())
                 .orderByDesc(FeedbackDO::getId));
     }
 

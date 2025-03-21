@@ -118,6 +118,7 @@ dofast:
     permit-all_urls:
       - /admin-api/system/auth/one-click-login
       - /admin-api/mp/open/** # 微信公众号开放平台，微信回调接口，不需要登录
+      - /admin-api/report/go-view/code/** # goView看板二维码
   websocket:
     enable: true # websocket的开关
     path: /websocket/message # 路径
@@ -161,6 +162,9 @@ dofast:
       - /admin-api/system/sms/callback/* # 短信回调接口，无法带上租户编号
       - /admin-api/pay/notify/callback/* # 支付回调通知，不携带租户编号
       - /admin-api/report/go-view/project/get # 预览goview
+      - /admin-api/report/go-view/data/generate # goView看板二维码
+      - /admin-api/report/go-view/data/check/** # goView看板二维码确认有效期
+      - /admin-api/report/go-view/data/scan # PDA扫二维码登录
       - /jmreport/* # 积木报表，无法携带租户编号
       - /admin-api/mp/open/** # 微信公众号开放平台，微信回调接口，无法携带租户编号
       - /app-api/test/**

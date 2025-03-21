@@ -76,4 +76,10 @@ public class ToolExportReqVO {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "母版/工作版")
+    private String template;
+
+    @Schema(description = "正/反")
+    private String positiveOrNegative;
+
 }

@@ -213,4 +213,20 @@ public class FeedbackDO extends BaseDO {
      * 来源编码
      */
     private String originCode;
+
+
+    /**
+     * 设备ID
+      */
+    private Long machineryId;
+
+    /**
+     * 设备名称
+     */
+    private String machineryName;
+
+    /**
+     * 设备编码
+     */
+    private String machineryCode;
 }

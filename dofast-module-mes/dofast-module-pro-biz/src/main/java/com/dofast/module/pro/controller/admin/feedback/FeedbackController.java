@@ -256,7 +256,28 @@ public class FeedbackController {
         createReqVO.setFeedbackCode(new StringBuffer().append("AMBG01").append("-").append(createReqVO.getTaskCode()).append("-").append(random).toString());
         Long feedbackId = feedbackService.createFeedback(createReqVO);
         String taskCode = createReqVO.getTaskCode();
+
         TaskDO task = taskService.getTask(taskCode);
+
+        // 2025-03-13 追加需求: 判定当前任务单对应的领料单是否存在未上料单据信息, 存在则不允许其进行报工操作
+        // 基于任务单获取生产领料单
+        IssueheaderDTO issueHeader = new IssueheaderDTO();
+        issueHeader.setTaskId(task.getId());
+        issueHeader.setWorkorderCode(createReqVO.getWorkorderCode());
+        List<IssueheaderDTO> issueHeaderList = issueApi.listIssueHeader(issueHeader);
+        if (issueHeaderList.isEmpty()) {
+            return error(ErrorCodeConstants.ISSUE_NOT_EXISTS);
+        }
+        IssueheaderDTO issueHeaderDTO = issueHeaderList.get(0);
+        // 基于生产领料单获取未上料的生产领料单行
+        IssueLineDTO issueLine = new IssueLineDTO();
+        issueLine.setIssueId(issueHeaderDTO.getId());
+        issueLine.setStatus("N");
+        List<IssueLineDTO> issueLineList = issueApi.listIssueLine(issueLine);
+        if (!issueLineList.isEmpty()) {
+            return error(ErrorCodeConstants.TASK_NOT_RECEPT);
+        }
+
         task.setFeedbackStatus("Y");
 
         taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
@@ -441,7 +462,7 @@ public class FeedbackController {
      * @param recordId
      * @return
      */
-    @PreAuthorize("@ss.hasPermission('pro:feedback:update')")
+   /* @PreAuthorize("@ss.hasPermission('pro:feedback:update')")
     @Operation(summary = "执行生产报工")
     @Transactional
     @PutMapping("/{recordId}")
@@ -472,21 +493,20 @@ public class FeedbackController {
         task.setDeleted(true);
         TaskUpdateReqVO taskUpdateReqVO = BeanUtil.toBean(task, TaskUpdateReqVO.class);
         taskService.updateTask(taskUpdateReqVO);
-        /**
-         *  2024-11-15注释, 澳美没有关键工序概念
-         *  根据当前任务校验当前是否有下一道工序
-         *      有: 入下一道制成线边仓(状态待入库)
-         *          线边仓库区有工序编码
-         *      无: 入本制程线边仓(状态待入库)
-         */
-
+        *//**
+     *  2024-11-15注释, 澳美没有关键工序概念
+     *  根据当前任务校验当前是否有下一道工序
+     *      有: 入下一道制成线边仓(状态待入库)
+     *          线边仓库区有工序编码
+     *      无: 入本制程线边仓(状态待入库)
+     *//*
         // 澳美的前制程的产成品是下道制程的半半成品, 均视为产品
         //生成产品产出记录单
         FeedbackDTO feedbackDTO = BeanUtil.toBean(feedback, FeedbackDTO.class);
         ProductProduceDO productRecord = productProduceService.generateProductProduce(feedbackDTO);
         //执行产品产出入线边库
         executeProductProduce(feedback, productRecord, workorder);
-        /*if(routeProcessService.checkKeyProcess(feedback)){
+        *//*if(routeProcessService.checkKeyProcess(feedback)){
             //更新生产工单的生产数量
             Double produced = workorder.getQuantityProduced() == null?0:workorder.getQuantityProduced();
             Double feedBackQuantity = feedback.getQuantityFeedback() ==null?0:feedback.getQuantityFeedback();
@@ -499,8 +519,7 @@ public class FeedbackController {
             ProductProduceDO productRecord = productProduceService.generateProductProduce(feedbackDTO);
             //执行产品产出入线边库
             executeProductProduce(productRecord,workorder);
-        }*/
-
+        }*//*
         //根据当前工序的物料BOM配置，进行物料消耗
         //先生成消耗单
         //FeedbackDTO feedbackDTO = BeanUtil.toBean(feedback, FeedbackDTO.class);
@@ -519,6 +538,70 @@ public class FeedbackController {
         dvMachineryDTO.setStatus("STOP"); // 报工后设备停机
         dvMachineryApi.updateMachineryInfo(dvMachineryDTO);
         return CommonResult.success();
+    }*/
+
+    /**
+     * 初始化仓库信息
+     *
+     * @param feedBack
+     * @return
+     */
+    @PreAuthorize("@ss.hasPermission('pro:feedback:query')")
+    @Operation(summary = "初始化仓库信息")
+    @Transactional
+    @GetMapping("/initWarehouse")
+    public Map<String, Object> checkWarehouse(FeedbackRespVO feedBack) {
+        Map<String, Object> result = new HashMap<>();
+        Long taskId = feedBack.getTaskId();
+        TaskDO task = taskService.getTask(taskId);
+        Long workorderId = feedBack.getWorkorderId();
+        WorkorderDO workorder = workorderService.getWorkorder(workorderId);
+
+        String routeCode = workorder.getProductCode() + "-" + workorder.getRouteCode();
+        // 获取工艺路线详情
+        RouteDO route = routeService.getRoute(routeCode);
+        RouteProcessExportReqVO exportReqVO = new RouteProcessExportReqVO();
+        exportReqVO.setRouteId(route.getId());
+        // 基于任务单判定所属工序
+        // 基于工序查看是否存在下道工序
+        // 存在->入下道制程线边仓  无->入本仓
+        exportReqVO.setProcessCode(task.getProcessCode());
+        List<RouteProcessDO> routeProcess = routeProcessService.getRouteProcessList(exportReqVO);
+        RouteProcessDO process = routeProcess.get(0);
+        String nextProcessCode = Optional.ofNullable(routeProcess.get(0).getNextProcessCode()).orElse(null);
+        WarehouseDTO warehouse = null;
+        StorageLocationDO location = null;
+        StorageAreaDO area = null;
+
+        if (nextProcessCode != null) {
+            // 入下一个制成线边仓
+            // 仓库
+            warehouse = warehouseApiImpl.selectWmWarehouseByWarehouseCode(Constant.LINE_EDGE_CODE);
+            // 库区
+            location = locationService.getStorageLocation(nextProcessCode);
+            // 库位, 目前没有WMS, 仅获取第一个库位(MES管控, 无需回传ERP)
+            area = areaService.getStorageAreaByLocationId(location.getId()).get(0);
+        } else {
+            // 当前工序若为涂布, 入模压线边仓
+            if("AM001".equals(task.getProcessCode())){
+                warehouse = warehouseApiImpl.selectWmWarehouseByWarehouseCode(Constant.LINE_EDGE_CODE);
+                location = locationService.getStorageLocation("AM002");
+                area = areaService.getStorageAreaByLocationId(location.getId()).get(0);
+            }else if("AM004".equals(task.getProcessCode())){
+                warehouse = warehouseApiImpl.selectWmWarehouseByWarehouseCode(Constant.LINE_EDGE_CODE);
+                location = locationService.getStorageLocation("AM005");
+                area = areaService.getStorageAreaByLocationId(location.getId()).get(0);
+            }else{
+                warehouse = warehouseApiImpl.selectWmWarehouseByWarehouseCode(Constant.WAREHOUSE_CODE);
+                // 传递至成品仓-基于正式库决定, 暂时写死
+                location = locationService.getStorageLocation(66L);
+                area = areaService.getStorageArea(55L);
+            }
+        }
+        result.put("warehouse", warehouse);
+        result.put("location", location);
+        result.put("area", area);
+        return result;
     }
 
     /**
@@ -526,7 +609,7 @@ public class FeedbackController {
      *
      * @param record
      */
-    private void executeProductProduce(FeedbackDO feedBack, ProductProduceDO record, WorkorderDO workorder) {
+    private void executeProductProduce(FeedbackDO feedBack, ProductProduceDO record, WorkorderDO workorder, Long warehouseId, Long locationId, Long areaId) {
         /*List<ProductProductTxBean> beans = productProduceService.getTxBeans(record.getId());
         for (ProductProductTxBean bean : beans) {
             MdItemDO mdItem = mdItemService.getMdItem(bean.getItemId());
@@ -545,9 +628,6 @@ public class FeedbackController {
         // 2024-11-1注释
         Long taskId = record.getTaskId();
         TaskDO task = taskService.getTask(taskId);
-      /*  List<FeedbackDO> feedBackList = feedbackService.getFeedbackListByTaskId(task.getId());
-        FeedbackDO feedBack = feedBackList.get(0);*/
-        String processCode = task.getProcessCode();
         String routeCode = workorder.getProductCode() + "-" + workorder.getRouteCode();
         // 获取工艺路线详情
         RouteDO route = routeService.getRoute(routeCode);
@@ -577,77 +657,47 @@ public class FeedbackController {
         // 定义日期格式
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         String parentBatchCode = currentDate.format(formatter) + ThreadLocalRandom.current().nextInt(1000, 10000);
-        if (nextProcessCode != null) {
-            // 入下一个制成线边仓
-            // 仓库
-            WarehouseDTO warehouse = warehouseApiImpl.selectWmWarehouseByWarehouseCode(Constant.LINE_EDGE_CODE);
-            // 库区
-            StorageLocationDO location = locationService.getStorageLocation(nextProcessCode);
-            // 库位, 目前没有WMS, 仅获取第一个库位(MES管控, 无需回传ERP)
-            List<StorageAreaDO> area = areaService.getStorageAreaByLocationId(location.getId());
-            // 开始录入库存
-            materialStock.setItemName(item.getItemName() + "-" + process.getProcessCode() + "半成品");
-            materialStock.setWarehouseCode(warehouse.getWarehouseCode()); // 线边仓
-            materialStock.setWarehouseId(warehouse.getId());
-            materialStock.setWarehouseName(warehouse.getWarehouseName());
-            materialStock.setLocationCode(location.getLocationCode()); // 线边仓库区
-            materialStock.setLocationId(location.getId());
-            materialStock.setLocationName(location.getLocationName());
-            materialStock.setAreaCode(area.get(0).getAreaCode()); // 线边仓库区
-            materialStock.setAreaId(area.get(0).getId());
-            materialStock.setAreaName(area.get(0).getAreaName());
-            materialStock.setRecptStatus("N");// 需等待打印条码后质检合格开始入库
-            //批次: 获取当前任务单及最新的流水号
-            String serial = task.getSerial();
-            if (serial == null) {
-                serial = "001";
-            } else {
-                int serialInt = Integer.parseInt(serial);
-                serialInt++;
-                serial = String.format("%03d", serialInt);
-            }
-            materialStock.setBatchCode(task.getParentBatchCode() + "-" + serial);
-            feedBack.setBatchCode(task.getParentBatchCode() + "-" + serial);
-            feedBack.setErpBatchCode(parentBatchCode);
-            // 修改任务单最新批次信息
-            task.setSerial(serial);
-            taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
-        } else {
-            // 入主仓
-            // 仓库
-            WarehouseDTO warehouse = warehouseApiImpl.selectWmWarehouseByWarehouseCode(Constant.WAREHOUSE_CODE);
-            // 开始录入库存
-            materialStock.setItemName(item.getItemName()); // 最后一道工序视为产成品
-            materialStock.setWarehouseCode(warehouse.getWarehouseCode()); // 线边仓
-            materialStock.setWarehouseId(warehouse.getId());
-            materialStock.setWarehouseName(warehouse.getWarehouseName());
-            // 传递至成品仓-基于正式库决定, 暂时写死
-            StorageLocationDO location = locationService.getStorageLocation(40L);
-            StorageAreaDO area = areaService.getStorageArea(42L);
-            materialStock.setLocationId(location.getId());
-            materialStock.setLocationCode(location.getLocationCode());
-            materialStock.setLocationName(location.getLocationName());
-            materialStock.setAreaId(area.getId());
-            materialStock.setAreaCode(area.getAreaCode());
-            materialStock.setAreaName(area.getAreaName());
-            materialStock.setRecptStatus("N");// 需等待打印条码后质检合格开始入库
-            //批次: 获取当前任务单及最新的流水号
-            String serial = task.getSerial();
-            if (serial == null) {
-                serial = "001";
-            } else {
-                int serialInt = Integer.parseInt(serial);
-                serialInt += 1;
-                serial = String.format("%03d", serialInt);
-            }
-            materialStock.setBatchCode(task.getWorkorderCode() + "-" + serial);
-            feedBack.setBatchCode(task.getWorkorderCode() + "-" + serial);
-            feedBack.setErpBatchCode(parentBatchCode);
 
-            // 修改任务单最新批次信息
-            task.setSerial(serial);
-            taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
+        // 仓库
+        WarehouseDTO warehouse = warehouseApiImpl.getWarehouse(warehouseId);
+        // 库区
+        StorageLocationDO location = locationService.getStorageLocation(locationId);
+        // 库位, 目前没有WMS, 仅获取第一个库位(MES管控, 无需回传ERP)
+        StorageAreaDO area = areaService.getStorageArea(areaId);
+        // 开始录入库存
+        // 后缀配置: 若warehouse的编码为WH165视为半成品, WH166视为成品
+        String warehouseCode = warehouse.getWarehouseCode();
+        if (warehouseCode.equals(Constant.LINE_EDGE_CODE)) {
+            materialStock.setItemName(item.getItemName() + "-" + process.getProcessCode() + "半成品");
+        } else {
+            materialStock.setItemName(item.getItemName() + "-" + process.getProcessCode() + "产成品");
         }
+        materialStock.setWarehouseCode(warehouse.getWarehouseCode()); // 线边仓
+        materialStock.setWarehouseId(warehouse.getId());
+        materialStock.setWarehouseName(warehouse.getWarehouseName());
+        materialStock.setLocationCode(location.getLocationCode()); // 线边仓库区
+        materialStock.setLocationId(location.getId());
+        materialStock.setLocationName(location.getLocationName());
+        materialStock.setAreaCode(area.getAreaCode()); // 线边仓库区
+        materialStock.setAreaId(area.getId());
+        materialStock.setAreaName(area.getAreaName());
+        materialStock.setRecptStatus("N");// 需等待打印条码后质检合格开始入库
+        //批次: 获取当前任务单及最新的流水号
+        String serial = task.getSerial();
+        if (serial == null) {
+            serial = "001";
+        } else {
+            int serialInt = Integer.parseInt(serial);
+            serialInt++;
+            serial = String.format("%03d", serialInt);
+        }
+        materialStock.setBatchCode(task.getParentBatchCode() + "-" + serial);
+        feedBack.setBatchCode(task.getParentBatchCode() + "-" + serial);
+        feedBack.setErpBatchCode(parentBatchCode);
+        // 修改任务单最新批次信息
+        task.setSerial(serial);
+        taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
+
         // 追加库存
         materialStockService.createMaterialStock(materialStock);
         FeedbackUpdateReqVO feedbackUpdateReqVO = BeanUtil.toBean(feedBack, FeedbackUpdateReqVO.class);
@@ -686,7 +736,7 @@ public class FeedbackController {
     @Operation(summary = "更新生产报工记录的状态")
     @Transactional
     @PreAuthorize("@ss.hasPermission('pro:feedback:update')")
-    public CommonResult updateFeedbackStatus(@RequestParam("id") Long id, @RequestParam("status") String status) {
+    public CommonResult updateFeedbackStatus(@RequestParam("id") Long id, @RequestParam("status") String status, @RequestParam("warehouseId") Long warehouseId, @RequestParam("locationId") Long locationId, @RequestParam("areaId") Long areaId) {
         if (!StrUtils.isNotNull(id)) {
             return error(ErrorCodeConstants.FEEDBACK_NEED_SAVE_FIRST);
         }
@@ -702,8 +752,6 @@ public class FeedbackController {
             feedbackUpdateReqVO.setStatus("UNAPPROVED");
             feedbackService.updateFeedback(feedbackUpdateReqVO);
             // 追加IPQC记录(机长自检)
-
-
             return error(ErrorCodeConstants.FEEDBACK_NOT_APPROVED);
         }
 
@@ -726,7 +774,6 @@ public class FeedbackController {
         task.setQuantityUnquanlify(quantityUnquanlify + feedback.getQuantityUnquanlified());
         TaskUpdateReqVO taskUpdateReqVO = BeanUtil.toBean(task, TaskUpdateReqVO.class);
         taskService.updateTask(taskUpdateReqVO);
-
 
         //更新工单的生产数量
         //workorder.setQuantityProduced(quantityProduced + feedback.getQuantityFeedback());
@@ -758,7 +805,7 @@ public class FeedbackController {
         //生成产品产出记录单
         ProductProduceDO productRecord = productProduceService.generateProductProduce(feedbackDTO);
         //执行产品产出入线边库
-        executeProductProduce(feedback, productRecord, workorder);
+        executeProductProduce(feedback, productRecord, workorder, warehouseId, locationId, areaId);
         //更新报工单的状态
         feedback.setStatus(UserConstants.ORDER_STATUS_FINISHED);
         // 追加批次号信息
@@ -815,6 +862,8 @@ public class FeedbackController {
         }
     }
 
+    /*
+    * 暂时取消一键报工
     @PutMapping("/one-click-create")
     @Operation(summary = "一键报工")
     @Transactional
@@ -891,7 +940,7 @@ public class FeedbackController {
             }
 
         }
-    }
+    }*/
 
     /**
      * 报工产成品入库
@@ -913,6 +962,12 @@ public class FeedbackController {
             List<MaterialStockDO> materialStock = materialStockService.getMaterialStockList(exportReqVO);
             materialStock.get(0).setRecptStatus("Y");
             materialStockService.updateMaterialStock(BeanUtil.toBean(materialStock.get(0), MaterialStockUpdateReqVO.class));
+
+            // 修改当前单据状态为已入库
+            Integer id = (Integer) map.get("id");
+            FeedbackDO feedbackDO = feedbackService.getFeedback(id.longValue());
+            feedbackDO.setStatus("WAREHOUSED");
+            feedbackService.updateFeedback(FeedbackConvert.INSTANCE.convert02(feedbackDO));
         }
         return "success";
     }
@@ -1262,10 +1317,13 @@ public class FeedbackController {
                         Objects.equals(f.getWorkorderCode(), first.getWorkorderCode())
         );
 
-        if(!allSame){
+        if (!allSame) {
             return error(ErrorCodeConstants.FEEDBACK_NOT_SAME);
         }
 
+        Long warehouseId = null;
+        Long locationId = null;
+        Long areaId = null;
         for (FeedbackDO feedback : feedbackList) {
             // 校验是否存在未入库单据信息
             MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
@@ -1276,9 +1334,12 @@ public class FeedbackController {
                 return error(ErrorCodeConstants.MATERIAL_STOCK_NOT_EXISTS);
             }
             MaterialStockDO stock = stockList.get(0);
-            if(stock.getRecptStatus().equals("N")){
-                return error(new ErrorCode(500, "报工单" + feedback.getFeedbackCode() + "未入库, 请先进行入库操作"));
+            if (stock.getRecptStatus().equals("N")) {
+                return error(ErrorCodeConstants.MATERIAL_STOCK_NOT_RECEPT);
             }
+            warehouseId = stock.getWarehouseId();
+            locationId = stock.getLocationId();
+            areaId = stock.getAreaId();
         }
 
         WorkorderDO workorder = workorderService.getWorkorder(first.getWorkorderId());
@@ -1334,7 +1395,7 @@ public class FeedbackController {
         FeedbackDTO feedbackDTO = BeanUtil.toBean(merged, FeedbackDTO.class);
         ProductProduceDO productRecord = productProduceService.generateProductProduce(feedbackDTO);
         //执行产品产出入线边库
-        executeProductProduce(merged, productRecord, workorder);
+        executeProductProduce(merged, productRecord, workorder, warehouseId, locationId, areaId);
 
         // 移除原报工单库存信息
         for (FeedbackDO feedback : feedbackList) {
@@ -1380,9 +1441,7 @@ public class FeedbackController {
             feedback.setQuantityFeedback(0.0);
             feedbackService.updateFeedback(FeedbackConvert.INSTANCE.convert02(feedback));
         }
-
         return success(mergedId);
     }
-
 
 }

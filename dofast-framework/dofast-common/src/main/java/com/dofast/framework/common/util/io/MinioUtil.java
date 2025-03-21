@@ -4,6 +4,7 @@ import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.dofast.framework.common.config.MinioConfig;
 import com.dofast.framework.common.util.date.DateUtils;
 import com.dofast.framework.common.util.spring.SpringUtils;
 import io.minio.*;
@@ -47,6 +48,8 @@ public class MinioUtil {
     @Autowired
     private MinioClient minioClient;
 
+    @Autowired
+    private MinioConfig minioConfig;
 
     /**
      * 判断桶是否存在
@@ -198,6 +201,9 @@ public class MinioUtil {
 
         // 文件上传
         uploadToMinio(bucketName, fileName, multipartFile);
+
+        // 返回完整的文件名
+        fileName = minioConfig.getEndpoint()+"/"+bucketName+"/"+fileName;
         return fileName;
     }
 

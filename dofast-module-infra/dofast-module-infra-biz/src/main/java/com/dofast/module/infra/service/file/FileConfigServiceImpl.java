@@ -244,14 +244,11 @@ public class FileConfigServiceImpl implements FileConfigService {
         validateFileConfigExists(id);
         // 上传文件
         byte[] content = ResourceUtil.readBytes("file/erweima.jpg");
-
         return getFileClient(id).upload(content, IdUtil.fastSimpleUUID() + ".jpg", "image/jpeg");
-
     }
 
     @Override
     public FileClient getFileClient(Long id) {
-
         return clientCache.getUnchecked(id);
     }
 

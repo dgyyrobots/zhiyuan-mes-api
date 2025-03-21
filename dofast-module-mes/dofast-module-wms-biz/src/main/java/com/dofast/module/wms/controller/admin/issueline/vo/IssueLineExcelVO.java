@@ -116,4 +116,7 @@ public class IssueLineExcelVO {
     @ExcelProperty("条码编号")
     private Long barcodeNumber;
 
+    @ExcelProperty("启用标识")
+    private String enableFlag;
+
 }

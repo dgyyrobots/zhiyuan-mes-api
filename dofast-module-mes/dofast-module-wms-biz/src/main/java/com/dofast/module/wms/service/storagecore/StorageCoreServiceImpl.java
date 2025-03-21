@@ -504,7 +504,7 @@ public class StorageCoreServiceImpl implements StorageCoreService{
      *
      */
     public void processItemConsume(List<ItemConsumeTxBean> lines){
-        if(CollUtil.isEmpty(lines)){
+        if(lines.isEmpty()){
             throw exception(TRANSFER_NO_PROCESS_LINE);
         }
         String transactionType = UserConstants.TRANSACTION_TYPE_ITEM_CONSUME;
