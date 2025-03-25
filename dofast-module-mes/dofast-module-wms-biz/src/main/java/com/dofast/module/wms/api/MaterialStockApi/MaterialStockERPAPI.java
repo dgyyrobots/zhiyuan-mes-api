@@ -79,7 +79,7 @@ public class MaterialStockERPAPI {
             detail.put("pmdt003", ""); // 采购项序
             detail.put("pmdt004", ""); // 采购分批序
             detail.put("pmdt027", ""); // 收货单号
-            detail.put("pmdt028", ""); // 收获项次
+            detail.put("pmdt028", good.get("consequence")); // 收获项次
             detail.put("pmdt006", good.get("goodsNumber")); // 料件
             detail.put("pmdt007", " "); // 特性
             detail.put("pmdt019", good.get("unitOfMeasure")); // 单位
@@ -218,7 +218,7 @@ public class MaterialStockERPAPI {
     }
 
     private Map<String, Object> createBaseRequest(String interfaceName) {
-        String ipAddress = getHostIp();
+        String ipAddress = "172.18.12.250";
         Map<String, Object> request = new HashMap<>();
         request.put("key", "f5458f5c0f9022db743a7c0710145903");
         request.put("type", "sync");
@@ -231,7 +231,7 @@ public class MaterialStockERPAPI {
         request.put("host", hostInfo);
 
         Map<String, Object> serviceInfo = new HashMap<>();
-        serviceInfo.put("prod", "T30");
+        serviceInfo.put("prod", "T32");
         serviceInfo.put("name", interfaceName);
         serviceInfo.put("ip", "192.168.127.7");
         serviceInfo.put("id", "toptst"); // topprd正式库 toptst测试库

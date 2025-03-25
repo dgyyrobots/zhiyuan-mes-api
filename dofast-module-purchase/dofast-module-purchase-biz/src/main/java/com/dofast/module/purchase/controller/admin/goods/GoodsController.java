@@ -315,21 +315,22 @@ public class GoodsController {
             goodsMap.put("unitOfMeasure", goodsDO.getUnitOfMeasure());
             goodsMap.put("receiveNum", goodsDO.getReceiveNum());
             goodsMap.put("batchCode", goodsDO.getBatchCode());
+            goodsMap.put("consequence", goodsDO.getConsequence());
             goodsMapList.add(goodsMap);
         }
         System.out.println(goodsMapList);
         params.put("goodsList", goodsMapList);
         params.put("sourceNo", poNo);
         params.put("supplierCode", supplierCode);
-        params.put("pmds000", "1"); // 采购收货
+        //params.put("pmds000", "1"); // 采购收货
         // 调用ERP接口, 先收货
        /* String result = materialStockERPAPI.purchaseDeliveryCreate(params);
         if (!result.equals("success")) {
             return result;
         }*/
-        params.put("pmds001", "6"); // 采购入库
+        params.put("pmds000", "6"); // 采购入库
         // 调用ERP接口, 再入库
-       /* String wareHouseingResult = materialStockERPAPI.purchaseDeliveryCreate(params);
+        /*String wareHouseingResult = materialStockERPAPI.purchaseDeliveryCreate(params);
         if (!wareHouseingResult.equals("success")) {
             return wareHouseingResult;
         }*/

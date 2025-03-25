@@ -60,7 +60,9 @@ public class WarehouseController {
     @Operation(summary = "查询树型的列表")
     @GetMapping("/getTreeList")
     public CommonResult getTreeList(){
-        return success(warehouseService.getTreeList());
+        List<WarehouseDO> list = warehouseService.getTreeList();
+        System.out.println(list);
+        return success(list);
     }
 
     @PostMapping("/create")

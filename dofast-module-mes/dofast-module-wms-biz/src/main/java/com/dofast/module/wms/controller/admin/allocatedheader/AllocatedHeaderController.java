@@ -26,6 +26,7 @@ import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueTxBean;
 import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
+import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.mysql.allocatedline.AllocatedLineMapper;
 import com.dofast.module.wms.dal.mysql.issueheader.IssueHeaderMapper;
 import com.dofast.module.wms.dal.mysql.issueline.IssueLineMapper;
@@ -36,6 +37,7 @@ import com.dofast.module.wms.service.issueheader.IssueHeaderService;
 import com.dofast.module.wms.service.issueline.IssueLineService;
 import com.dofast.module.wms.service.materialstock.MaterialStockService;
 import com.dofast.module.wms.service.storagecore.StorageCoreService;
+import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -124,6 +126,10 @@ public class AllocatedHeaderController {
     @Resource
     private TeamApi teamApi;
 
+    @Resource
+    private StorageLocationService storageLocationService;
+
+
     @PostMapping("/create")
     @Operation(summary = "创建调拨单头")
     @PreAuthorize("@ss.hasPermission('wms:allocated-header:create')")
@@ -154,7 +160,13 @@ public class AllocatedHeaderController {
 
             createReqVO.setAllocatedName(taskDTO.getProcessName() + "调拨单" + dateStr + random);
         }else{
-            createReqVO.setAllocatedName("调拨单" + dateStr + random);
+            StorageLocationDO location = storageLocationService.getStorageLocation(createReqVO.getLocationId());
+            String processName = "";
+            if(location!= null){
+                ProcessDTO process =  processApi.getcess(location.getProcessCode());
+                processName = process.getProcessName();
+            }
+            createReqVO.setAllocatedName(processName + "调拨单" + dateStr + random);
         }
 
         // 2025-3-18 调拨改为可分批次调拨, 无需管控在一张调拨单内

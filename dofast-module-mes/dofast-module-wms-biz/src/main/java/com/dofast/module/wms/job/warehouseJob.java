@@ -111,6 +111,7 @@ public class warehouseJob implements JobHandler {
                 addInfo.setAreaCode((String) areaMap.get("AREA_CODE")); // 库位编码
                 addInfo.setAreaName((String) areaMap.get("AREA_NAME")); // 库位名称
                 addInfo.setDeleted(!"Y".equals((String) areaMap.get("AREA_DELETED"))); // 是否删除
+                addInfo.setEnableFlag((String) areaMap.get("AREA_DELETED")); // 是否启用
                 addArea.add(addInfo);
             }
         }
