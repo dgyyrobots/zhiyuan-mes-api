@@ -1,5 +1,6 @@
 package com.dofast.module.pro.dal.dataobject.workorder;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.math.BigDecimal;
@@ -152,4 +153,6 @@ public class WorkorderDO extends BaseDO {
      * 工艺编号
      */
     private String routeCode;
+
+
 }

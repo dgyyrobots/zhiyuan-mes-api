@@ -84,11 +84,19 @@ public class OrderDO extends BaseDO {
      * 备注
      */
     private String remarks;
-
+    /**
+     * 母批次号
+     */
     private String parentBatchCode;
 
     private String serial;
 
     private String supplierCode;
+
+    /**
+     * ERP入库单号
+     */
+    private String warehousingCode;
+
 
 }

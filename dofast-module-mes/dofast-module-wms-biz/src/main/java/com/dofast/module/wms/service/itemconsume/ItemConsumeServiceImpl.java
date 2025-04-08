@@ -1,6 +1,5 @@
 package com.dofast.module.wms.service.itemconsume;
 
-import cn.hutool.core.collection.CollectionUtil;
 import com.dofast.framework.common.pojo.UserConstants;
 import com.dofast.module.mes.api.WorkStationAPi.WorkStationApi;
 import com.dofast.module.mes.api.WorkStationAPi.dto.WorkStationDTO;
@@ -11,22 +10,19 @@ import com.dofast.module.pro.api.ProcessApi.dto.ProcessDTO;
 import com.dofast.module.pro.api.RouteApi.RouteApi;
 import com.dofast.module.pro.api.RouteApi.RouteDTO;
 import com.dofast.module.pro.api.RouteProductBomApi.RouteProductBomApi;
-import com.dofast.module.pro.api.RouteProductBomApi.dto.RouteProductBomDTO;
 import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
 import com.dofast.module.pro.api.WorkorderApi.WorkorderApi;
 import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderDTO;
+import com.dofast.module.wms.api.ERPApi.WorkorderERPAPI;
 import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineExportReqVO;
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderExportReqVO;
 import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineExportReqVO;
-import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
-import com.dofast.module.wms.convert.issueline.IssueLineConvert;
 import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
 import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeTxBean;
 import com.dofast.module.wms.dal.dataobject.itemconsumeline.ItemConsumeLineDO;
-import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
 import com.dofast.module.wms.dal.mysql.itemconsumeline.ItemConsumeLineMapper;
 import com.dofast.module.wms.dal.mysql.materialstock.MaterialStockMapper;
 import com.dofast.module.wms.service.feedline.FeedLineService;
@@ -37,8 +33,13 @@ import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import com.dofast.module.wms.controller.admin.itemconsume.vo.*;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeDO;
 import com.dofast.framework.common.pojo.PageResult;
@@ -96,6 +97,10 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
 
     @Resource
     private FeedbackApi feedbackApi;
+
+    @Resource
+    private WorkorderERPAPI workorderERPAPI;
+
 
     @Override
     public Long createItemConsume(ItemConsumeCreateReqVO createReqVO) {
@@ -292,6 +297,44 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
             issueLineExportReqVO.setMachineryId(String.valueOf(feedback.getMachineryId()));
             List<IssueLineDO> issueLines = issueLineService.getIssueLineList(issueLineExportReqVO);
             if(!issueLines.isEmpty()){
+                // 追加ERP调拨接口测试
+                Map<String, Object> params = new HashMap<>();
+                List<Map<String, Object>>  list = new ArrayList<>(); // 装填领料信息
+
+                for (IssueLineDO issueLine: issueLines) {
+
+                    FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
+                    exportReqVO.setTaskCode(task.getTaskCode());
+                    exportReqVO.setItemCode(issueLine.getItemCode());
+                    exportReqVO.setBatchCode(issueLine.getBatchCode());
+                    exportReqVO.setBarcodeNumber(issueLine.getBarcodeNumber());
+
+                    FeedLineDO feedLine = feedLineService.getFeedLineList(exportReqVO).get(0);
+
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("sfdc001", workorder.getWorkorderCode()); // 工单单号
+                    map.put("sfdc002", feedLine.getSequence()); // 工单项次
+                    map.put("sfdc003", feedLine.getSequenceOrder()); // 工单项序
+                    map.put("sfdc007", issueLine.getQuantityIssued()); // 申请数量
+                    map.put("sfdc012", feedLine.getLocationCode()); // ERP库区
+                    map.put("sfdc013", feedLine.getAreaCode()); // ERP库位
+                    map.put("sfdc014", issueLine.getBatchCode()); // 批号
+                    map.put("sfdc015", "H01"); // 理由码 成套发料对应H01，成套退料对应Y01，超领对应H02，超领退对应Y02
+                    map.put("sfdc016", ""); // 库存管理特征
+                    map.put("source_seq", ""); // MES项次
+                    list.add(map);
+                }
+                params.put("goodsList", list);
+                params.put("sfda002", "11"); // 成套领料
+                params.put("source_no", issueHeader.getIssueCode()); // 成套领料
+
+               /* String erpResult = workorderERPAPI.workOrderIssueCreate(params);
+
+                if(!erpResult.contains("success")){
+                    // 过账失败
+                    System.out.println("ERP过账失败：" + erpResult);
+                }*/
+
                 // 更新上料详情
                 issueLines.forEach(issueLine -> {
                     issueLine.setFeedbackCode(feedback.getFeedbackCode()); // 绑定报工单号
@@ -306,11 +349,19 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
                 ReqVO.setIssueId(issueHeader.getId());
                 List<IssueLineDO> doubleCheckLines = issueLineService.getIssueLineList(ReqVO);
                 if(!doubleCheckLines.isEmpty()){
-                    // 开始追加关联关系
-                    doubleCheckLines.forEach(issueLine -> {
-                        StringBuffer feedBackStr = new StringBuffer();
-                        feedBackStr.append(issueLine.getFeedbackCode()).append(",").append(feedback.getFeedbackCode());
-                        issueLine.setFeedbackCode(feedBackStr.toString()); // 绑定报工单号
+                    // 校验当前报工单是否已绑定
+                    // 基于,拆分doubleCheckLines的feedbackCode字段, 与issueLines每一行对应的feedbackCode字段进行比对
+                    // 确保doubleCheckLines的feedbackCode字段, 都与issueLines每一行对应的feedbackCode字段进行比对, 出现不匹配的, 则进行追加关联关系
+                    // 否则, 则直接跳过
+                    issueLines.forEach(issueLine -> {
+                        if(issueLine.getFeedbackCode().contains(feedback.getFeedbackCode())){
+                            // 匹配, 则跳过
+                        }else{
+                            // 不匹配, 则追加关联关系
+                            StringBuffer feedBackStr = new StringBuffer();
+                            feedBackStr.append(issueLine.getFeedbackCode()).append(",").append(feedback.getFeedbackCode());
+                            issueLine.setFeedbackCode(feedBackStr.toString()); // 绑定报工单号
+                        }
                     });
                     issueLineService.updateIssueLineBatch(doubleCheckLines);
                 }
@@ -380,4 +431,40 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
     public List<ItemConsumeTxBean> getTxBeans(Long recordId) {
         return itemConsumeMapper.getTxBeans(recordId);
     }
+
+    @Override
+    public List<Map<String, Object>> getWeeklyConsumeSummary() {
+        LocalDate now = LocalDate.now();
+
+        // 计算时间范围
+        LocalDate currentWeekStart = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate currentWeekEnd = currentWeekStart.plusDays(6);
+        LocalDate lastWeekStart = currentWeekStart.minusWeeks(1);
+        LocalDate lastWeekEnd = lastWeekStart.plusDays(6);
+
+        // 转换为DateTime
+        LocalDateTime currentWeekStartTime = currentWeekStart.atStartOfDay();
+        LocalDateTime currentWeekEndTime = currentWeekEnd.atTime(23, 59, 59);
+        LocalDateTime lastWeekStartTime = lastWeekStart.atStartOfDay();
+        LocalDateTime lastWeekEndTime = lastWeekEnd.atTime(23, 59, 59);
+
+        // 查询数据
+        List<Map<String, Object>> dataList = itemConsumeMapper.selectWeeklyConsume(
+                currentWeekStartTime, currentWeekEndTime,
+                lastWeekStartTime, lastWeekEndTime
+        );
+
+        // 构建响应
+        List<Map<String, Object>> source = dataList.stream()
+                .map(data -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("product", data.get("product"));
+                    map.put("data1", data.get("current_week"));
+                    map.put("data2", data.get("last_week"));
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return source;
+    }
+
 }

@@ -65,4 +65,7 @@ public class WorkorderBomExcelVO {
     @ExcelProperty("项次")
     private Long sequence;
 
+    @Schema(description = "项序")
+    private Long sequenceOrder;
+
 }

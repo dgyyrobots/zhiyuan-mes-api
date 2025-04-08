@@ -62,4 +62,7 @@ public class OrderExcelVO {
     @ExcelProperty("供应商编码")
     private String supplierCode;
 
+    @ExcelProperty("ERP入库单")
+    private String warehousingCode;
+
 }

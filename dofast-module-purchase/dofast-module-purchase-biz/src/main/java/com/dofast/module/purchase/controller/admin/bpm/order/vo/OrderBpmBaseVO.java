@@ -42,4 +42,16 @@ public class OrderBpmBaseVO {
     @Schema(description = "备注")
     private String remarks;
 
+    @Schema(description = "母批次号")
+    private String parentBatchCode;
+
+    @Schema(description = "流水号")
+    private String serial;
+
+    @Schema(description = "供应商编码")
+    private String supplierCode;
+
+    @Schema(description = "ERP入库单")
+    private String warehousingCode;
+
 }

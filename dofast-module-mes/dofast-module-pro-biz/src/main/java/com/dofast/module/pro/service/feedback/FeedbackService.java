@@ -74,4 +74,6 @@ public interface FeedbackService {
 
     Boolean OneClickCreateFeedback(FeedbackDO taskDO);
 
+    List<Map<String, Object>> getCapacity();
+
 }

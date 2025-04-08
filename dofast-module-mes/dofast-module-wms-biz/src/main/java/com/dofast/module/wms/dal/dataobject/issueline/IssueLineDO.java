@@ -167,4 +167,15 @@ public class IssueLineDO extends BaseDO {
      */
     private String enableFlag;
 
+    /**
+     * ERP项次
+    */
+     private Long sequence;
+
+    /**
+     * ERP项次
+     */
+    private Long sequenceOrder;
+
+
 }

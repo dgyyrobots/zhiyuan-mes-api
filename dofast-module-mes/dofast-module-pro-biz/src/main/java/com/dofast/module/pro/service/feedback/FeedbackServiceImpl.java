@@ -175,4 +175,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         }
     }
 
+    @Override
+    public List<Map<String, Object>> getCapacity(){
+        return feedbackMapper.getCapacity();
+    }
+
 }

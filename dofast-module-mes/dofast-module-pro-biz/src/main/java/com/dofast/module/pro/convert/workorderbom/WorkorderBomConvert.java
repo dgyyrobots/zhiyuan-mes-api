@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.dofast.framework.common.pojo.PageResult;
 
+import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderBomDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import com.dofast.module.pro.controller.admin.workorderbom.vo.*;
@@ -26,6 +27,9 @@ public interface WorkorderBomConvert {
     WorkorderBomRespVO convert(WorkorderBomDO bean);
 
     List<WorkorderBomRespVO> convertList(List<WorkorderBomDO> list);
+
+    List<WorkorderBomDTO> convertList01(List<WorkorderBomDO> list);
+
 
     PageResult<WorkorderBomRespVO> convertPage(PageResult<WorkorderBomDO> page);
 

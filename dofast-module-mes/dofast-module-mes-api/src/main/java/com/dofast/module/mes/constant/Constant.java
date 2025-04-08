@@ -63,11 +63,14 @@ public class Constant {
     public static final String TRANSACTION_TYPE_ITEM_RECPT = "ITEM_RECPT"; //原材料接收入库
     public static final String TRANSACTION_TYPE_ITEM_RTV = "ITEM_RTV"; //原材料退回供应商
 
-    public static final String TRANSACTION_TYPE_ITEM_ALLOCATED_OUT = "ITEM_ALLOCATED_OUT"; //生产领用-出库事务
-    public static final String TRANSACTION_TYPE_ITEM_ALLOCATED_IN = "ITEM_ALLOCATED_IN"; //生产领用-入库事务
+    public static final String TRANSACTION_TYPE_ITEM_ALLOCATED_OUT = "ITEM_ALLOCATED_OUT"; //生产调拨-出库事务
+    public static final String TRANSACTION_TYPE_ITEM_ALLOCATED_IN = "ITEM_ALLOCATED_IN"; //生产调拨-入库事务
 
     public static final String TRANSACTION_TYPE_ITEM_ISSUE_OUT = "ITEM_ISSUE_OUT"; //生产领用-出库事务
     public static final String TRANSACTION_TYPE_ITEM_ISSUE_IN = "ITEM_ISSUE_IN"; //生产领用-入库事务
+
+    public static final String TRANSACTION_TYPE_ITEM_REISSUE_OUT = "ITEM_ISSUE_OUT"; //生产撤销领用-出库事务
+    public static final String TRANSACTION_TYPE_ITEM_REISSUE_IN = "ITEM_ISSUE_IN"; //生产撤销领用-入库事务
 
     public static final String TRANSACTION_TYPE_ITEM_RT_ISSUE_OUT = "ITEM_RT_ISSUE_OUT"; //生产退料-出库事务
     public static final String TRANSACTION_TYPE_ITEM_RT_ISSUE_IN = "ITEM_RT_ISSUE_IN"; //生产退料-入库事务

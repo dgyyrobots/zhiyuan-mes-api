@@ -90,4 +90,11 @@ public class GoodsServiceImpl implements GoodsService {
         return goodsMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public void updateBatch(List<GoodsDO> goodsList){
+        goodsMapper.updateBatch(goodsList);
+    }
+
+
+
 }

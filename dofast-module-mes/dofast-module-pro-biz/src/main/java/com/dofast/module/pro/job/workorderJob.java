@@ -106,6 +106,7 @@ public class workorderJob implements JobHandler {
                 if (file != null) {
                     workorderDO.setAdjuncts(file); // 工艺附件
                 }
+
                 addWorkorder.add(workorderDO);
             } else {
                 // 更新工单信息
@@ -133,6 +134,7 @@ public class workorderJob implements JobHandler {
                 Timestamp timestamp = (Timestamp) workOrder.get("REQUEST_DATE");
                 query.setRequestDate(timestamp.toLocalDateTime()); // 需求日期
                 query.setSourceCode(Optional.ofNullable((String) workOrder.get("SOURCE_CODE")).orElse("")); // 来源单据
+
                 updateWorkorder.add(query);
             }
         }
@@ -182,7 +184,9 @@ public class workorderJob implements JobHandler {
                 workorderBomDO.setQuantity(doubleValue);
                 workorderBomDO.setItemOrProduct("ITEM");
                 BigDecimal sequence = new BigDecimal(String.valueOf(workOrderBom.get("SEQUENCE")));
+                BigDecimal sequenceOrder = new BigDecimal(String.valueOf(workOrderBom.get("SEQUENCE_ORDER")));
                 workorderBomDO.setSequence(sequence.longValue()); // 项次
+                workorderBomDO.setSequenceOrder(sequenceOrder.longValue()); // 项序
                 addWorkorderBom.add(workorderBomDO);
             } else {
                 queryBom.setItemName(Optional.ofNullable((String) workOrderBom.get("ITEM_NAME")).orElse("")); // BOM名称
@@ -192,7 +196,9 @@ public class workorderJob implements JobHandler {
                 double doubleValue = bigDecimalValue.doubleValue();
                 queryBom.setQuantity(doubleValue);
                 BigDecimal sequence = new BigDecimal(String.valueOf(workOrderBom.get("SEQUENCE")));
+                BigDecimal sequenceOrder = new BigDecimal(String.valueOf(workOrderBom.get("SEQUENCE_ORDER")));
                 queryBom.setSequence(sequence.longValue()); // 项次
+                queryBom.setSequenceOrder(sequenceOrder.longValue()); // 项序
                 updateWorkorderBom.add(queryBom);
             }
         }

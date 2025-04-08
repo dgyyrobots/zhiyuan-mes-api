@@ -22,7 +22,7 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
 
     default PageResult<TaskDO> selectPage(TaskPageReqVO reqVO, Collection<Long> workorderIds) {
         return selectPage(reqVO, new LambdaQueryWrapperX<TaskDO>()
-                .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
+                .likeIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
                 .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
                 .in(TaskDO::getWorkorderId, workorderIds)
                 .eqIfPresent(TaskDO::getWorkorderCode, reqVO.getWorkorderCode())
@@ -72,7 +72,7 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
 
     default PageResult<TaskDO> selectPage(TaskPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<TaskDO>()
-                .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
+                .likeIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
                 .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
                 .eqIfPresent(TaskDO::getWorkorderId, reqVO.getWorkorderId())
                 .eqIfPresent(TaskDO::getWorkorderCode, reqVO.getWorkorderCode())
@@ -121,7 +121,7 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
 
     default PageResult<TaskDO> selectPageByIds(TaskPageReqVO reqVO, Collection<Long> collect) {
         return selectPage(reqVO, new LambdaQueryWrapperX<TaskDO>()
-                .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
+                .likeIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
                 .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
                 .eqIfPresent(TaskDO::getWorkorderId, reqVO.getWorkorderId())
                 .eqIfPresent(TaskDO::getWorkorderCode, reqVO.getWorkorderCode())
@@ -192,7 +192,7 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
 
     default List<TaskDO> selectList(TaskListVO reqVO) {
         return selectList(new LambdaQueryWrapperX<TaskDO>()
-                .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
+                .likeIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
                 .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
                 .eqIfPresent(TaskDO::getWorkorderId, reqVO.getWorkorderId())
                 .eqIfPresent(TaskDO::getWorkorderCode, reqVO.getWorkorderCode())
@@ -242,7 +242,7 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
 
     default List<TaskDO> selectList(TaskExportReqVO reqVO, Collection<Long> workstationIds) {
         return selectList(new LambdaQueryWrapperX<TaskDO>()
-                .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
+                .likeIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
                 .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
                 .eqIfPresent(TaskDO::getWorkorderId, reqVO.getWorkorderId())
                 .eqIfPresent(TaskDO::getWorkorderCode, reqVO.getWorkorderCode())
@@ -292,7 +292,7 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
 
     default List<TaskDO> selectList(TaskExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<TaskDO>()
-                .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
+                .likeIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
                 .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
                 .eqIfPresent(TaskDO::getWorkorderId, reqVO.getWorkorderId())
                 .eqIfPresent(TaskDO::getWorkorderCode, reqVO.getWorkorderCode())
@@ -358,7 +358,7 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
 
     default PageResult<TaskDO> getTaskByTeamCode(TaskPageReqVO reqVO, String teamCode) {
         return selectPage(reqVO, new LambdaQueryWrapperX<TaskDO>()
-                .eqIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
+                .likeIfPresent(TaskDO::getTaskCode, reqVO.getTaskCode())
                 .likeIfPresent(TaskDO::getTaskName, reqVO.getTaskName())
                 .eqIfPresent(TaskDO::getWorkorderId, reqVO.getWorkorderId())
                 .eqIfPresent(TaskDO::getWorkorderCode, reqVO.getWorkorderCode())

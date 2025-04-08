@@ -24,7 +24,7 @@ public interface MdWorkstationMapper extends BaseMapperX<MdWorkstationDO> {
     }
     default PageResult<MdWorkstationDO> selectPage(MdWorkstationPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<MdWorkstationDO>()
-                .eqIfPresent(MdWorkstationDO::getWorkstationCode, reqVO.getWorkstationCode())
+                .likeIfPresent(MdWorkstationDO::getWorkstationCode, reqVO.getWorkstationCode())
                 .likeIfPresent(MdWorkstationDO::getWorkstationName, reqVO.getWorkstationName())
                 .eqIfPresent(MdWorkstationDO::getWorkstationAddress, reqVO.getWorkstationAddress())
                 .eqIfPresent(MdWorkstationDO::getWorkshopId, reqVO.getWorkshopId())
@@ -55,7 +55,7 @@ public interface MdWorkstationMapper extends BaseMapperX<MdWorkstationDO> {
     default List<MdWorkstationDO> selectList(MdWorkstationExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<MdWorkstationDO>()
                 .inIfPresent(MdWorkstationDO::getId, reqVO.getIds())
-                .eqIfPresent(MdWorkstationDO::getWorkstationCode, reqVO.getWorkstationCode())
+                .likeIfPresent(MdWorkstationDO::getWorkstationCode, reqVO.getWorkstationCode())
                 .likeIfPresent(MdWorkstationDO::getWorkstationName, reqVO.getWorkstationName())
                 .eqIfPresent(MdWorkstationDO::getWorkstationAddress, reqVO.getWorkstationAddress())
                 .eqIfPresent(MdWorkstationDO::getWorkshopId, reqVO.getWorkshopId())

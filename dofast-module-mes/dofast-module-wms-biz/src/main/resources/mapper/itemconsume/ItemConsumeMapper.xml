@@ -50,4 +50,22 @@
         WHERE ir.`id` = #{recordId}
     </select>
 
+
+    <select id="selectWeeklyConsume" resultType="java.util.Map">
+        SELECT
+            a.item_code AS product,
+            SUM(CASE WHEN b.consume_date BETWEEN '2025-03-24' AND '2025-03-29' THEN a.quantity_consume ELSE 0 END) AS current_week,
+            SUM(CASE WHEN b.consume_date BETWEEN '2025-03-19' AND '2025-03-24' THEN a.quantity_consume ELSE 0 END) AS last_week
+        FROM
+            wms_item_consume_line a
+                LEFT JOIN
+            wms_item_consume b ON a.record_id = b.id
+        WHERE
+            b.consume_date BETWEEN '2025-03-19' AND '2025-03-29'
+          AND b.deleted = 0
+          AND a.deleted = 0
+        GROUP BY
+            a.item_code
+    </select>
+
 </mapper>

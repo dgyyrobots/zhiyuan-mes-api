@@ -60,4 +60,7 @@ public class OrderPageReqVO extends PageParam {
     @Schema(description = "供应商编码")
     private String supplierCode;
 
+    @Schema(description = "ERP入库单")
+    private String warehousingCode;
+
 }

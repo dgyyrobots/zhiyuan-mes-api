@@ -85,4 +85,9 @@ public class WorkorderBomDO extends BaseDO {
      */
     private Long sequence;
 
+    /**
+     * 项序
+     */
+    private Long sequenceOrder;
+
 }

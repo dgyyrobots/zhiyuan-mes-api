@@ -1,5 +1,6 @@
 package com.dofast.module.purchase.dal.dataobject.goods;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -103,6 +104,17 @@ public class GoodsDO extends BaseDO {
      * 母批次
      */
     private String parentBatchCode;
+
+    /**
+     * 供应商编码
+     */
+    private String vendorCode;
+
+    /**
+     * 供应商名称
+     */
+    private String vendorName;
+
     /**
      * 项次
      */
@@ -112,4 +124,27 @@ public class GoodsDO extends BaseDO {
      * ERP数量
      */
     private BigDecimal erpNum;
+
+    /**
+     * ERP采购批次
+     */
+    private Integer purchaseBatch;
+
+    /**
+     * ERP采购批序
+     */
+    private Integer purchaseConsequence;
+
+    /**
+     * ERP采购分批序
+     */
+    private Integer purchaseBatchConsequence;
+
+    @Schema(description = "ERP采购单号")
+    /**
+     * ERP采购单号
+     */
+    private String erpReceiveCode;
+
+
 }

@@ -273,6 +273,9 @@ public class IssueHeaderController {
             lineDO.setMachineryName(issueLine.getMachineryName());
             lineDO.setMachineryId(issueLine.getMachineryId());
             lineDO.setBarcodeNumber(issueLine.getBarcodeNumber());
+            // 2025-04-03: 追加ERP项次, 项序用于领料接口
+            lineDO.setSequence(issueLine.getSequence());
+            lineDO.setSequenceOrder(issueLine.getSequenceOrder());
             createReqVOList.add(lineDO);
         }
         feedLineService.insertBatch(createReqVOList);

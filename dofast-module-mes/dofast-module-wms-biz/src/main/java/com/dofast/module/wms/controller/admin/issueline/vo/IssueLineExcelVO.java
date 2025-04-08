@@ -119,4 +119,10 @@ public class IssueLineExcelVO {
     @ExcelProperty("启用标识")
     private String enableFlag;
 
+    @ExcelProperty("ERP项次")
+    private Long sequence;
+
+    @ExcelProperty("ERP项序")
+    private Long sequenceOrder;
+
 }

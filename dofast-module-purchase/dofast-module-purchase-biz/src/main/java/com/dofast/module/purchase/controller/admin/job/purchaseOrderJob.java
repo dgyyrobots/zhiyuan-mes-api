@@ -3,6 +3,8 @@ package com.dofast.module.purchase.controller.admin.job;
 import com.dofast.framework.common.core.LoginUser;
 import com.dofast.framework.quartz.core.handler.JobHandler;
 import com.dofast.framework.security.core.util.SecurityFrameworkUtils;
+import com.dofast.module.mes.api.MdVendorApi.MdVendorApi;
+import com.dofast.module.mes.api.MdVendorApi.dto.MdVendorDTO;
 import com.dofast.module.purchase.controller.admin.goods.vo.GoodsExportReqVO;
 import com.dofast.module.purchase.controller.admin.order.vo.OrderBaseVO;
 import com.dofast.module.purchase.dal.dataobject.goods.GoodsDO;
@@ -33,6 +35,9 @@ public class purchaseOrderJob implements JobHandler {
 
     @Resource
     private RtVendorService rtVendorService;
+
+    @Resource
+    private MdVendorApi mdVendorApi;
 
     @Override
     public String execute(String param) throws Exception {
@@ -103,6 +108,13 @@ public class purchaseOrderJob implements JobHandler {
                 String itemUnit = Optional.ofNullable((String) purchaseGoods.get("COMPANY")).orElse("");
                 String supplierCode = Optional.ofNullable((String) purchaseGoods.get("SUPPLIER_CODE")).orElse("");
                 // BigDecimal consequence = new BigDecimal(String.valueOf(purchaseGoods.get("CONSEQUENCE")));
+
+                // 根据当前的供应商编号获取供应商名称
+                MdVendorDTO vendor = mdVendorApi.getVendorByVendorCode(supplierCode);
+
+                BigDecimal purchaseBatch = purchaseGoods.get("PURCHASE_BATCH") != null ? (BigDecimal) purchaseGoods.get("PURCHASE_BATCH") : new BigDecimal(0); // 采购项次
+                BigDecimal purchaseConsequence = purchaseGoods.get("PURCHASE_CONSEQUENCE") != null ? (BigDecimal) purchaseGoods.get("PURCHASE_CONSEQUENCE") : new BigDecimal(0); // 采购项序
+                BigDecimal purchaseBatchConsequence = purchaseGoods.get("PURCHASE_BATCH_CONSEQUENCE") != null ? (BigDecimal) purchaseGoods.get("PURCHASE_BATCH_CONSEQUENCE") : new BigDecimal(0); // 采购分批序
                 BigDecimal consequence = new BigDecimal(purchaseGoods.get("CONSEQUENCE") != null ? String.valueOf(purchaseGoods.get("CONSEQUENCE")) : "-1");
 
                 BigDecimal itemNum = purchaseGoods.get("QUANTITY").equals(null)? new BigDecimal(0) : (BigDecimal) purchaseGoods.get("QUANTITY");
@@ -114,16 +126,25 @@ public class purchaseOrderJob implements JobHandler {
                 List<GoodsDO> goodsDO = goodsMapper.selectList(exr);
                 if (!goodsDO.isEmpty()) {
                     // 更新入库单详情信息
-                    /*goodsDO.setGoodsName(itemName);
-                    goodsDO.setGoodsSpecs(itemSpec);
-                    goodsDO.setCompany(itemUnit);
-                    goodsDO.setQuantity(itemNum);
-                    goodsDO.setErpNum(itemNum);
-                    goodsDO.setPoNo(orderDO.getPoNo());
-                    if(!consequence.equals(-1)){
-                        goodsDO.setConsequence(String.valueOf(consequence));
+                    for(GoodsDO seqGoods : goodsDO){
+                        seqGoods.setGoodsName(itemName);
+                        seqGoods.setGoodsSpecs(itemSpec);
+                        seqGoods.setCompany(itemUnit);
+                        seqGoods.setQuantity(itemNum);
+                        seqGoods.setErpNum(itemNum);
+                        seqGoods.setPoNo(orderDO.getPoNo());
+                        if(!consequence.equals(-1)){
+                            seqGoods.setConsequence(String.valueOf(consequence));
+                        }
+                        seqGoods.setPurchaseBatch(purchaseBatch.intValue());
+                        seqGoods.setPurchaseConsequence(purchaseConsequence.intValue());
+                        seqGoods.setPurchaseBatchConsequence(purchaseBatchConsequence.intValue());
+                        seqGoods.setVendorCode(supplierCode);
+                        if(vendor!=null){
+                            seqGoods.setVendorName(vendor.getVendorName());
+                        }
+                        editGoods.add(seqGoods);
                     }
-                    editGoods.add(goodsDO);*/
                     continue;
                 } else {
                     // 新增入库单详情信息
@@ -137,6 +158,13 @@ public class purchaseOrderJob implements JobHandler {
                     goods.setQuantity(itemNum);
                     goods.setGoodsNumber(itemCode);
                     goods.setPoNo(orderDO.getPoNo());
+                    goods.setVendorCode(supplierCode);
+                    if(vendor!=null){
+                        goods.setVendorName(vendor.getVendorName());
+                    }
+                    goods.setPurchaseBatch(purchaseBatch.intValue());
+                    goods.setPurchaseConsequence(purchaseConsequence.intValue());
+                    goods.setPurchaseBatchConsequence(purchaseBatchConsequence.intValue());
                     //goodsDO.setConsequence(consequence.toString());
                     if(!consequence.equals(-1)){
                         goods.setConsequence(String.valueOf(consequence));

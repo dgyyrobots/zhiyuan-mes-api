@@ -60,6 +60,7 @@ import com.dofast.module.qms.api.oqcApi.dto.OqcDTO;
 import com.dofast.module.system.api.user.AdminUserApi;
 import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
 import com.dofast.module.trade.api.mixinorder.MixinOrderApi;
+import com.dofast.module.wms.api.ERPApi.WorkorderERPAPI;
 import com.dofast.module.wms.api.Issueheader.IssueApi;
 import com.dofast.module.wms.api.Issueheader.dto.IssueLineDTO;
 import com.dofast.module.wms.api.Issueheader.dto.IssueheaderDTO;
@@ -129,6 +130,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 //import static com.dofast.framework.common.pad.util.PadSecurityUtils.getUsername;
+import static cn.hutool.core.date.DateUtil.formatDate;
 import static com.dofast.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.dofast.framework.common.pojo.CommonResult.error;
 import static com.dofast.framework.common.pojo.CommonResult.success;
@@ -238,6 +240,8 @@ public class FeedbackController {
     @Resource
     private ItemConsumeLineMapper itemConsumeLineMapper;
 
+    @Resource
+    private WorkorderERPAPI workorderERPAPI;
 
     @PostMapping("/create")
     @Operation(summary = "创建生产报工记录")
@@ -583,15 +587,15 @@ public class FeedbackController {
             area = areaService.getStorageAreaByLocationId(location.getId()).get(0);
         } else {
             // 当前工序若为涂布, 入模压线边仓
-            if("AM001".equals(task.getProcessCode())){
+            if ("AM001".equals(task.getProcessCode())) {
                 warehouse = warehouseApiImpl.selectWmWarehouseByWarehouseCode(Constant.LINE_EDGE_CODE);
                 location = locationService.getStorageLocation("AM002");
                 area = areaService.getStorageAreaByLocationId(location.getId()).get(0);
-            }else if("AM004".equals(task.getProcessCode())){
+            } else if ("AM004".equals(task.getProcessCode())) {
                 warehouse = warehouseApiImpl.selectWmWarehouseByWarehouseCode(Constant.LINE_EDGE_CODE);
                 location = locationService.getStorageLocation("AM005");
                 area = areaService.getStorageAreaByLocationId(location.getId()).get(0);
-            }else{
+            } else {
                 warehouse = warehouseApiImpl.selectWmWarehouseByWarehouseCode(Constant.WAREHOUSE_CODE);
                 // 传递至成品仓-基于正式库决定, 暂时写死
                 location = locationService.getStorageLocation(66L);
@@ -741,6 +745,7 @@ public class FeedbackController {
             return error(ErrorCodeConstants.FEEDBACK_NEED_SAVE_FIRST);
         }
         FeedbackDO feedback = feedbackService.getFeedback(id);
+
         // 获得用户基本信息
         Long loginUserId = SecurityFrameworkUtils.getLoginUserId();
         AdminUserRespDTO userDTO = adminUserApi.getUser(loginUserId);
@@ -953,11 +958,64 @@ public class FeedbackController {
     public String wareHousing(@RequestBody Map<String, Object> params) {
         System.out.println(params.toString());
         List<Map<String, Object>> objList = (List<Map<String, Object>>) params.get("wareList");
+
+        System.out.println(objList.toString());
+
+        // 准备调用ERP接口的参数容器
+        Map<String, Object> erpParams = new HashMap<>();
+        List<Map<String, Object>> workOrders = new ArrayList<>();
+
+        // 遍历每个报工单进行数据转换
+        for (Map<String, Object> ware : objList) {
+            // 构建goodsList明细（根据ERP接口要求）
+            List<Map<String, Object>> goodsList = new ArrayList<>();
+
+            Map<String, Object> detail = new HashMap<>();
+            detail.put("sfeb001", ware.get("workorderCode"));       // 工单单号
+            detail.put("sfeb003", "1");                             // 入库类型（示例值，需确认）
+            detail.put("sfeb004", ware.get("itemCode"));            // 料号
+            detail.put("sfeb005", ware.get("specification"));       // 产品特征
+            detail.put("sfeb008", ware.get("quantityFeedback"));    // 申请数量
+
+            // 基于当前的库存信息
+            MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
+            exportReqVO.setItemCode((String) ware.get("itemCode"));
+            exportReqVO.setBatchCode((String) ware.get("batchCode"));
+            List<MaterialStockDO> materialStock = materialStockService.getMaterialStockList(exportReqVO);
+
+            detail.put("sfeb013", materialStock.get(0).getLocationCode());                          // 库位（示例值）
+            detail.put("sfeb014", materialStock.get(0).getAreaCode());                       // 储位（示例值）
+            detail.put("sfeb015", ware.get("batchCode"));        // 批号
+            detail.put("source_seq", "");     // MES项次
+            goodsList.add(detail);
+
+            // 构建单个工单的master数据
+            Map<String, Object> workOrder = new HashMap<>();
+            workOrder.put("source_no", ware.get("feedbackCode"));   // MES报工单号
+            workOrder.put("sfeadocno", "asft340");                  // 单别（示例值）
+            workOrder.put("sfeadocdt", formatDate(new Date()));     // 单据日期
+            workOrder.put("sfea001", formatDate(new Date()));       // 过账日期
+            workOrder.put("sfea002", ware.get("userName"));         // 申请人员
+            workOrder.put("goodsList", goodsList);                  // 当前工单明细
+
+            workOrders.add(workOrder);
+        }
+
+        // 组装最终ERP接口参数
+        erpParams.put("workOrders", workOrders);
+
+        // 调用接口方法
+       /* String result = workorderERPAPI.workOrderFinishCreate(erpParams);
+
+        if(result!="success"){
+            return null;
+        }*/
+
+
         for (Map<String, Object> map : objList) {
             // 基于当前的库存信息
             MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
             exportReqVO.setItemCode((String) map.get("itemCode"));
-            exportReqVO.setItemName((String) map.get("itemName"));
             exportReqVO.setBatchCode((String) map.get("batchCode"));
             List<MaterialStockDO> materialStock = materialStockService.getMaterialStockList(exportReqVO);
             materialStock.get(0).setRecptStatus("Y");
@@ -1443,5 +1501,21 @@ public class FeedbackController {
         }
         return success(mergedId);
     }
+
+
+    /**
+     * 看板: 各车间产量
+     * @param tenantId
+     * @return
+     */
+    @GetMapping("/workshop-capacity")
+    public Map<String, Object> getWorkshopCapacity() {
+        List<Map<String, Object>> source = feedbackService.getCapacity();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("dimensions", Arrays.asList("name", "value"));
+        result.put("source", source);
+        return result;
+    }
+
 
 }

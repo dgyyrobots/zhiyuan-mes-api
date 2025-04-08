@@ -214,14 +214,14 @@ public class RouteProcessServiceImpl implements RouteProcessService {
         }else{
             finCode = routeCode;
         }
-        RouteDO routeDO = routeService.getRoute(routeCode);
+        RouteDO routeDO = routeService.getRoute(finCode);
         if(routeDO == null){
             System.out.println("工单号: "+workOrderCode+" 对应工艺路线不存在!");
             return false;
         }
         // 根据工艺路线获取工艺路线信息
         RouteProcessListVO reqVO = new RouteProcessListVO();
-        reqVO.setProcessCode(routeCode);
+        reqVO.setProcessCode(processCode);
         reqVO.setRouteId(routeDO.getId());
         List<RouteProcessDO> routeProcessList = routeProcessMapper.selectList(reqVO);
         if(!routeProcessList.isEmpty()){

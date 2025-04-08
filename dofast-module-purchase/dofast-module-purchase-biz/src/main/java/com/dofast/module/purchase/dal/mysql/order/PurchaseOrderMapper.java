@@ -30,6 +30,7 @@ public interface PurchaseOrderMapper extends BaseMapperX<OrderDO> {
                 .eqIfPresent(OrderDO::getReturnGoods, reqVO.getReturnGoods())
                 .eqIfPresent(OrderDO::getProcessType, reqVO.getProcessType())
                 .eqIfPresent(OrderDO::getRemarks, reqVO.getRemarks())
+                .eqIfPresent(OrderDO::getWarehousingCode, reqVO.getWarehousingCode())
                 .betweenIfPresent(OrderDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(OrderDO::getId));
     }
@@ -45,6 +46,7 @@ public interface PurchaseOrderMapper extends BaseMapperX<OrderDO> {
                 .eqIfPresent(OrderDO::getReturnGoods, reqVO.getReturnGoods())
                 .eqIfPresent(OrderDO::getProcessType, reqVO.getProcessType())
                 .eqIfPresent(OrderDO::getRemarks, reqVO.getRemarks())
+                .eqIfPresent(OrderDO::getWarehousingCode, reqVO.getWarehousingCode())
                 .betweenIfPresent(OrderDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(OrderDO::getId));
     }
@@ -61,6 +63,7 @@ public interface PurchaseOrderMapper extends BaseMapperX<OrderDO> {
                 .eqIfPresent(OrderDO::getProcessType, reqVO.getProcessType())
                 .eqIfPresent(OrderDO::getRemarks, reqVO.getRemarks())
                 .eqIfPresent(BaseDO::getCreator,userId)
+                .eqIfPresent(OrderDO::getWarehousingCode, reqVO.getWarehousingCode())
                 .betweenIfPresent(OrderDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(OrderDO::getId));
     }

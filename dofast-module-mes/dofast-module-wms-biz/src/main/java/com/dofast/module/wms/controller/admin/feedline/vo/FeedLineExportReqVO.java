@@ -125,4 +125,11 @@ public class FeedLineExportReqVO {
     @Schema(description = "条码编号")
     private Long barcodeNumber;
 
+    @Schema(description = "ERP项次")
+    private Long sequence;
+
+    @Schema(description = "ERP项次")
+    private Long sequenceOrder;
+
+
 }

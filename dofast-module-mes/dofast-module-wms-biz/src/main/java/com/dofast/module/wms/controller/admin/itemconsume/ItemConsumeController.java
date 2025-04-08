@@ -99,4 +99,14 @@ public class ItemConsumeController {
         ExcelUtils.write(response, "物料消耗记录.xls", "数据", ItemConsumeExcelVO.class, datas);
     }
 
+
+    /**
+     * 看板: 用于计算物料消耗
+     * @return
+     */
+    @GetMapping("/weekly-summary")
+    public CommonResult getWeeklyConsumeSummary() {
+        return success(itemConsumeService.getWeeklyConsumeSummary());
+    }
+
 }

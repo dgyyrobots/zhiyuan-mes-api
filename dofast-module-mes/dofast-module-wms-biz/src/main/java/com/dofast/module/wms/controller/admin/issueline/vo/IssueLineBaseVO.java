@@ -112,4 +112,10 @@ public class IssueLineBaseVO {
     @Schema(description = "启用标识")
     private String enableFlag;
 
+    @Schema(description = "ERP项次")
+    private Long sequence;
+
+    @Schema(description = "ERP项次")
+    private Long sequenceOrder;
+
 }

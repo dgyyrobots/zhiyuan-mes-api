@@ -1,9 +1,6 @@
 package com.dofast.module.purchase.controller.admin.goods;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import com.dofast.framework.common.util.bean.BeanUtils;
-import com.dofast.framework.common.util.http.HttpUtils;
 import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.mes.dal.dataobject.mditem.MdItemDO;
 import com.dofast.module.mes.service.mditem.MdItemService;
@@ -11,13 +8,12 @@ import com.dofast.module.pro.api.FeedbackApi.FeedbackApi;
 import com.dofast.module.pro.api.FeedbackApi.dto.FeedbackDTO;
 import com.dofast.module.purchase.convert.order.OrderConvert;
 import com.dofast.module.purchase.dal.dataobject.order.OrderDO;
-import com.dofast.module.purchase.dal.mysql.goods.GoodsMapper;
 import com.dofast.module.purchase.dal.mysql.order.PurchaseOrderMapper;
 import com.dofast.module.purchase.enums.ErrorCodeConstants;
 import com.dofast.module.purchase.service.order.OrderService;
 import com.dofast.module.tm.dal.dataobject.tool.ToolDO;
 import com.dofast.module.tm.service.tool.ToolService;
-import com.dofast.module.wms.api.MaterialStockApi.MaterialStockERPAPI;
+import com.dofast.module.wms.api.ERPApi.MaterialStockERPAPI;
 import com.dofast.module.wms.api.StorageAreaApi.StorageAreaApi;
 import com.dofast.module.wms.api.StorageAreaApi.dto.StorageAreaDTO;
 import com.dofast.module.wms.api.StorageLocationApi.StorageLocationApi;
@@ -51,13 +47,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 
-import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
 import java.math.BigDecimal;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -196,8 +188,8 @@ public class GoodsController {
             // 未入库 =》 已入库
             for (GoodsUpdateReqVO goodsUpdateReqVO : updateReqVOList) {
                 Integer status = goodsUpdateReqVO.getStatus();
-                if (status == 0) {
-                    goodsUpdateReqVO.setStatus(1);
+                if (status == 1) { // 1: 未打印 2: 已打印
+                    goodsUpdateReqVO.setStatus(2);
                     goodsService.updateGoods(goodsUpdateReqVO);
                 }
             }
@@ -265,7 +257,7 @@ public class GoodsController {
     @PreAuthorize("@ss.hasPermission('purchase:goods:query')")
     public CommonResult<List<GoodsRespVO>> getGoodsAllList(@Valid GoodsDO goodsDO) {
         GoodsExportReqVO exportReqVO = new GoodsExportReqVO();
-        goodsDO.setStatus(1);
+        goodsDO.setStatus(2); // 2: 已打印
         BeanUtils.copyProperties(goodsDO, exportReqVO);
         List<GoodsDO> pageResult = goodsService.getGoodsList(exportReqVO);
         return success(GoodsConvert.INSTANCE.convertList(pageResult));
@@ -300,7 +292,45 @@ public class GoodsController {
 
         GoodsExportReqVO exportReqVO = new GoodsExportReqVO();
         exportReqVO.setPoNo(poNo);
+        exportReqVO.setStatus(2); // 2-已打印
         List<GoodsDO> goodsList = goodsService.getGoodsList(exportReqVO);
+
+
+        // 开始过滤数据
+        // 当前goodsMapList中存在多行单身信息, 但其收货单不同, 请根据poNo与收货单erpReceiveCode进行过滤
+        // 创建一个Map来存储不同组合的List
+        Map<String, List<Map<String, Object>>> groupedGoodsMap = new HashMap<>();
+        for (GoodsDO goodsDO : goodsList) {
+            BigDecimal receiveNum = goodsDO.getReceiveNum() == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(goodsDO.getReceiveNum()));
+            if (receiveNum.compareTo(BigDecimal.ZERO) == 0) {
+                continue;
+            }
+            String erpReceiveCode = goodsDO.getErpReceiveCode();
+            String key = poNo + "_" + erpReceiveCode;
+
+            // 如果Map中还没有这个组合的List，创建一个新的List
+            if (!groupedGoodsMap.containsKey(key)) {
+                groupedGoodsMap.put(key, new ArrayList<>());
+            }
+            // 将当前的商品信息添加到对应的List中
+            Map<String, Object> goodsMap = new HashMap<>();
+            goodsMap.put("id", goodsDO.getId());
+            goodsMap.put("poNo", poNo);
+            goodsMap.put("goodsNumber", goodsDO.getGoodsNumber());
+            goodsMap.put("goodsName", goodsDO.getGoodsName());
+            goodsMap.put("unitOfMeasure", goodsDO.getUnitOfMeasure());
+            goodsMap.put("receiveNum", goodsDO.getReceiveNum());
+            goodsMap.put("batchCode", goodsDO.getBatchCode());
+            goodsMap.put("consequence", goodsDO.getConsequence());
+            goodsMap.put("purchaseBatch", goodsDO.getPurchaseBatch());
+            goodsMap.put("purchaseConsequence", goodsDO.getPurchaseConsequence());
+            goodsMap.put("purchaseBatchConsequence", goodsDO.getPurchaseBatchConsequence());
+            goodsMap.put("supplierCode", goodsDO.getVendorCode());
+            goodsMap.put("erpReceiveCode", goodsDO.getErpReceiveCode());
+            groupedGoodsMap.get(key).add(goodsMap);
+        }
+        System.out.println(groupedGoodsMap.toString());
+/*
         List<Map<String, Object>> goodsMapList = new ArrayList<>();
         for (GoodsDO goodsDO : goodsList) {
             BigDecimal receiveNum = goodsDO.getReceiveNum() == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(goodsDO.getReceiveNum()));
@@ -316,24 +346,52 @@ public class GoodsController {
             goodsMap.put("receiveNum", goodsDO.getReceiveNum());
             goodsMap.put("batchCode", goodsDO.getBatchCode());
             goodsMap.put("consequence", goodsDO.getConsequence());
+            goodsMap.put("purchaseBatch", goodsDO.getPurchaseBatch());
+            goodsMap.put("purchaseConsequence", goodsDO.getPurchaseConsequence());
+            goodsMap.put("purchaseBatchConsequence", goodsDO.getPurchaseBatchConsequence());
+
             goodsMapList.add(goodsMap);
         }
-        System.out.println(goodsMapList);
-        params.put("goodsList", goodsMapList);
+        System.out.println(goodsMapList);*/
+
+
+    /*    params.put("goodsList", goodsMapList);
         params.put("sourceNo", poNo);
-        params.put("supplierCode", supplierCode);
-        //params.put("pmds000", "1"); // 采购收货
+        params.put("supplierCode", supplierCode);*/
+        // params.put("pmds000", "1"); // 采购收货
         // 调用ERP接口, 先收货
-       /* String result = materialStockERPAPI.purchaseDeliveryCreate(params);
-        if (!result.equals("success")) {
+        /*String result = materialStockERPAPI.purchaseDeliveryCreate(params);
+        if(result.contains("success")){
+            String warehousingCode = result.split(",")[1];
+
+        }*/
+
+       /* if (!result.equals("success")) {
             return result;
         }*/
-        params.put("pmds000", "6"); // 采购入库
+        /*params.put("pmds000", "6"); // 采购入库
+        params.put("warehousingCode", "AMSH02-250401001");
         // 调用ERP接口, 再入库
-        /*String wareHouseingResult = materialStockERPAPI.purchaseDeliveryCreate(params);
+        String wareHouseingResult = materialStockERPAPI.purchaseDeliveryCreate(params);
         if (!wareHouseingResult.equals("success")) {
             return wareHouseingResult;
         }*/
+
+        for (List<Map<String, Object>> goodsMapList : groupedGoodsMap.values()) {
+            Map<String, Object> erpParams = new HashMap<>(params);
+            erpParams.put("goodsList", goodsMapList);
+            erpParams.put("sourceNo", goodsMapList.get(0).get("erpReceiveCode"));
+            erpParams.put("warehousingCode", goodsMapList.get(0).get("erpReceiveCode"));
+            erpParams.put("supplierCode", goodsMapList.get(0).get("supplierCode"));
+            erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
+            erpParams.put("pmds000", "6"); // 采购入库
+            System.out.println(erpParams.toString());
+            /*String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+            if (!result.contains("success")) {
+                return result;
+            }*/
+        }
+
 
         List<ItemRecptTxBean> transactionList = new ArrayList<>();
         // 将数据库的数据追加到库存现有量中
@@ -517,6 +575,10 @@ public class GoodsController {
             goodsDO.setReceiveTime(parent.getReceiveTime());
             goodsDO.setStatus(0);
             goodsDO.setConsequence(parent.getConsequence()); // 继承拆分行项次
+            goodsDO.setPurchaseBatch(parent.getPurchaseBatch());   // ERP采购批次
+            goodsDO.setPurchaseConsequence(parent.getPurchaseConsequence()); // ERP采购批序
+            goodsDO.setPurchaseBatchConsequence(parent.getPurchaseBatchConsequence()); // ERP采购分批序
+
             String serial = orderDO.getSerial();
             if (serial == null) {
                 serial = "001";
@@ -648,6 +710,73 @@ public class GoodsController {
             }
         }
         return success(goodsList);
+    }
+
+
+    @PostMapping("/receiving")
+    public String receiving(@RequestBody Map<String, Object> params) {
+        List<Map<String, Object>> goodsList = (List<Map<String, Object>>) params.get("list");
+        // 创建一个Map来存储不同组合的List
+        Map<String, List<Map<String, Object>>> groupedGoodsMap = new HashMap<>();
+
+        for (Map<String, Object> goodsDO : goodsList) {
+            BigDecimal receiveNum = goodsDO.get("receiveNum") == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(goodsDO.get("receiveNum")));
+            if (receiveNum.compareTo(BigDecimal.ZERO) == 0) {
+                continue;
+            }
+            String poNo = goodsDO.get("poNo").toString();
+            String vendorCode = goodsDO.get("vendorCode").toString();
+            String key = poNo + "_" + vendorCode;
+
+            // 如果Map中还没有这个组合的List，创建一个新的List
+            if (!groupedGoodsMap.containsKey(key)) {
+                groupedGoodsMap.put(key, new ArrayList<>());
+            }
+            // 将当前的商品信息添加到对应的List中
+            Map<String, Object> goodsMap = new HashMap<>();
+            goodsMap.put("id", goodsDO.get("id"));
+            goodsMap.put("poNo", poNo);
+            goodsMap.put("goodsNumber", goodsDO.get("goodsNumber"));
+            goodsMap.put("goodsName", goodsDO.get("goodsName"));
+            goodsMap.put("unitOfMeasure", goodsDO.get("unitOfMeasure"));
+            goodsMap.put("receiveNum", goodsDO.get("receiveNum"));
+            goodsMap.put("batchCode", goodsDO.get("batchCode"));
+            goodsMap.put("consequence", goodsDO.get("consequence"));
+            goodsMap.put("purchaseBatch", goodsDO.get("purchaseBatch"));
+            goodsMap.put("purchaseConsequence", goodsDO.get("purchaseConsequence"));
+            goodsMap.put("purchaseBatchConsequence", goodsDO.get("purchaseBatchConsequence"));
+            goodsMap.put("supplierCode", vendorCode);
+            groupedGoodsMap.get(key).add(goodsMap);
+        }
+        System.out.println(groupedGoodsMap.toString());
+        // 调用ERP接口, 先收货
+        for (List<Map<String, Object>> goodsMapList : groupedGoodsMap.values()) {
+            Map<String, Object> erpParams = new HashMap<>(params);
+            erpParams.put("goodsList", goodsMapList);
+            erpParams.put("sourceNo", goodsMapList.get(0).get("poNo"));
+            erpParams.put("supplierCode", goodsMapList.get(0).get("supplierCode"));
+            erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
+            erpParams.put("pmds000", "1"); // 采购收货
+            System.out.println(erpParams.toString());
+            /*String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+            if (!result.contains("success")) {
+                return result;
+            }*/
+            //String warehousingCode = result.split(",")[1];
+            String warehousingCode = "";
+            // 这里可以处理warehousingCode，例如保存到数据库等
+            // 将当前单身信息与收货单号绑定
+            List<GoodsDO> update = new ArrayList<>();
+            for (Map<String, Object> goodsMap : goodsMapList) {
+                Integer id = (Integer) goodsMap.get("id");
+                GoodsDO goodsDO = goodsService.getGoods(id);
+                goodsDO.setErpReceiveCode(warehousingCode);
+                goodsDO.setStatus(1); // 未收货 => 未打印
+                update.add(goodsDO);
+            }
+            goodsService.updateBatch(update);
+        }
+        return "success";
     }
 
 

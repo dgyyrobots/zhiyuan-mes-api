@@ -30,4 +30,7 @@ public interface ErrorCodeConstants {
 
     ErrorCode TOOL_NOT_ENOUGH= new ErrorCode(1030007000, "镭射版库存不足!");
 
+    ErrorCode RETREATE_ORDER_NOT_EXISTS = new ErrorCode(1030008000, "ERP仓退单不存在");
+
+
 }

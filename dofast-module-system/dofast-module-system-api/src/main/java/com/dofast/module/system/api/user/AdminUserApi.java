@@ -23,6 +23,14 @@ public interface AdminUserApi {
     AdminUserRespDTO getUser(Long id);
 
     /**
+     * 通过ERP用户编号查询用户
+     *
+     * @param userName 用户编号
+     * @return 用户对象信息
+     */
+    AdminUserRespDTO getUser(String userName);
+
+    /**
      * 通过用户 ID 查询用户们
      *
      * @param ids 用户 ID 们

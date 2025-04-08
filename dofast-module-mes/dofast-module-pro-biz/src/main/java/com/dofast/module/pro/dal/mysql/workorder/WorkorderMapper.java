@@ -22,7 +22,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
 
     default PageResult<WorkorderDO> selectPage(WorkorderPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<WorkorderDO>()
-                .eqIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderCode())
+                .likeIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderCode())
                 .likeIfPresent(WorkorderDO::getWorkorderName, reqVO.getWorkorderName())
                 //.eqIfPresent(WorkorderDO::getOrderSource, reqVO.getOrderSource())
                 .eqIfPresent(WorkorderDO::getSourceCode, reqVO.getSourceCode())
@@ -57,7 +57,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
     }
     default List<WorkorderDO> selectList(WorkorderListVO reqVO) {
         return selectList(new LambdaQueryWrapperX<WorkorderDO>()
-                .eqIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderCode())
+                .likeIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderCode())
                 .likeIfPresent(WorkorderDO::getWorkorderName, reqVO.getWorkorderName())
                 .eqIfPresent(WorkorderDO::getOrderSource, reqVO.getOrderSource())
                 .eqIfPresent(WorkorderDO::getSourceCode, reqVO.getSourceCode())
@@ -92,7 +92,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
 
     default List<WorkorderDO> selectList(WorkorderExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<WorkorderDO>()
-                .eqIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderCode())
+                .likeIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderCode())
                 .likeIfPresent(WorkorderDO::getWorkorderName, reqVO.getWorkorderName())
                 .eqIfPresent(WorkorderDO::getOrderSource, reqVO.getOrderSource())
                 .eqIfPresent(WorkorderDO::getSourceCode, reqVO.getSourceCode())
@@ -128,7 +128,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
 
     default Long selectCount(WorkorderPageReqVO reqVO) {
         return selectCount(new LambdaQueryWrapperX<WorkorderDO>()
-                .eqIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderCode())
+                .likeIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderCode())
                 .likeIfPresent(WorkorderDO::getWorkorderName, reqVO.getWorkorderName())
                 //.eqIfPresent(WorkorderDO::getOrderSource, reqVO.getOrderSource())
                 .eqIfPresent(WorkorderDO::getSourceCode, reqVO.getSourceCode())

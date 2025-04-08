@@ -22,7 +22,7 @@ public interface RouteMapper extends BaseMapperX<RouteDO> {
     }
     default PageResult<RouteDO> selectPage(RoutePageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<RouteDO>()
-                .eqIfPresent(RouteDO::getRouteCode, reqVO.getRouteCode())
+                .likeIfPresent(RouteDO::getRouteCode, reqVO.getRouteCode())
                 .likeIfPresent(RouteDO::getRouteName, reqVO.getRouteName())
                 .eqIfPresent(RouteDO::getRouteDesc, reqVO.getRouteDesc())
                 .eqIfPresent(RouteDO::getEnableFlag, reqVO.getEnableFlag())
@@ -39,7 +39,7 @@ public interface RouteMapper extends BaseMapperX<RouteDO> {
 
     default List<RouteDO> selectList(RouteExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<RouteDO>()
-                .eqIfPresent(RouteDO::getRouteCode, reqVO.getRouteCode())
+                .likeIfPresent(RouteDO::getRouteCode, reqVO.getRouteCode())
                 .likeIfPresent(RouteDO::getRouteName, reqVO.getRouteName())
                 .eqIfPresent(RouteDO::getRouteDesc, reqVO.getRouteDesc())
                 .eqIfPresent(RouteDO::getEnableFlag, reqVO.getEnableFlag())

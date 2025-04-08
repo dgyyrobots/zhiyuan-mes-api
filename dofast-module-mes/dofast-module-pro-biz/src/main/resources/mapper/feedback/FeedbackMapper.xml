@@ -9,4 +9,16 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getCapacity" resultType="java.util.Map">
+        SELECT
+            process_code,
+            workstation_name AS name,
+            SUM(quantity_qualified) AS value
+        FROM pro_feedback
+        GROUP BY process_code, name
+        ORDER BY process_code
+
+    </select>
+
+
 </mapper>

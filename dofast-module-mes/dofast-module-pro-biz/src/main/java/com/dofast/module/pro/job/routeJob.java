@@ -151,7 +151,7 @@ public class routeJob implements JobHandler {
         List<Map<String, Object>> finRouteList = new ArrayList<>();
         finProcessMap.forEach((key, value) -> {
             //if (value.size() > 1) {
-                System.out.println("构筑工艺路线, 唯一标识码: " + key);
+                //System.out.println("构筑工艺路线, 唯一标识码: " + key);
                 List<String> route = buildRoute(value);
                 if (route != null && !route.isEmpty()) {
                     Map<String, Object> routeInfo = new HashMap<>();

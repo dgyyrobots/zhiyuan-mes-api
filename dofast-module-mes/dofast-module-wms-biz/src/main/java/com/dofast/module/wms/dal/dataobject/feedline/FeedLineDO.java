@@ -177,4 +177,14 @@ public class FeedLineDO extends BaseDO {
      * 条码编号
      */
     private Long barcodeNumber;
+
+    /**
+     * ERP项次
+     */
+    private Long sequence;
+
+    /**
+     * ERP项次
+     */
+    private Long sequenceOrder;
 }

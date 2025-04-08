@@ -20,7 +20,7 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
     default PageResult<FeedbackDO> selectPage(FeedbackPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<FeedbackDO>()
                 .eqIfPresent(FeedbackDO::getFeedbackType, reqVO.getFeedbackType())
-                .eqIfPresent(FeedbackDO::getFeedbackCode, reqVO.getFeedbackCode())
+                .likeIfPresent(FeedbackDO::getFeedbackCode, reqVO.getFeedbackCode())
                 .eqIfPresent(FeedbackDO::getWorkstationId, reqVO.getWorkstationId())
                 .eqIfPresent(FeedbackDO::getWorkstationCode, reqVO.getWorkstationCode())
                 .likeIfPresent(FeedbackDO::getWorkstationName, reqVO.getWorkstationName())
@@ -70,7 +70,7 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
     default List<FeedbackDO> selectList(FeedbackExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<FeedbackDO>()
                 .eqIfPresent(FeedbackDO::getFeedbackType, reqVO.getFeedbackType())
-                .eqIfPresent(FeedbackDO::getFeedbackCode, reqVO.getFeedbackCode())
+                .likeIfPresent(FeedbackDO::getFeedbackCode, reqVO.getFeedbackCode())
                 .eqIfPresent(FeedbackDO::getWorkstationId, reqVO.getWorkstationId())
                 .eqIfPresent(FeedbackDO::getWorkstationCode, reqVO.getWorkstationCode())
                 .likeIfPresent(FeedbackDO::getWorkstationName, reqVO.getWorkstationName())
@@ -122,5 +122,9 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
                 .eq(FeedbackDO::getTaskId,taskId)
                 .orderByDesc(FeedbackDO::getId));
     }
+
+    public List<Map<String, Object>> getCapacity();
+
+
 
 }

@@ -96,6 +96,11 @@ public class PadMdVendorServiceImpl implements PadMdVendorService {
     }
 
     @Override
+    public MdVendorDO getMdVendor(String vendorCode){
+        return padMdVendorMapper.selectOne(MdVendorDO::getVendorCode,vendorCode);
+    }
+
+    @Override
     public List<MdVendorDO> getMdVendorList(Collection<Long> ids) {
         return padMdVendorMapper.selectBatchIds(ids);
     }

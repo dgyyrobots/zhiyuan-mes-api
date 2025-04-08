@@ -130,5 +130,12 @@ public class FeedLineExcelVO {
     @ExcelProperty("条码编号")
     private Long barcodeNumber;
 
+    @ExcelProperty("ERP项次")
+    private Long sequence;
+
+    @ExcelProperty("ERP项次")
+    private Long sequenceOrder;
+
+
 
 }

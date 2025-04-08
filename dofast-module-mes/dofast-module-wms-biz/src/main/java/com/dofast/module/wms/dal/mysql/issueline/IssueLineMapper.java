@@ -51,6 +51,8 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(IssueLineDO::getBarcodeNumber, reqVO.getBarcodeNumber())
                 .eqIfPresent(IssueLineDO::getEnableFlag, reqVO.getEnableFlag())
+                .eqIfPresent(IssueLineDO::getSequence, reqVO.getSequence())
+                .eqIfPresent(IssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
                 .orderByDesc(IssueLineDO::getId));
     }
 
@@ -93,6 +95,8 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(IssueLineDO::getBarcodeNumber, reqVO.getBarcodeNumber())
                 .eqIfPresent(IssueLineDO::getEnableFlag, reqVO.getEnableFlag())
+                .eqIfPresent(IssueLineDO::getSequence, reqVO.getSequence())
+                .eqIfPresent(IssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
                 .orderByDesc(IssueLineDO::getId));
     }
 
@@ -131,6 +135,8 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(IssueLineDO::getBarcodeNumber, reqVO.getBarcodeNumber())
                 .eqIfPresent(IssueLineDO::getEnableFlag, reqVO.getEnableFlag())
+                .eqIfPresent(IssueLineDO::getSequence, reqVO.getSequence())
+                .eqIfPresent(IssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
                 .orderByDesc(IssueLineDO::getId));
     }
 

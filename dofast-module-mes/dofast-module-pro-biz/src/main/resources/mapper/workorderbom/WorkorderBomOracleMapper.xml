@@ -17,7 +17,8 @@
             IMAAL004 AS ITEM_SPEC,
             sfba014 AS UNIT_OF_MEASURE,
             sfba023 AS QUANTITY,
-            sfbaseq as SEQUENCE
+            sfbaseq as SEQUENCE,
+            sfbaseq1 as SEQUENCE_ORDER
         FROM
             DSDATA.SFBA_T A
                 LEFT JOIN DSDATA.IMAA_T B ON A.SFBA006 = B.IMAA001

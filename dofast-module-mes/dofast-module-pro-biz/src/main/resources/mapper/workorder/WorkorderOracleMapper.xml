@@ -21,7 +21,8 @@
             SFAA011 AS ROUTE_CODE,
             SFAA021 AS SOURCE_CODE
         FROM
-            DSDATA.SFAA_T
+            DSDATA.SFAA_T A
+        LEFT JOIN  DSDATA.SFAB_T B ON A.SFAADOCNO = B.SFABDOCNO AND A.SFAAENT = B.SFABENT AND A.SFAASITE = B.SFABSITE
         WHERE
             sfaaent = #{erpCode}
           AND sfaasite = 'AM01'

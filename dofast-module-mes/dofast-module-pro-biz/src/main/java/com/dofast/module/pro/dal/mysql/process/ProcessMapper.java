@@ -25,7 +25,7 @@ public interface ProcessMapper extends BaseMapperX<ProcessDO> {
     }
     default PageResult<ProcessDO> selectPage(ProcessPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<ProcessDO>()
-                .eqIfPresent(ProcessDO::getProcessCode, reqVO.getProcessCode())
+                .likeIfPresent(ProcessDO::getProcessCode, reqVO.getProcessCode())
                 .likeIfPresent(ProcessDO::getProcessName, reqVO.getProcessName())
                 .eqIfPresent(ProcessDO::getAttention, reqVO.getAttention())
                 .eqIfPresent(ProcessDO::getEnableFlag, reqVO.getEnableFlag())
@@ -40,7 +40,7 @@ public interface ProcessMapper extends BaseMapperX<ProcessDO> {
 
     default List<ProcessDO> selectList(ProcessExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<ProcessDO>()
-                .eqIfPresent(ProcessDO::getProcessCode, reqVO.getProcessCode())
+                .likeIfPresent(ProcessDO::getProcessCode, reqVO.getProcessCode())
                 .likeIfPresent(ProcessDO::getProcessName, reqVO.getProcessName())
                 .eqIfPresent(ProcessDO::getAttention, reqVO.getAttention())
                 .eqIfPresent(ProcessDO::getEnableFlag, reqVO.getEnableFlag())
@@ -55,7 +55,7 @@ public interface ProcessMapper extends BaseMapperX<ProcessDO> {
 
     default List<ProcessDO> selectList(ProcessListVO reqVO) {
         return selectList(new LambdaQueryWrapperX<ProcessDO>()
-                .eqIfPresent(ProcessDO::getProcessCode, reqVO.getProcessCode())
+                .likeIfPresent(ProcessDO::getProcessCode, reqVO.getProcessCode())
                 .likeIfPresent(ProcessDO::getProcessName, reqVO.getProcessName())
                 .eqIfPresent(ProcessDO::getAttention, reqVO.getAttention())
                 .eqIfPresent(ProcessDO::getEnableFlag, reqVO.getEnableFlag())

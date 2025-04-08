@@ -46,6 +46,14 @@ public interface PadMdVendorService {
     MdVendorDO getMdVendor(Long id);
 
     /**
+     * 获得供应商
+     *
+     * @param vendorCode 供应商编号
+     * @return 供应商
+     */
+    MdVendorDO getMdVendor(String vendorCode);
+
+    /**
      * 获得供应商列表
      *
      * @param ids 编号

@@ -25,6 +25,8 @@ public interface IssueLineConvert {
 
     IssueLineRespVO convert(IssueLineDO bean);
 
+    IssueLineUpdateReqVO convert01(IssueLineDO bean);
+
     List<IssueLineRespVO> convertList(List<IssueLineDO> list);
 
     PageResult<IssueLineRespVO> convertPage(PageResult<IssueLineDO> page);

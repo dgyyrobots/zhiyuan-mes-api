@@ -67,4 +67,6 @@ public interface GoodsService {
      */
     List<GoodsDO> getGoodsList(GoodsExportReqVO exportReqVO);
 
+    void updateBatch(List<GoodsDO> goodsList);
+
 }

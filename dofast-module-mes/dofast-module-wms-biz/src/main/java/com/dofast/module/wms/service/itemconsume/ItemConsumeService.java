@@ -74,4 +74,8 @@ public interface ItemConsumeService {
 
 
     List<ItemConsumeTxBean> getTxBeans(Long recordId);
+
+    List<Map<String, Object>> getWeeklyConsumeSummary();
+
+
 }

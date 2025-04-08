@@ -79,7 +79,7 @@ public class frontJob implements JobHandler {
         }
         System.out.println("用户导入成功！");
 
-        /*System.out.println("开始同步仓退/入库原因码");
+        System.out.println("开始同步仓退/入库原因码");
         List<DictDataDO> addData = new ArrayList<>();
         List<DictDataDO> editData = new ArrayList<>();
         DictTypeDO warehouseReasonDO = dictTypeService.getDictType("erp_warehouse_reason");
@@ -117,7 +117,7 @@ public class frontJob implements JobHandler {
         }
         System.out.println("仓退/入库原因码加载完成!");
 
-        System.out.println("开始追加ER单别");
+       /* System.out.println("开始追加ER单别");
         DictTypeDO docTypeDO = dictTypeService.getDictType("erp_doc_type");
         if (docTypeDO == null) {
             docTypeDO = new DictTypeDO();
@@ -127,10 +127,10 @@ public class frontJob implements JobHandler {
             docTypeDO.setName("ERP单别"); // 类型名称
             docTypeDO.setRemark("ERP单别"); // 备注
             dictTypeService.createDictType(DictTypeConvert.INSTANCE.convert01(docTypeDO));
-        }
+        }*/
 
         // 校验是否存在单别信息
-        if (!docTypeList.isEmpty()) {
+        /*if (!docTypeList.isEmpty()) {
             Integer dataSerial = 0;
             for (Map<String, Object> map : docTypeList) {
                 String value = (String) map.get("DOC_TYPE");

@@ -1,8 +1,7 @@
-package com.dofast.module.wms.api.MaterialStockApi;
+package com.dofast.module.wms.api.ERPApi;
 
-import com.alibaba.excel.util.DateUtils;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.dofast.framework.common.core.LoginUser;
 import com.dofast.framework.common.util.http.HttpUtils;
 import com.dofast.framework.web.core.util.WebFrameworkUtils;
 import com.dofast.module.mes.constant.Constant;
@@ -15,7 +14,6 @@ import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.service.storagearea.StorageAreaService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
-import org.apache.catalina.security.SecurityUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -30,7 +28,6 @@ public class MaterialStockERPAPI {
     @Resource
     private InterfaceLogService interfaceLogService;
 
-
     @Resource
     private StorageLocationService storageLocationService;
 
@@ -44,13 +41,13 @@ public class MaterialStockERPAPI {
     private AdminUserApi adminUserApi;
 
     /**
-     * 采购收货/入库/仓退单生成接口
+     * 采购收货/入库/仓退单生成接
      */
     public String purchaseDeliveryCreate(Map<String, Object> params) {
         // ，根据环境选择
         Map<String, Object> request = createBaseRequest("PurchaseDeliveryCreate");
         String poNo = params.get("poNo").toString(); // 采购单号
-        String ejectNo = Optional.ofNullable((String) params.get("ejectNo")).orElse(null); // 退料单号
+        // String ejectNo = Optional.ofNullable((String) params.get("ejectNo")).orElse(null); // 退料单号
         String sourceNo = (String) params.get("sourceNo"); // MES单头
         String supplierCode = (String) params.get("supplierCode"); // 供应商编码
         Integer wareHouseId = (Integer) params.get("warehouseId"); // 仓库Id
@@ -58,9 +55,16 @@ public class MaterialStockERPAPI {
         Integer areaId = (Integer) params.get("areaId"); //库位Id
         List<Map<String, Object>> goodsList = (List<Map<String, Object>>) params.get("goodsList"); // 入库商品详情
         String pmds000 = (String) params.get("pmds000");// 单据类型 1：一般采购收货；2：无采购收货；3：采购收货入库单；6：一般采购入库；7：一般采购仓退；8：委外采购收货；12：委外采购入库；14：委外采购仓退；20：委外采购收货入库
+        String warehousingCode = "";
+        StorageLocationDO storageLocationDO = null;
+        StorageAreaDO storageAreaDO = null;
+        if("6".equals(pmds000)){
+            warehousingCode = String.valueOf(params.get("warehousingCode")); // 入库单号
+            // 在入库时, 使用库区库位
+            storageLocationDO = storageLocationService.getStorageLocation(locationId.longValue());
+            storageAreaDO = storageAreaService.getStorageArea(areaId.longValue());
+        }
 
-        StorageLocationDO storageLocationDO = storageLocationService.getStorageLocation(locationId.longValue());
-        StorageAreaDO storageAreaDO = storageAreaService.getStorageArea(areaId.longValue());
         //String pmds000 = null;
         /*if(poNo!=null){
             pmds000 = "6"; // 一般采购入库
@@ -74,20 +78,31 @@ public class MaterialStockERPAPI {
         int i = 1;
         for (Map<String, Object> good : goodsList) {
             Map<String, Object> detail = new HashMap<>();
-            detail.put("pmdt001", poNo); // 采购单号
-            detail.put("pmdt002", ""); // 采购项次
-            detail.put("pmdt003", ""); // 采购项序
-            detail.put("pmdt004", ""); // 采购分批序
-            detail.put("pmdt027", ""); // 收货单号
-            detail.put("pmdt028", good.get("consequence")); // 收获项次
+            if("1".equals(pmds000)){
+                detail.put("pmdt001", poNo); // 采购单号
+                detail.put("pmdt002", good.get("purchaseBatch")); // 采购项次
+                detail.put("pmdt003", good.get("purchaseConsequence")); // 采购项序
+                detail.put("pmdt004", good.get("purchaseBatchConsequence")); // 采购分批序
+                detail.put("pmdt027", ""); // 收货单号
+                detail.put("pmdt028", ""); // 收获项次
+                detail.put("pmdt016", ""); // 仓库
+                detail.put("pmdt017", ""); // 库位
+            }else if("6".equals(pmds000)){
+                detail.put("pmdt001", ""); // 采购单号
+                detail.put("pmdt002", ""); // 采购项次
+                detail.put("pmdt003", ""); // 采购项序
+                detail.put("pmdt004", ""); // 采购分批序
+                detail.put("pmdt027", warehousingCode); // 收货单号
+                detail.put("pmdt028", good.get("consequence")); // 收获项次
+                detail.put("pmdt016", storageLocationDO.getLocationCode()); // 仓库
+                detail.put("pmdt017", storageAreaDO.getAreaCode()); // 库位
+            }
             detail.put("pmdt006", good.get("goodsNumber")); // 料件
             detail.put("pmdt007", " "); // 特性
             detail.put("pmdt019", good.get("unitOfMeasure")); // 单位
             detail.put("pmdt020", good.get("receiveNum")); // 数量
             detail.put("pmdt025", "1"); // 紧急标识
             detail.put("pmdt026", "1"); // 检验标识
-            detail.put("pmdt016", storageLocationDO.getLocationCode()); // 仓库
-            detail.put("pmdt017", storageAreaDO.getAreaCode()); // 库位
             detail.put("pmdt018", good.get("batchCode")); // 批号
             detail.put("pmdt036", 0); // 单价
             detail.put("pmdt051", ""); // 理由码
@@ -102,7 +117,7 @@ public class MaterialStockERPAPI {
         if (Arrays.asList("1", "2", "8").contains(pmds000)) { // 收货单
             parameter.put("master", createMaster(poNo, sourceNo, pmds000, details, supplierCode));
         } else if (Arrays.asList("3", "6", "12", "20").contains(pmds000)) { // 入库单
-            parameter.put("master", createPmdsInfo(poNo, sourceNo, pmds000, details, supplierCode));
+            parameter.put("master", createPmdsInfo(poNo, warehousingCode, pmds000, details, supplierCode));
         } else if (Arrays.asList("7", "14").contains(pmds000)) { // 仓退单
             parameter.put("master", createMaster(poNo, sourceNo, pmds000, details, supplierCode));
         }
@@ -112,10 +127,34 @@ public class MaterialStockERPAPI {
         request.put("payload", payload);
         System.out.println(JSONObject.toJSONString(request));
 
-        String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request));
-
+        // String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
+        // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
+        // 测试报文解析
+        String result = "{\n" +
+                "    \"srvver\": \"1.0\",\n" +
+                "    \"srvcode\": \"000\",\n" +
+                "    \"datakey\": null,\n" +
+                "    \"payload\": {\n" +
+                "        \"std_data\": {\n" +
+                "            \"execution\": {\n" +
+                "                \"code\": \"0\",\n" +
+                "                \"sql_code\": \"0\",\n" +
+                "                \"description\": \"SUCCESS\"\n" +
+                "            },\n" +
+                "            \"parameter\": {\n" +
+                "                \"success_return\": [\n" +
+                "                    {\n" +
+                "                        \"source_no\": \"AMCG83-250401001\",\n" +
+                "                        \"success_msg\": \"AMSH02-250401001\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"fail_return\": []\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n";
         // 记录操作日志
-        InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
+       /* InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
         if(pmds000.equals("1")){
             log.setInterfaceName("采购收货接口");
         }else if(pmds000.equals("6")){
@@ -128,19 +167,45 @@ public class MaterialStockERPAPI {
         log.setRequestType("POST");
         log.setRequestMap(JSONObject.toJSONString(request));
         log.setResultMap(result);
-        interfaceLogService.createInterfaceLog(log);
+        interfaceLogService.createInterfaceLog(log);*/
         // 将String转为Json对象, 获取对象内code字段的值
 
         JSONObject jsonObject = JSONObject.parseObject(result);
-        String code = Optional.ofNullable(jsonObject.getString("code")).orElse(null);
-        // 解析description
-        String description = Optional.ofNullable(jsonObject.getJSONObject("payload").getJSONObject("std_data").getJSONObject("execution").getString("description")).orElse(null);
+        // 防止jsonObject.getString("code")空指针异常
+        if (jsonObject == null) {
+            return "error";
+        }
 
-        // 记录操作日志
-        if (code != null&& code.equals("0")){
+        // 提取执行状态信息
+        JSONObject reqPayload = jsonObject.getJSONObject("payload");
+        JSONObject reqStdData = payload != null ? reqPayload.getJSONObject("std_data") : null;
+        JSONObject reqExecution = stdData != null ? reqStdData.getJSONObject("execution") : null;
+        String code = reqExecution != null ? reqExecution.getString("code") : null;
+        String description = reqExecution != null ? reqExecution.getString("description") : null;
+
+        if ("0".equals(code)) {
+            // 若当前为采购收货, 则解析ERP回传的收货单号用于绑定入库单号
+            if(pmds000.equals("1")){
+                // 解析入库单号（source_no）
+                JSONObject reqParameter = stdData != null ? reqStdData.getJSONObject("parameter") : null;
+                JSONArray successReturn = parameter != null ? reqParameter.getJSONArray("success_return") : null;
+                String reqWarehousingCode = null;
+                if (successReturn != null && !successReturn.isEmpty()) {
+                    JSONObject firstSuccess = successReturn.getJSONObject(0);
+                    reqWarehousingCode = firstSuccess != null ? firstSuccess.getString("success_msg") : null; // 获取到的收货单号
+                }
+                // 示例：记录日志或处理sourceNo
+                if (reqWarehousingCode != null) {
+                    System.out.println("解析到的source_no: " + reqWarehousingCode);
+                    return "success,"+reqWarehousingCode; // 返回sourceNo
+                } else {
+                    return "ERROR: 未找到ERP入库单号!";
+                }
+            }
+            // 其余情况无需解析
             return "success";
         } else {
-            return description;
+            return description != null ? description : "error";
         }
 
         //return "error";
@@ -156,16 +221,18 @@ public class MaterialStockERPAPI {
         List<Map<String, Object>> masterList = new ArrayList<>();
         Map<String, Object> master = new HashMap<>();
         master.put("source_no", params.get("allocatedId")); // MES单头Id
-        master.put("indcdocno", null); // 单别
+        master.put("indcdocno", ""); // 单别
         master.put("indcdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date())); // 单据日期 默认获取当日日期
         master.put("indc000", 1); // 单据性质
-        master.put("indc002", 2); // 来源类别
+        master.put("indc002", 1); // 来源类别
         //获取当前用户信息
         // 获取当前用户信息
         AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
-        master.put("indc004", adminUserRespDTO.getUsername()); // 调拨人员-传递ERP编码
+        //master.put("indc004", adminUserRespDTO.getUsername()); // 调拨人员-传递ERP编码
+        master.put("indc004", "tiptop"); // 调拨人员-测试账户
+
         master.put("indc005", ""); // 拨出据点
-        master.put("indc006", params.get("inLocationCode")); // 拨入据点
+        master.put("indc006", "AM01"); // 拨入据点
         master.put("indc008", "测试调拨"); // 备注
         master.put("indc102", 1); // 检验否
 
@@ -178,7 +245,7 @@ public class MaterialStockERPAPI {
             detail.put("indd001", ""); // 来源项次
             detail.put("indd002", good.get("itemCode")); // 料号
             detail.put("indd004", ""); // 产品特征
-            detail.put("indd006", good.get("specification")); // 库存单位
+            detail.put("indd006", good.get("unitOfMeasure")); // 库存单位
             detail.put("indd022", good.get("locationCode")); // 拨出库位
             detail.put("indd023", good.get("areaCode")); // 拨出储位
             detail.put("indd024", good.get("batchCode")); // 拨出批号
@@ -196,13 +263,15 @@ public class MaterialStockERPAPI {
         // 构建payload
         Map<String, Object> payload = new HashMap<>();
         Map<String, Object> stdData = new HashMap<>();
-        stdData.put("parameter", masterList); // 使用masterList
+        Map<String, Object> masterData = new HashMap<>();
+        masterData.put("master", masterList);
+        stdData.put("parameter", masterData); // 使用masterList
         payload.put("std_data", stdData);
 
         request.put("payload", payload);
         System.out.println(JSONObject.toJSONString(request));
-        String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request));
-
+        // String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
+        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
         log.setInterfaceName("调拨单生成接口");
@@ -226,12 +295,12 @@ public class MaterialStockERPAPI {
         hostInfo.put("prod", "MES");
         hostInfo.put("ip", ipAddress); // 替换为实际的IP地址
         hostInfo.put("lang", "zh_CN");
-        hostInfo.put("acct", "tiptop"); // 后续替换为实际的用户
+        hostInfo.put("acct", "tiptst"); // 后续替换为实际的用户
         hostInfo.put("timestamp", String.valueOf(System.currentTimeMillis()));
         request.put("host", hostInfo);
 
         Map<String, Object> serviceInfo = new HashMap<>();
-        serviceInfo.put("prod", "T32");
+        serviceInfo.put("prod", "T100");
         serviceInfo.put("name", interfaceName);
         serviceInfo.put("ip", "192.168.127.7");
         serviceInfo.put("id", "toptst"); // topprd正式库 toptst测试库
@@ -311,7 +380,8 @@ public class MaterialStockERPAPI {
 
         request.put("payload", payload);
         System.out.println(JSONObject.toJSONString(request));
-        String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request));
+        // String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
+        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
 
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
@@ -338,7 +408,7 @@ public class MaterialStockERPAPI {
         // detail 单身
         Map<String, Object> master = new HashMap<>();
         master.put("source_no", sourceNo); // MES单头
-        master.put("pmdsdocno", "");
+        master.put("pmdsdocno", ""); // 单别
         master.put("pmdsdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         master.put("pmds000", pmds000);
         master.put("pmds006", mesDocNo);
@@ -366,7 +436,7 @@ public class MaterialStockERPAPI {
         pmdsInfo.put("pmdsdocno", "");
         pmdsInfo.put("pmdsdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         pmdsInfo.put("pmds000", pmds000);
-        pmdsInfo.put("pmds006", mesDocNo);
+        pmdsInfo.put("pmds006", sourceNo);
         pmdsInfo.put("pmds002", "00000");
         pmdsInfo.put("pmds007", supplierCode);// 后续询问供应商如何获取
         pmdsInfo.put("detail", details);

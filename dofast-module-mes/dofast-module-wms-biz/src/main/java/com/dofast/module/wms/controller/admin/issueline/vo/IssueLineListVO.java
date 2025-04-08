@@ -76,4 +76,10 @@ public class IssueLineListVO {
     private Long barcodeNumber;
 
     private String enableFlag;
+
+    private Long sequence;
+
+    private Long sequenceOrder;
+
+
 }

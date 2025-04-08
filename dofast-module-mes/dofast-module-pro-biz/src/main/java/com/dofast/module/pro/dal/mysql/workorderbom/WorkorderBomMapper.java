@@ -35,6 +35,8 @@ public interface WorkorderBomMapper extends BaseMapperX<WorkorderBomDO> {
                 .eqIfPresent(WorkorderBomDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(WorkorderBomDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(WorkorderBomDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(WorkorderBomDO::getSequence, reqVO.getSequence())
+                .eqIfPresent(WorkorderBomDO::getSequenceOrder, reqVO.getSequenceOrder())
                 .betweenIfPresent(WorkorderBomDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(WorkorderBomDO::getId));
     }
@@ -54,6 +56,8 @@ public interface WorkorderBomMapper extends BaseMapperX<WorkorderBomDO> {
                 .eqIfPresent(WorkorderBomDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(WorkorderBomDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(WorkorderBomDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(WorkorderBomDO::getSequence, reqVO.getSequence())
+                .eqIfPresent(WorkorderBomDO::getSequenceOrder, reqVO.getSequenceOrder())
                 .betweenIfPresent(WorkorderBomDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(WorkorderBomDO::getId));
     }

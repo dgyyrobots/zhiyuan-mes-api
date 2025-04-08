@@ -1,5 +1,6 @@
 package com.dofast.module.wms.dal.mysql.itemconsume;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import com.dofast.framework.common.pojo.PageResult;
@@ -9,6 +10,7 @@ import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeDO;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeTxBean;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.wms.controller.admin.itemconsume.vo.*;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 物料消耗记录 Mapper
@@ -69,4 +71,9 @@ public interface ItemConsumeMapper extends BaseMapperX<ItemConsumeDO> {
     }
 
     public List<ItemConsumeTxBean> getTxBeans(Long recordId);
+
+    public List<Map<String, Object>> selectWeeklyConsume(@Param("currentWeekStart") LocalDateTime currentWeekStart,
+                                                         @Param("currentWeekEnd") LocalDateTime currentWeekEnd,
+                                                         @Param("lastWeekStart") LocalDateTime lastWeekStart,
+                                                         @Param("lastWeekEnd") LocalDateTime lastWeekEnd);
 }

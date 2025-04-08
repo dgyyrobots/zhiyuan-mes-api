@@ -10,13 +10,57 @@
      -->
 
     <select id="initPurchaseGoods" parameterType="java.lang.String" resultType="java.util.HashMap">
-        SELECT distinct A.pmdldocno AS PO_NO,  B.pmdn001 AS GOODS_NUMBER , E.imaal003 AS GOODS_NAME, E.imaal004 AS GOODS_SPECS , B.pmdn006 AS COMPANY , B.pmdn007 AS QUANTITY, A.pmdlstus PROCESS_TYPE , A.pmdlcrtdt CREATE_TIME , pmdl004 AS SUPPLIER_CODE , B.pmdnseq as CONSEQUENCE
+
+            WITH PMDO_MaxSeq AS (
+    SELECT
+        pmdodocno,
+        pmdosite,
+        pmdoent,
+        -- 获取每个采购单的最大 pmdoseq 及其对应其他字段
+        MAX(pmdoseq) OVER (PARTITION BY pmdodocno) AS max_pmdoseq,
+        pmdoseq,
+        pmdoseq1,
+        pmdoseq2
+    FROM DSDATA.PMDO_T
+    WHERE pmdoent = 100 AND pmdosite = 'AM01'
+)
+        SELECT DISTINCT
+            A.pmdldocno AS PO_NO,
+            B.pmdn001 AS GOODS_NUMBER,
+            E.imaal003 AS GOODS_NAME,
+            E.imaal004 AS GOODS_SPECS,
+            B.pmdn006 AS COMPANY,
+            B.pmdn007 AS QUANTITY,
+            A.pmdlstus AS PROCESS_TYPE,
+            A.pmdlcrtdt AS CREATE_TIME,
+            A.pmdl004 AS SUPPLIER_CODE,
+            B.pmdnseq AS CONSEQUENCE,
+            F.max_pmdoseq AS PURCHASE_BATCH,
+            F.pmdoseq1 AS PURCHASE_CONSEQUENCE,
+            F.pmdoseq2 AS PURCHASE_BATCH_CONSEQUENCE
         FROM DSDATA.PMDL_T A
-                 LEFT JOIN DSDATA.PMDN_T B ON A.pmdldocno = B.pmdndocno AND A.PMDLENT = B.PMDNENT AND A.PMDLSITE = B.PMDNSITE
-                 LEFT JOIN DSDATA.PMDP_T C ON A.pmdldocno = C.pmdpdocno  AND A.PMDLENT = C.pmdpent
-                 LEFT JOIN DSDATA.IMAA_T D ON B.pmdn001 =  D.imaa001 and b.PMDNENT = imaaent
-                 left join DSDATA.IMAAL_T E ON B.pmdn001 = E.imaal001 and D.IMAA001 = E.IMAAL001 AND E.IMAALENT = A.PMDLENT
-        WHERE A.PMDLENT = #{erpCode} AND A.PMDLSITE = 'AM01' AND A.pmdlstus = 'Y' AND E.imaal002 ='zh_CN'
+                 LEFT JOIN DSDATA.PMDN_T B
+                           ON A.pmdldocno = B.pmdndocno
+                               AND A.PMDLENT = B.PMDNENT
+                               AND A.PMDLSITE = B.PMDNSITE
+                 LEFT JOIN DSDATA.IMAA_T D
+                           ON B.pmdn001 = D.imaa001
+                               AND B.PMDNENT = D.imaaent
+                 LEFT JOIN DSDATA.IMAAL_T E
+                           ON B.pmdn001 = E.imaal001
+                               AND D.IMAA001 = E.IMAAL001
+                               AND E.IMAALENT = A.PMDLENT
+                 LEFT JOIN PMDO_MaxSeq F
+                           ON A.pmdldocno = F.pmdodocno
+                               AND A.PMDLSITE = F.pmdosite
+                               AND A.PMDLENT = F.pmdoent
+                               AND F.pmdoseq = F.max_pmdoseq  -- 仅匹配最大值
+        WHERE
+            A.PMDLENT = #{erpCode}
+          AND A.PMDLSITE = 'AM01'
+          AND A.pmdlstus = 'Y'
+          AND E.imaal002 = 'zh_CN'
+
     </select>
 
     <select id="initPurchaseOrder" parameterType="java.lang.String" resultType="java.util.HashMap">

@@ -127,6 +127,11 @@ public class WorkorderRespPlusVO {
     @Schema(description = "生产任务数量")
     private Integer taskNum;
 
+
     @Schema(description = "是否已打印",requiredMode = Schema.RequiredMode.REQUIRED,example = "true")
     private Integer isPrint;
+
 }
+
+
+

@@ -80,7 +80,24 @@ public class GoodsPageReqVO extends PageParam {
     @Schema(description = "项次")
     private String consequence;
 
+    @Schema(description = "供应商编号")
+    private String vendorCode;
+
+    @Schema(description = "供应商名称")
+    private String vendorName;
+
     @Schema(description = "ERP数量")
     private BigDecimal erpNum;
 
+    @Schema(description = "ERP采购批次")
+    private Integer purchaseBatch;
+
+    @Schema(description = "ERP采购批序")
+    private Integer purchaseConsequence;
+
+    @Schema(description = "ERP采购分批序")
+    private Integer purchaseBatchConsequence;
+
+    @Schema(description = "ERP采购单号")
+    private String erpReceiveCode;
 }

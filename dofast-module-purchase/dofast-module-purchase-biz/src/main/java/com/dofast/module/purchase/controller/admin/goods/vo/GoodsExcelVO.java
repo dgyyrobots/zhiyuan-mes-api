@@ -78,10 +78,28 @@ public class GoodsExcelVO {
     @ExcelProperty("母批次")
     private String parentBatchCode;
 
+    @ExcelProperty("供应商编号")
+    private String vendorCode;
+
+    @ExcelProperty("供应商名称")
+    private String vendorName;
+
     @ExcelProperty("项次")
     private String consequence;
 
     @ExcelProperty("ERP数量")
     private BigDecimal erpNum;
+
+    @ExcelProperty("ERP采购批次")
+    private Integer purchaseBatch;
+
+    @ExcelProperty("ERP采购批序")
+    private Integer purchaseConsequence;
+
+    @ExcelProperty("ERP采购分批序")
+    private Integer purchaseBatchConsequence;
+
+    @ExcelProperty("ERP采购单号")
+    private String erpReceiveCode;
 
 }

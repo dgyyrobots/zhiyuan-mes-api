@@ -77,9 +77,12 @@ public interface ErrorCodeConstants {
     ErrorCode ISSUE_HEADER_TASK_EXISTS = new ErrorCode(621006, "没有需要处理的领料单行");
     ErrorCode ISSUE_HEADER_NOT_FEEDBACK_EXISTS = new ErrorCode(621007, "当前领料单身存在未报工数据!");
     ErrorCode ISSUE_HEADER_NO_PROCESS = new ErrorCode(621001, "无法领用非当前工序线边仓的物料, 请检查领料单信息!");
+    ErrorCode ISSUE_HEADER_NO_ENABLE_PROCESS = new ErrorCode(621001, "仅允许复合车间使用启用标识!");
     ErrorCode ISSUE_LINE_VIRTUAL_WH = new ErrorCode(621001, "当前物料已使用!");
     ErrorCode ISSUE_HEADER_NO_ISSUE = new ErrorCode(621001, "只允许变更已领料的单据!");
-
+    ErrorCode ISSUE_LINE_NOT_ENABLE = new ErrorCode(621001, "仅允许选中膜类物料!");
+    ErrorCode ISSUE_LINE_MULTI_MATERIAL = new ErrorCode(621001, "当前机台已存在膜类物料!!");
+    ErrorCode ISSUE_LINE_ITEM_NOT_CONTAIN_BOM = new ErrorCode(621001, "领料失败! 物料不属于当前工单BOM");
 
     ErrorCode ALLOCATED_HEADER_NEED_PROCESS_LINE = new ErrorCode(621006, "没有需要处理的调拨单行");
     ErrorCode ALLOCATED_HEADER_NEED_TASK_TEAM = new ErrorCode(621006, "当前任务单尚未派工, 请先排产!");
@@ -89,6 +92,9 @@ public interface ErrorCodeConstants {
     ErrorCode RT_ISSUE_NEED_MAT = new ErrorCode(622004, "请选择要退料的物资");
     ErrorCode RT_ISSUE_NO_LINE_PROCESS = new ErrorCode(622005, "没有需要处理的退料单行");
     ErrorCode RT_ISSUE_HAS_FEEDBACK = new ErrorCode(622006, "当前任务已报工, 无法进行退料操作!");
+
+
+
 
     ErrorCode ALLOCATED_HEADER_NEED_BIND_WORKORDER = new ErrorCode(622006, "当前调拨单无需生成领料单!");
     ErrorCode ALLOCATED_HEADER_NEED_NOT_CREATE_ISSUE = new ErrorCode(622006, "当前任务单已存在领料单!");

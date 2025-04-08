@@ -9,22 +9,17 @@ import com.dofast.module.pro.api.ProcessApi.ProcessApi;
 import com.dofast.module.pro.api.ProcessApi.dto.ProcessDTO;
 import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
-import com.dofast.module.wms.api.MaterialStockApi.MaterialStockERPAPI;
+import com.dofast.module.wms.api.ERPApi.MaterialStockERPAPI;
 import com.dofast.module.wms.controller.admin.allocatedline.vo.AllocatedLineExportReqVO;
-import com.dofast.module.wms.controller.admin.allocatedline.vo.AllocatedLineRespVO;
 import com.dofast.module.wms.controller.admin.allocatedrecord.vo.AllocatedRecordExportReqVO;
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderCreateReqVO;
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderExportReqVO;
-import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderUpdateReqVO;
-import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineListVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockUpdateReqVO;
 import com.dofast.module.wms.convert.issueheader.IssueHeaderConvert;
 import com.dofast.module.wms.dal.dataobject.allocatedline.AllocatedLineDO;
 import com.dofast.module.wms.dal.dataobject.allocatedrecord.AllocatedRecordDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
-import com.dofast.module.wms.dal.dataobject.issueheader.IssueTxBean;
-import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.mysql.allocatedline.AllocatedLineMapper;
@@ -34,11 +29,9 @@ import com.dofast.module.wms.enums.ErrorCodeConstants;
 import com.dofast.module.wms.service.allocatedline.AllocatedLineService;
 import com.dofast.module.wms.service.allocatedrecord.AllocatedRecordService;
 import com.dofast.module.wms.service.issueheader.IssueHeaderService;
-import com.dofast.module.wms.service.issueline.IssueLineService;
 import com.dofast.module.wms.service.materialstock.MaterialStockService;
 import com.dofast.module.wms.service.storagecore.StorageCoreService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,7 +43,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 
-import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
 import java.math.BigDecimal;
@@ -60,7 +52,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.pojo.CommonResult;
@@ -164,7 +155,9 @@ public class AllocatedHeaderController {
             String processName = "";
             if(location!= null){
                 ProcessDTO process =  processApi.getcess(location.getProcessCode());
-                processName = process.getProcessName();
+                if(process!= null){
+                    processName = process.getProcessName();
+                }
             }
             createReqVO.setAllocatedName(processName + "调拨单" + dateStr + random);
         }
@@ -476,7 +469,7 @@ public class AllocatedHeaderController {
 
         Map<String, Object> params = new HashMap<>(); // 用于回传ERP接口
         params.put("allocatedId", allocatedId);
-
+        params.put("allocatedCode", allocated.getAllocatedCode());
         // ERP暂时没有仓库, 只有库区与库位暂时不传递仓库信息
         params.put("inLocationId" , allocated.getLocationId());
         params.put("inLocationCode", allocated.getLocationCode());
@@ -518,6 +511,11 @@ public class AllocatedHeaderController {
         }
         params.put("allocatedList", erpRequestList);
 
+        /*String result = materialStockERPAPI.requisitionNoteCreate(params);
+
+        if(result!="success"){
+            return error(500, "ERP接口调用失败");
+        }*/
         List<AllocatedTxBean> beans = allocatedHeaderService.getTxBeans(allocatedId);
 
         //调用库存核心
@@ -536,7 +534,6 @@ public class AllocatedHeaderController {
         }
         allocatedRecordService.updateAllocatedRecordBatch(lines);
 
-        //String result = materialStockERPAPI.requisitionNoteCreate(params);
 
         return success(true);
 

@@ -76,7 +76,8 @@ spring:
           validation-query: SELECT 1 # 配置检测连接是否有效
         oracle: # 添加Oracle数据库配置
           name: oracle_db
-          url: jdbc:oracle:thin:@//192.168.127.7:1521/TOPPRD
+          #url: jdbc:oracle:thin:@//192.168.127.7:1521/TOPPRD # ERP正式库
+          url: jdbc:oracle:thin:@//192.168.127.7:1521/TOPTST # ERP测试库
           driver-class-name: oracle.jdbc.driver.OracleDriver
           username: amuser
           password: am123456

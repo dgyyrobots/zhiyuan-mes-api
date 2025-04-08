@@ -57,6 +57,9 @@ public interface FeedLineMapper extends BaseMapperX<FeedLineDO> {
                 .eqIfPresent(FeedLineDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(FeedLineDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(FeedLineDO::getBarcodeNumber, reqVO.getBarcodeNumber())
+                .eqIfPresent(FeedLineDO::getSequence, reqVO.getSequence())
+                .eqIfPresent(FeedLineDO::getSequenceOrder, reqVO.getSequenceOrder())
+
                 .orderByDesc(FeedLineDO::getId));
     }
 
@@ -99,6 +102,8 @@ public interface FeedLineMapper extends BaseMapperX<FeedLineDO> {
                 .eqIfPresent(FeedLineDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(FeedLineDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(FeedLineDO::getBarcodeNumber, reqVO.getBarcodeNumber())
+                .eqIfPresent(FeedLineDO::getSequence, reqVO.getSequence())
+                .eqIfPresent(FeedLineDO::getSequenceOrder, reqVO.getSequenceOrder())
                 .orderByDesc(FeedLineDO::getId));
     }
 
