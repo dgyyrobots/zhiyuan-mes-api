@@ -80,7 +80,7 @@ public class MaterialStockERPAPI {
             Map<String, Object> detail = new HashMap<>();
             if("1".equals(pmds000)){
                 detail.put("pmdt001", poNo); // 采购单号
-                detail.put("pmdt002", good.get("purchaseBatch")); // 采购项次
+                detail.put("pmdt002", good.get("consequence")); // 项次
                 detail.put("pmdt003", good.get("purchaseConsequence")); // 采购项序
                 detail.put("pmdt004", good.get("purchaseBatchConsequence")); // 采购分批序
                 detail.put("pmdt027", ""); // 收货单号
@@ -128,9 +128,9 @@ public class MaterialStockERPAPI {
         System.out.println(JSONObject.toJSONString(request));
 
         // String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
-        // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
+        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
         // 测试报文解析
-        String result = "{\n" +
+        /*String result = "{\n" +
                 "    \"srvver\": \"1.0\",\n" +
                 "    \"srvcode\": \"000\",\n" +
                 "    \"datakey\": null,\n" +
@@ -152,9 +152,9 @@ public class MaterialStockERPAPI {
                 "            }\n" +
                 "        }\n" +
                 "    }\n" +
-                "}\n";
+                "}\n";*/
         // 记录操作日志
-       /* InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
+        InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
         if(pmds000.equals("1")){
             log.setInterfaceName("采购收货接口");
         }else if(pmds000.equals("6")){
@@ -167,7 +167,7 @@ public class MaterialStockERPAPI {
         log.setRequestType("POST");
         log.setRequestMap(JSONObject.toJSONString(request));
         log.setResultMap(result);
-        interfaceLogService.createInterfaceLog(log);*/
+        interfaceLogService.createInterfaceLog(log);
         // 将String转为Json对象, 获取对象内code字段的值
 
         JSONObject jsonObject = JSONObject.parseObject(result);
@@ -295,7 +295,7 @@ public class MaterialStockERPAPI {
         hostInfo.put("prod", "MES");
         hostInfo.put("ip", ipAddress); // 替换为实际的IP地址
         hostInfo.put("lang", "zh_CN");
-        hostInfo.put("acct", "tiptst"); // 后续替换为实际的用户
+        hostInfo.put("acct", "tiptop"); // 后续替换为实际的用户
         hostInfo.put("timestamp", String.valueOf(System.currentTimeMillis()));
         request.put("host", hostInfo);
 

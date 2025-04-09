@@ -369,10 +369,11 @@ public class GoodsController {
        /* if (!result.equals("success")) {
             return result;
         }*/
-        /*params.put("pmds000", "6"); // 采购入库
-        params.put("warehousingCode", "AMSH02-250401001");
+        params.put("pmds000", "6"); // 采购入库
+        params.put("warehousingCode", "AMSH01-250409001");
+        //params.put("goodsList", groupedGoodsMap);
         // 调用ERP接口, 再入库
-        String wareHouseingResult = materialStockERPAPI.purchaseDeliveryCreate(params);
+       /* String wareHouseingResult = materialStockERPAPI.purchaseDeliveryCreate(params);
         if (!wareHouseingResult.equals("success")) {
             return wareHouseingResult;
         }*/
@@ -386,10 +387,10 @@ public class GoodsController {
             erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
             erpParams.put("pmds000", "6"); // 采购入库
             System.out.println(erpParams.toString());
-            /*String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+            String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
             if (!result.contains("success")) {
                 return result;
-            }*/
+            }
         }
 
 
@@ -758,12 +759,12 @@ public class GoodsController {
             erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
             erpParams.put("pmds000", "1"); // 采购收货
             System.out.println(erpParams.toString());
-            /*String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+            String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
             if (!result.contains("success")) {
                 return result;
-            }*/
-            //String warehousingCode = result.split(",")[1];
-            String warehousingCode = "";
+            }
+            String warehousingCode = result.split(",")[1];
+            //String warehousingCode = "";
             // 这里可以处理warehousingCode，例如保存到数据库等
             // 将当前单身信息与收货单号绑定
             List<GoodsDO> update = new ArrayList<>();

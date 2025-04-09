@@ -328,12 +328,12 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
                 params.put("sfda002", "11"); // 成套领料
                 params.put("source_no", issueHeader.getIssueCode()); // 成套领料
 
-               /* String erpResult = workorderERPAPI.workOrderIssueCreate(params);
+                String erpResult = workorderERPAPI.workOrderIssueCreate(params);
 
                 if(!erpResult.contains("success")){
                     // 过账失败
                     System.out.println("ERP过账失败：" + erpResult);
-                }*/
+                }
 
                 // 更新上料详情
                 issueLines.forEach(issueLine -> {
