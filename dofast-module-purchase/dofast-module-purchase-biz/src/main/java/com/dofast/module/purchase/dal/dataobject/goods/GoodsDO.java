@@ -146,5 +146,9 @@ public class GoodsDO extends BaseDO {
      */
     private String erpReceiveCode;
 
+    /**
+     * ERP收货项次
+     */
+    private Integer receiveSeq;
 
 }

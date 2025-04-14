@@ -255,14 +255,13 @@ public class FeedbackController {
         AdminUserRespDTO userDTO = adminUserApi.getUser(loginUserId);
         createReqVO.setNickName(userDTO.getNickname());
         createReqVO.setUserName(userDTO.getUsername());
+
         // 生成三位数随机数
         int random = (int) ((Math.random() * 9 + 1) * 100);
         createReqVO.setFeedbackCode(new StringBuffer().append("AMBG01").append("-").append(createReqVO.getTaskCode()).append("-").append(random).toString());
-        Long feedbackId = feedbackService.createFeedback(createReqVO);
         String taskCode = createReqVO.getTaskCode();
 
         TaskDO task = taskService.getTask(taskCode);
-
         // 2025-03-13 追加需求: 判定当前任务单对应的领料单是否存在未上料单据信息, 存在则不允许其进行报工操作
         // 基于任务单获取生产领料单
         IssueheaderDTO issueHeader = new IssueheaderDTO();
@@ -272,18 +271,31 @@ public class FeedbackController {
         if (issueHeaderList.isEmpty()) {
             return error(ErrorCodeConstants.ISSUE_NOT_EXISTS);
         }
+
         IssueheaderDTO issueHeaderDTO = issueHeaderList.get(0);
-        // 基于生产领料单获取未上料的生产领料单行
+        // 基于生产领料单获取已上料未报工的生产领料单行
         IssueLineDTO issueLine = new IssueLineDTO();
         issueLine.setIssueId(issueHeaderDTO.getId());
-        issueLine.setStatus("N");
+        issueLine.setStatus("Y");
+        issueLine.setFeedbackStatus("N");
+        issueLine.setMachineryCode(createReqVO.getMachineryCode());
         List<IssueLineDTO> issueLineList = issueApi.listIssueLine(issueLine);
-        if (!issueLineList.isEmpty()) {
+
+        // 获取当前已报工且勾选已启用的物料
+        IssueLineDTO enableIssue = new IssueLineDTO();
+        enableIssue.setIssueId(issueHeaderDTO.getId());
+        enableIssue.setFeedbackStatus("Y");
+        enableIssue.setEnableFlag("true");
+        issueLine.setMachineryCode(createReqVO.getMachineryCode());
+        List<IssueLineDTO> enableIssueList = issueApi.listIssueLine(enableIssue);
+
+        if (issueLineList.isEmpty() && enableIssueList.isEmpty()) {
+            // 不存在已上料未报工信息与残留物料
             return error(ErrorCodeConstants.TASK_NOT_RECEPT);
         }
 
+        Long feedbackId = feedbackService.createFeedback(createReqVO);
         task.setFeedbackStatus("Y");
-
         taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
         for (Map<String, Object> map : list) {
             FeedbackMemberCreateReqVO req = new FeedbackMemberCreateReqVO();
@@ -302,11 +314,9 @@ public class FeedbackController {
             Object startMeterObj = map.get("startMeter");
             Object endMeterObj = map.get("endMeter");
             Object defectMeterObj = map.get("defectMeter");
-
             Integer startMeter = parseInteger(startMeterObj, 0); // 提供默认值 0
             Integer endMeter = parseInteger(endMeterObj, 0); // 提供默认值 0
             Integer defectMeter = parseInteger(defectMeterObj, 0); // 提供默认值 0
-
             req.setFeedbackId(String.valueOf(feedbackId));
             req.setDefectId(Long.valueOf((Integer) map.get("id")));
             req.setDefectName((String) map.get("defectName"));
@@ -756,7 +766,7 @@ public class FeedbackController {
             FeedbackUpdateReqVO feedbackUpdateReqVO = BeanUtil.toBean(feedback, FeedbackUpdateReqVO.class);
             feedbackUpdateReqVO.setStatus("UNAPPROVED");
             feedbackService.updateFeedback(feedbackUpdateReqVO);
-            // 追加IPQC记录(机长自检)
+            // TODO 追加IPQC记录(机长自检)
             return error(ErrorCodeConstants.FEEDBACK_NOT_APPROVED);
         }
 
@@ -974,7 +984,7 @@ public class FeedbackController {
             detail.put("sfeb001", ware.get("workorderCode"));       // 工单单号
             detail.put("sfeb003", "1");                             // 入库类型（示例值，需确认）
             detail.put("sfeb004", ware.get("itemCode"));            // 料号
-            detail.put("sfeb005", ware.get("specification"));       // 产品特征
+            detail.put("sfeb005", "");       // 产品特征 ware.get("specification")
             detail.put("sfeb008", ware.get("quantityFeedback"));    // 申请数量
 
             // 基于当前的库存信息
@@ -992,12 +1002,12 @@ public class FeedbackController {
             // 构建单个工单的master数据
             Map<String, Object> workOrder = new HashMap<>();
             workOrder.put("source_no", ware.get("feedbackCode"));   // MES报工单号
-            workOrder.put("sfeadocno", "asft340");                  // 单别（示例值）
+            workOrder.put("sfeadocno", "");                  // 单别（示例值）
             workOrder.put("sfeadocdt", formatDate(new Date()));     // 单据日期
             workOrder.put("sfea001", formatDate(new Date()));       // 过账日期
-            workOrder.put("sfea002", ware.get("userName"));         // 申请人员
+            //workOrder.put("sfea002", ware.get("userName"));         // 申请人员
+            workOrder.put("sfea002", "tiptop");         // 申请人员
             workOrder.put("goodsList", goodsList);                  // 当前工单明细
-
             workOrders.add(workOrder);
         }
 
@@ -1005,13 +1015,11 @@ public class FeedbackController {
         erpParams.put("workOrders", workOrders);
 
         // 调用接口方法
-       /* String result = workorderERPAPI.workOrderFinishCreate(erpParams);
-
+      /*  String result = workorderERPAPI.workOrderFinishCreate(erpParams);
         if(result!="success"){
-            return null;
-        }*/
-
-
+            return result;
+        }
+*/
         for (Map<String, Object> map : objList) {
             // 基于当前的库存信息
             MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
@@ -1505,7 +1513,6 @@ public class FeedbackController {
 
     /**
      * 看板: 各车间产量
-     * @param tenantId
      * @return
      */
     @GetMapping("/workshop-capacity")

@@ -155,11 +155,11 @@ public class RetreatOrderController {
         erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
         erpParams.put("pmds000", "7"); // 仓库退货
         System.out.println(erpParams.toString());
-        String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+        /*String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
         if (!result.contains("success")) {
             return result;
         }
-
+*/
         return "success";
     }
 

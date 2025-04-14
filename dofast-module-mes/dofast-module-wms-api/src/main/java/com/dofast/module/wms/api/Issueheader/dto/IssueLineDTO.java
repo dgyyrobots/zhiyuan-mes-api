@@ -124,6 +124,39 @@ public class IssueLineDTO {
      */
     private String feedbackCode;
 
+    /**
+     * 生产设备名称
+     */
+    private String machineryName;
 
+    /**
+     * 生产设备编码
+     */
+    private String machineryCode;
+
+    /**
+     * 生产设备ID
+     */
+    private String machineryId;
+
+    /**
+     * 条码编号
+     */
+    private Long barcodeNumber;
+
+    /**
+     * 启用标识
+     */
+    private String enableFlag;
+
+    /**
+     * ERP项次
+     */
+    private Long sequence;
+
+    /**
+     * ERP项次
+     */
+    private Long sequenceOrder;
 
 }

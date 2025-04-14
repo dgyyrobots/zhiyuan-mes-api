@@ -69,5 +69,13 @@
         WHERE A.PMDLENT = #{erpCode} AND A.PMDLSITE = 'AM01' AND A.pmdlstus = 'Y'
     </select>
 
+    <select id="getReceiveSeq" resultType="java.util.HashMap">
+        SELECT PMDTSEQ AS RECEIVE_SEQ FROM DSDATA.PMDT_T
+        WHERE PMDTENT = #{erpCode}  AND PMDTSITE = 'AM01'
+            AND PMDTDOCNO = #{goodsDO.erpReceiveCode} AND PMDT001 = #{goodsDO.poNo}
+            AND PMDT002 = #{goodsDO.consequence} AND PMDT003 =  #{goodsDO.purchaseConsequence} AND PMDT004 = #{goodsDO.purchaseBatchConsequence}
+            AND PMDT006 =  #{goodsDO.goodsNumber}
+    </select>
+
 
 </mapper>

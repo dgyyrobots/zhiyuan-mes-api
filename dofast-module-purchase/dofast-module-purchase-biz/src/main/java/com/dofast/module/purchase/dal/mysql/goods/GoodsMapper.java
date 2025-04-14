@@ -41,6 +41,7 @@ public interface GoodsMapper extends BaseMapperX<GoodsDO> {
                 .eqIfPresent(GoodsDO::getConsequence, reqVO.getConsequence())
                 .eqIfPresent(GoodsDO::getErpReceiveCode, reqVO.getErpReceiveCode())
                 .likeIfPresent(GoodsDO::getVendorName, reqVO.getVendorName())
+                .eqIfPresent(GoodsDO::getReceiveSeq, reqVO.getReceiveSeq())
                 .orderByDesc(GoodsDO::getId));
     }
 
@@ -68,6 +69,7 @@ public interface GoodsMapper extends BaseMapperX<GoodsDO> {
                 .eqIfPresent(GoodsDO::getConsequence, reqVO.getConsequence())
                 .eqIfPresent(GoodsDO::getErpReceiveCode, reqVO.getErpReceiveCode())
                 .likeIfPresent(GoodsDO::getVendorName, reqVO.getVendorName())
+                .eqIfPresent(GoodsDO::getReceiveSeq, reqVO.getReceiveSeq())
                 .orderByDesc(GoodsDO::getId));
     }
 

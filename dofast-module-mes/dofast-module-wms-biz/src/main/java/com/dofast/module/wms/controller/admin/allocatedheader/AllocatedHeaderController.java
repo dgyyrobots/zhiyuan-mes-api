@@ -511,11 +511,10 @@ public class AllocatedHeaderController {
         }
         params.put("allocatedList", erpRequestList);
 
-        String result = materialStockERPAPI.requisitionNoteCreate(params);
-
+       /* String result = materialStockERPAPI.requisitionNoteCreate(params);
         if(result!="success"){
             return error(500, "ERP接口调用失败");
-        }
+        }*/
         List<AllocatedTxBean> beans = allocatedHeaderService.getTxBeans(allocatedId);
 
         //调用库存核心

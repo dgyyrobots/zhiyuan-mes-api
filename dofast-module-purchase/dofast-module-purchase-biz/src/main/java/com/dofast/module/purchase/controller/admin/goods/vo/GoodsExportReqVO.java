@@ -98,4 +98,7 @@ public class GoodsExportReqVO {
     @Schema(description = "ERP采购单号")
     private String erpReceiveCode;
 
+    @Schema(description = "ERP收货项次")
+    private Integer receiveSeq;
+
 }

@@ -129,30 +129,6 @@ public class MaterialStockERPAPI {
 
         // String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
         String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
-        // 测试报文解析
-        /*String result = "{\n" +
-                "    \"srvver\": \"1.0\",\n" +
-                "    \"srvcode\": \"000\",\n" +
-                "    \"datakey\": null,\n" +
-                "    \"payload\": {\n" +
-                "        \"std_data\": {\n" +
-                "            \"execution\": {\n" +
-                "                \"code\": \"0\",\n" +
-                "                \"sql_code\": \"0\",\n" +
-                "                \"description\": \"SUCCESS\"\n" +
-                "            },\n" +
-                "            \"parameter\": {\n" +
-                "                \"success_return\": [\n" +
-                "                    {\n" +
-                "                        \"source_no\": \"AMCG83-250401001\",\n" +
-                "                        \"success_msg\": \"AMSH02-250401001\"\n" +
-                "                    }\n" +
-                "                ],\n" +
-                "                \"fail_return\": []\n" +
-                "            }\n" +
-                "        }\n" +
-                "    }\n" +
-                "}\n";*/
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
         if(pmds000.equals("1")){
@@ -223,8 +199,8 @@ public class MaterialStockERPAPI {
         master.put("source_no", params.get("allocatedId")); // MES单头Id
         master.put("indcdocno", ""); // 单别
         master.put("indcdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date())); // 单据日期 默认获取当日日期
-        master.put("indc000", 1); // 单据性质
-        master.put("indc002", 1); // 来源类别
+        master.put("indc000", "1"); // 单据性质
+        master.put("indc002", "1"); // 来源类别
         //获取当前用户信息
         // 获取当前用户信息
         AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
@@ -234,7 +210,7 @@ public class MaterialStockERPAPI {
         master.put("indc005", ""); // 拨出据点
         master.put("indc006", "AM01"); // 拨入据点
         master.put("indc008", "测试调拨"); // 备注
-        master.put("indc102", 1); // 检验否
+        master.put("indc102", "1"); // 检验否
 
         // 构建details
         List<Map<String, Object>> details = new ArrayList<>();
@@ -281,9 +257,23 @@ public class MaterialStockERPAPI {
         log.setRequestMap(JSONObject.toJSONString(request));
         log.setResultMap(result);
         interfaceLogService.createInterfaceLog(log);
-        return result;
 
-        //return "success";
+        JSONObject jsonObject = JSONObject.parseObject(result);
+        // 防止jsonObject.getString("code")空指针异常
+        if (jsonObject == null) {
+            return "error";
+        }
+        // 提取执行状态信息
+        JSONObject reqPayload = jsonObject.getJSONObject("payload");
+        JSONObject reqStdData = payload != null ? reqPayload.getJSONObject("std_data") : null;
+        JSONObject reqExecution = stdData != null ? reqStdData.getJSONObject("execution") : null;
+        String code = reqExecution != null ? reqExecution.getString("code") : null;
+        String description = reqExecution != null ? reqExecution.getString("description") : null;
+
+        if ("0".equals(code)) {
+            return description != null ? description : "error";
+        }
+        return result;
     }
 
     private Map<String, Object> createBaseRequest(String interfaceName) {
@@ -414,7 +404,6 @@ public class MaterialStockERPAPI {
         master.put("pmds006", mesDocNo);
         master.put("pmds002", "00000");
         master.put("pmds007", supplierCode);
-        master.put("pmds011", "1");
         master.put("detail", details);
         List<Map<String, Object>> masterList = new ArrayList<>();
         masterList.add(master);

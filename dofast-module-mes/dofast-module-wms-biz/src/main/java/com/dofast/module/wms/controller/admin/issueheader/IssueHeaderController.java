@@ -9,9 +9,11 @@ import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.api.ProcessApi.dto.ProcessDTO;
 import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
+import com.dofast.module.wms.api.ERPApi.WorkorderERPAPI;
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeaderExportReqVO;
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeaderUpdateReqVO;
 import com.dofast.module.wms.controller.admin.allocatedrecord.vo.AllocatedRecordExportReqVO;
+import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineExportReqVO;
 import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineListVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockUpdateReqVO;
@@ -109,6 +111,10 @@ public class IssueHeaderController {
 
     @Resource
     private FeedLineService feedLineService;
+
+    @Resource
+    private WorkorderERPAPI workorderERPAPI;
+
 
     @PostMapping("/create")
     @Operation(summary = "创建生产领料单头")
@@ -237,6 +243,42 @@ public class IssueHeaderController {
         if (lines.isEmpty()) {
             return error(ErrorCodeConstants.ISSUE_HEADER_NEED_LINE);
         }
+
+        // 追加ERP接口调用
+        Map<String, Object> params = new HashMap<>();
+        List<Map<String, Object>>  list = new ArrayList<>(); // 装填领料信息
+
+        for (IssueLineDO issueLine: lines) {
+
+            FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
+            exportReqVO.setTaskCode(header.getTaskCode());
+            exportReqVO.setItemCode(issueLine.getItemCode());
+            exportReqVO.setBatchCode(issueLine.getBatchCode());
+            exportReqVO.setBarcodeNumber(issueLine.getBarcodeNumber());
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("sfdc001", header.getWorkorderCode()); // 工单单号
+            map.put("sfdc002", issueLine.getSequence()); // 工单项次
+            map.put("sfdc003", issueLine.getSequenceOrder()); // 工单项序
+            map.put("sfdc007", issueLine.getQuantityIssued()); // 申请数量
+            map.put("sfdc012", issueLine.getLocationCode()); // ERP库区
+            map.put("sfdc013", issueLine.getAreaCode()); // ERP库位
+            map.put("sfdc014", issueLine.getBatchCode()); // 批号
+            map.put("sfdc015", "H01"); // 理由码 成套发料对应H01，成套退料对应Y01，超领对应H02，超领退对应Y02
+            map.put("sfdc016", ""); // 库存管理特征
+            map.put("source_seq", ""); // MES项次
+            list.add(map);
+        }
+        params.put("goodsList", list);
+        params.put("sfda002", "11"); // 成套领料
+        params.put("source_no", header.getIssueCode()); // 成套领料
+
+        /*String erpResult = workorderERPAPI.workOrderIssueCreate(params);
+
+        if(!erpResult.contains("success")){
+            // 过账失败
+            System.out.println("ERP过账失败：" + erpResult);
+        }*/
 
         // 追加上料详情
         List<FeedLineDO> createReqVOList = new ArrayList<>();

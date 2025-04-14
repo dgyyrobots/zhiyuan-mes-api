@@ -83,6 +83,8 @@ public interface ErrorCodeConstants {
     ErrorCode ISSUE_LINE_NOT_ENABLE = new ErrorCode(621001, "仅允许选中膜类物料!");
     ErrorCode ISSUE_LINE_MULTI_MATERIAL = new ErrorCode(621001, "当前机台已存在膜类物料!!");
     ErrorCode ISSUE_LINE_ITEM_NOT_CONTAIN_BOM = new ErrorCode(621001, "领料失败! 物料不属于当前工单BOM");
+    ErrorCode ISSUE_HEADER_NO_TASK = new ErrorCode(621001, "上料失败，当前领料单对应任务单不存在！");
+    ErrorCode ISSUE_LINE_DELETE_ERROR = new ErrorCode(621001, "生产领料单已领料，无法删除！");
 
     ErrorCode ALLOCATED_HEADER_NEED_PROCESS_LINE = new ErrorCode(621006, "没有需要处理的调拨单行");
     ErrorCode ALLOCATED_HEADER_NEED_TASK_TEAM = new ErrorCode(621006, "当前任务单尚未派工, 请先排产!");

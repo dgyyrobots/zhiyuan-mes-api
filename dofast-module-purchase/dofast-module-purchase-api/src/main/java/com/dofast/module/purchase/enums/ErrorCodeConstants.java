@@ -13,6 +13,8 @@ public interface ErrorCodeConstants {
     // === 采购商品明细 1030000000 ===
     ErrorCode GOODS_NOT_CONFIG = new ErrorCode(1030001001, "当前采购单下还有未配置的单据信息!");
 
+    ErrorCode GOODS_NOT_RECEIVE = new ErrorCode(1030001001, "当前采购单下还有未收货的单据信息!");
+
     // === 采购入库单 1030002000 ===
     ErrorCode INVOICE_NOT_EXISTS = new ErrorCode(1030002000, "采购入库单不存在");
 

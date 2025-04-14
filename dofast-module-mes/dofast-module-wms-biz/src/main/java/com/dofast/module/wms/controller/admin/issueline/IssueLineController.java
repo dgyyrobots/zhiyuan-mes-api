@@ -4,6 +4,7 @@ import com.dofast.framework.common.util.bean.BeanUtils;
 import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.framework.web.core.util.WebFrameworkUtils;
 import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
 import com.dofast.module.pro.api.WorkorderApi.WorkorderApi;
 import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderBomDTO;
@@ -101,13 +102,15 @@ public class IssueLineController {
     @Resource
     private WorkorderApi workorderService;
 
+    @Resource
+    private TaskApi taskApi;
+
     @PostMapping("/create")
     @Operation(summary = "创建生产领料单行")
     @PreAuthorize("@ss.hasPermission('wms:issue-line:create')")
     public CommonResult<Long> createIssueLine(@Valid @RequestBody IssueLineCreateReqVO createReqVO) {
         // 获取当前单身信息
         IssueHeaderDO issueHeaderDO = issueHeaderService.getIssueHeader(createReqVO.getIssueId());
-
 
        /*
        澳美一个任务单无法对应一个机台
@@ -135,19 +138,29 @@ public class IssueLineController {
             createReqVO.setLocationCode(storageLocationDO.getLocationCode());
             createReqVO.setLocationName(storageLocationDO.getLocationName());
             // 追加校验, 无法添加非库存的数据
-            /*String processCode = issueHeaderDO.getProcessCode();
+            String processCode = issueHeaderDO.getProcessCode();
             if (!processCode.equals(storageLocationDO.getProcessCode()) && !"AM007".equals(storageLocationDO.getProcessCode())) {
                 return error(ErrorCodeConstants.ISSUE_HEADER_NO_PROCESS);
-            }*/
+            }
         }
         if (StrUtils.isNotNull(createReqVO.getAreaId())) {
             StorageAreaDO storageAreaDO = storageAreaService.getStorageArea(createReqVO.getAreaId());
             createReqVO.setAreaCode(storageAreaDO.getAreaCode());
             createReqVO.setAreaName(storageAreaDO.getAreaName());
         }
+        // 追加校验: 未派工不允许进行扫码上料操作
+        TaskDTO taskDto = taskApi.getTask(issueHeaderDO.getTaskCode());
+        if (taskDto == null) {
+            return error(ErrorCodeConstants.ISSUE_HEADER_NO_TASK);
+        }
+        String teamCode = Optional.ofNullable(taskDto.getAttr1()).orElse(null);
+        if (teamCode == null) {
+            return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
+        }
+
         // 追加校验:
         // 获取当前领料单对应工单, 校验当前物料是否属于bom, 若存在则绑定ERP项次, 项序用于接口传参
-        List<WorkorderBomDTO> bomList = workorderService.getWorkorderBom(issueHeaderDO.getWorkorderCode());
+        /*List<WorkorderBomDTO> bomList = workorderService.getWorkorderBom(issueHeaderDO.getWorkorderCode());
         createReqVO.getItemCode();
         for (WorkorderBomDTO bom : bomList) {
             // 校验当前物料是否属于BOM列表
@@ -157,9 +170,9 @@ public class IssueLineController {
                 break;
             }
         }
-        if(createReqVO.getSequence() == null){
+        if (createReqVO.getSequence() == null) {
             return error(ErrorCodeConstants.ISSUE_LINE_ITEM_NOT_CONTAIN_BOM);
-        }
+        }*/
 
         return success(issueLineService.createIssueLine(createReqVO));
     }
@@ -182,8 +195,8 @@ public class IssueLineController {
                 for (IssueLineDO line : issueLineByMachineryId) {
                     if (line.getItemCode().startsWith("61")) {
                         // 校验最新一卷膜类物料状态, 禁止多次上膜
-                        if("N".equals(line.getStatus()) && "N".equals(line.getFeedbackStatus()) || "N".equals(line.getStatus()) && "Y".equals(line.getFeedbackStatus())) {
-                           return error(ErrorCodeConstants.ISSUE_LINE_MULTI_MATERIAL);
+                        if ("N".equals(line.getStatus()) && "N".equals(line.getFeedbackStatus()) || "N".equals(line.getStatus()) && "Y".equals(line.getFeedbackStatus())) {
+                            return error(ErrorCodeConstants.ISSUE_LINE_MULTI_MATERIAL);
                         }
                         String feedbackCode = Optional.ofNullable(line.getFeedbackCode()).orElse("");
                         String[] str = feedbackCode.split(",");
@@ -230,6 +243,12 @@ public class IssueLineController {
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('wms:issue-line:delete')")
     public CommonResult<Boolean> deleteIssueLine(@RequestParam("id") ArrayList<Long> ids) {
+        // 追加卡控，无法删除已领料行数据
+        for (Long id : ids) {
+            if("Y".equals(issueLineService.getIssueLine(id).getStatus())){
+                return error(ErrorCodeConstants.ISSUE_LINE_DELETE_ERROR);
+            };
+        }
         issueLineService.batchDeleteIssueLine(ids);
         return success(true);
     }
@@ -288,16 +307,16 @@ public class IssueLineController {
     public CommonResult<Boolean> updateEnable(@RequestBody ArrayList<Long> ids) {
         List<IssueLineDO> lineList = issueLineService.getIssueLineList(ids);
         // 追加卡控, 仅允许复合车间使用
-        IssueHeaderDO issueHeaderDO = issueHeaderService.getIssueHeader(lineList.get(0).getIssueId());
-        if(!"AM005".equals(issueHeaderDO.getProcessCode())){
+        /*IssueHeaderDO issueHeaderDO = issueHeaderService.getIssueHeader(lineList.get(0).getIssueId());
+        if (!"AM005".equals(issueHeaderDO.getProcessCode())) {
             return error(ErrorCodeConstants.ISSUE_HEADER_NO_ENABLE_PROCESS);
-        }
+        }*/
         // 追加校验: 仅允许启用膜类物料, 开头为61
-        for (IssueLineDO line : lineList) {
+        /*for (IssueLineDO line : lineList) {
             if (!line.getItemCode().startsWith("61")) {
                 return error(ErrorCodeConstants.ISSUE_LINE_NOT_ENABLE);
             }
-        }
+        }*/
         for (IssueLineDO line : lineList) {
             String flag = "true".equals(line.getEnableFlag()) ? "false" : "true";
             line.setEnableFlag(flag);

@@ -102,4 +102,7 @@ public class GoodsExcelVO {
     @ExcelProperty("ERP采购单号")
     private String erpReceiveCode;
 
+    @ExcelProperty("ERP收货项次")
+    private Integer receiveSeq;
+
 }

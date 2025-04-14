@@ -340,5 +340,12 @@ public class WorkorderController {
         return success(result);
     }
 
+    @PostMapping("/finshWorkorder")
+    public CommonResult<String> wareHousing(@RequestBody WorkorderDO workorder) {
+        workorder.setStatus("FINISHED"); // 完成的工单不允许进行调拨，领料与报工
+        workorderService.updateWorkorder(WorkorderConvert.INSTANCE.convert1(workorder));
+        return success();
+    }
+
 
 }

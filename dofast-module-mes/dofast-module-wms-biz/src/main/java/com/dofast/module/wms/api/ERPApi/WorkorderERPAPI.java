@@ -1,5 +1,6 @@
 package com.dofast.module.wms.api.ERPApi;
 
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.dofast.framework.common.util.http.HttpUtils;
 import com.dofast.module.mes.controller.admin.interfacelog.vo.InterfaceLogCreateReqVO;
@@ -78,6 +79,22 @@ public class WorkorderERPAPI {
         log.setRequestMap(JSONObject.toJSONString(request));
         log.setResultMap(result);
         interfaceLogService.createInterfaceLog(log);
+
+        JSONObject jsonObject = JSONObject.parseObject(result);
+        // 防止jsonObject.getString("code")空指针异常
+        if (jsonObject == null) {
+            return "error";
+        }
+        // 提取执行状态信息
+        JSONObject reqPayload = jsonObject.getJSONObject("payload");
+        JSONObject reqStdData = payload != null ? reqPayload.getJSONObject("std_data") : null;
+        JSONObject reqExecution = stdData != null ? reqStdData.getJSONObject("execution") : null;
+        String code = reqExecution != null ? reqExecution.getString("code") : null;
+        String description = reqExecution != null ? reqExecution.getString("description") : null;
+
+        if ("0".equals(code)) {
+            return description != null ? description : "error";
+        }
         return result;
     }
 
@@ -149,6 +166,21 @@ public class WorkorderERPAPI {
         log.setResultMap(result);
         interfaceLogService.createInterfaceLog(log);
 
+        JSONObject jsonObject = JSONObject.parseObject(result);
+        // 防止jsonObject.getString("code")空指针异常
+        if (jsonObject == null) {
+            return "error";
+        }
+        // 提取执行状态信息
+        JSONObject reqPayload = jsonObject.getJSONObject("payload");
+        JSONObject reqStdData = payload != null ? reqPayload.getJSONObject("std_data") : null;
+        JSONObject reqExecution = stdData != null ? reqStdData.getJSONObject("execution") : null;
+        String code = reqExecution != null ? reqExecution.getString("code") : null;
+        String description = reqExecution != null ? reqExecution.getString("description") : null;
+
+        if ("0".equals(code)) {
+            return description != null ? description : "error";
+        }
         return result;
     }
 

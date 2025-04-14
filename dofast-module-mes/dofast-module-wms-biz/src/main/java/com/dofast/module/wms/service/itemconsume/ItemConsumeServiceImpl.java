@@ -38,7 +38,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.dofast.module.wms.controller.admin.itemconsume.vo.*;
 import com.dofast.module.wms.dal.dataobject.itemconsume.ItemConsumeDO;
@@ -296,45 +298,8 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
             issueLineExportReqVO.setFeedbackStatus("N"); // 未报工
             issueLineExportReqVO.setMachineryId(String.valueOf(feedback.getMachineryId()));
             List<IssueLineDO> issueLines = issueLineService.getIssueLineList(issueLineExportReqVO);
+
             if(!issueLines.isEmpty()){
-                // 追加ERP调拨接口测试
-                Map<String, Object> params = new HashMap<>();
-                List<Map<String, Object>>  list = new ArrayList<>(); // 装填领料信息
-
-                for (IssueLineDO issueLine: issueLines) {
-
-                    FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
-                    exportReqVO.setTaskCode(task.getTaskCode());
-                    exportReqVO.setItemCode(issueLine.getItemCode());
-                    exportReqVO.setBatchCode(issueLine.getBatchCode());
-                    exportReqVO.setBarcodeNumber(issueLine.getBarcodeNumber());
-
-                    FeedLineDO feedLine = feedLineService.getFeedLineList(exportReqVO).get(0);
-
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("sfdc001", workorder.getWorkorderCode()); // 工单单号
-                    map.put("sfdc002", feedLine.getSequence()); // 工单项次
-                    map.put("sfdc003", feedLine.getSequenceOrder()); // 工单项序
-                    map.put("sfdc007", issueLine.getQuantityIssued()); // 申请数量
-                    map.put("sfdc012", feedLine.getLocationCode()); // ERP库区
-                    map.put("sfdc013", feedLine.getAreaCode()); // ERP库位
-                    map.put("sfdc014", issueLine.getBatchCode()); // 批号
-                    map.put("sfdc015", "H01"); // 理由码 成套发料对应H01，成套退料对应Y01，超领对应H02，超领退对应Y02
-                    map.put("sfdc016", ""); // 库存管理特征
-                    map.put("source_seq", ""); // MES项次
-                    list.add(map);
-                }
-                params.put("goodsList", list);
-                params.put("sfda002", "11"); // 成套领料
-                params.put("source_no", issueHeader.getIssueCode()); // 成套领料
-
-                String erpResult = workorderERPAPI.workOrderIssueCreate(params);
-
-                if(!erpResult.contains("success")){
-                    // 过账失败
-                    System.out.println("ERP过账失败：" + erpResult);
-                }
-
                 // 更新上料详情
                 issueLines.forEach(issueLine -> {
                     issueLine.setFeedbackCode(feedback.getFeedbackCode()); // 绑定报工单号
@@ -353,7 +318,7 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
                     // 基于,拆分doubleCheckLines的feedbackCode字段, 与issueLines每一行对应的feedbackCode字段进行比对
                     // 确保doubleCheckLines的feedbackCode字段, 都与issueLines每一行对应的feedbackCode字段进行比对, 出现不匹配的, 则进行追加关联关系
                     // 否则, 则直接跳过
-                    issueLines.forEach(issueLine -> {
+                    doubleCheckLines.forEach(issueLine -> {
                         if(issueLine.getFeedbackCode().contains(feedback.getFeedbackCode())){
                             // 匹配, 则跳过
                         }else{
@@ -361,9 +326,9 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
                             StringBuffer feedBackStr = new StringBuffer();
                             feedBackStr.append(issueLine.getFeedbackCode()).append(",").append(feedback.getFeedbackCode());
                             issueLine.setFeedbackCode(feedBackStr.toString()); // 绑定报工单号
+                            issueLine.setEnableFlag("false"); // 清除启用标识信息
                         }
                     });
-                    issueLineService.updateIssueLineBatch(doubleCheckLines);
                 }
             }else{
                 // 校验当前报工单对应领料单, 机台信息是否存在已启用信息
@@ -379,6 +344,7 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
                         StringBuffer feedBackStr = new StringBuffer();
                         feedBackStr.append(issueLine.getFeedbackCode()).append(",").append(feedback.getFeedbackCode());
                         issueLine.setFeedbackCode(feedBackStr.toString()); // 绑定报工单号
+                        issueLine.setEnableFlag("false"); // 清除启用标识信息
                     });
                     issueLineService.updateIssueLineBatch(doubleCheckLines);
                 }
