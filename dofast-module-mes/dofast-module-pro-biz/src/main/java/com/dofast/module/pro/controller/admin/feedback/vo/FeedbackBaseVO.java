@@ -167,4 +167,7 @@ public class FeedbackBaseVO {
     @Schema(description = "设备编码")
     private String machineryCode;
 
+    @Schema(description = "ERP报工单")
+    private String erpFeedback;
+
 }

@@ -229,4 +229,10 @@ public class FeedbackDO extends BaseDO {
      * 设备编码
      */
     private String machineryCode;
+
+    /**
+     * 设备编码
+     */
+    private String erpFeedback;
+
 }

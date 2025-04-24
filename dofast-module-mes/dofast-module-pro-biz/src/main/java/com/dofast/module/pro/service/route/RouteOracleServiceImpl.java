@@ -34,6 +34,7 @@ public class RouteOracleServiceImpl implements RouteOracleService {
      * @return
      */
     @Override
+    @DS("oracle")
     public List<Map<String, Object>> initRouteBindProcess(){
         String erpCode = Constant.ERP_PROD_DODE;
         return routeOracleMapper.initRouteBindProcess(erpCode);
@@ -49,6 +50,11 @@ public class RouteOracleServiceImpl implements RouteOracleService {
         return routeOracleMapper.initChangeWorkOrderRouteBindProcess(workOrderNo, erpCode);
     }
 
+    @Override
+    public Map<String, Object> initWorkSequence(String workOrderNo, String processCode){
+        String erpCode = Constant.ERP_PROD_DODE;
+        return routeOracleMapper.initWorkSequence(workOrderNo, processCode, erpCode);
+    }
 
 
 }

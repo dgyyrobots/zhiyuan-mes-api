@@ -93,4 +93,10 @@ public class RtIssueLinePageReqVO extends PageParam {
     @Schema(description = "供应商编码", example = "S1865")
     private String vendorCode;
 
+    @Schema(description = "ERP项次")
+    private Long sequence;
+
+    @Schema(description = "ERP项次")
+    private Long sequenceOrder;
+
 }

@@ -67,6 +67,10 @@ public class RtIssueLineListVO {
 
     private String vendorCode;
 
+    private Long sequence;
+
+    private Long sequenceOrder;
+
     private LocalDateTime createTime;
 
 }

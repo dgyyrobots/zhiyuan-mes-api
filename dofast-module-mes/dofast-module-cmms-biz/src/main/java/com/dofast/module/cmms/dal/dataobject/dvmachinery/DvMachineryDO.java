@@ -92,4 +92,9 @@ public class DvMachineryDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * ERP设备编码
+     */
+    private String erpMachineryCode;
+
 }

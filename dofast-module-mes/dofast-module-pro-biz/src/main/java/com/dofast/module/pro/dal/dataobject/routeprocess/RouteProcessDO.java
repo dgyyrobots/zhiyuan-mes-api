@@ -104,4 +104,11 @@ public class RouteProcessDO extends BaseDO {
      */
     private Long sequence;
 
+    /**
+     * 工作序
+     */
+    private Long workorderSequence;
+
+
+
 }

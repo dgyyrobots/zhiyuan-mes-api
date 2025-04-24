@@ -12,13 +12,16 @@ import com.dofast.module.system.api.user.AdminUserApi;
 import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
 import com.dofast.module.tm.convert.tool.ToolConvert;
 import com.dofast.module.tm.dal.dataobject.tool.ToolDO;
+import com.dofast.module.wms.api.ERPApi.WorkorderERPAPI;
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeaderExportReqVO;
 import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineExportReqVO;
+import com.dofast.module.wms.controller.admin.storagearea.vo.StorageAreaExportReqVO;
 import com.dofast.module.wms.controller.admin.transaction.vo.TransactionUpdateReqVO;
 import com.dofast.module.wms.convert.issueheader.IssueHeaderConvert;
 import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueTxBean;
+import com.dofast.module.wms.dal.dataobject.rtissueline.RtIssueLineDO;
 import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
@@ -105,6 +108,9 @@ public class IssueLineController {
     @Resource
     private TaskApi taskApi;
 
+    @Resource
+    private WorkorderERPAPI workorderERPAPI;
+
     @PostMapping("/create")
     @Operation(summary = "创建生产领料单行")
     @PreAuthorize("@ss.hasPermission('wms:issue-line:create')")
@@ -160,7 +166,7 @@ public class IssueLineController {
 
         // 追加校验:
         // 获取当前领料单对应工单, 校验当前物料是否属于bom, 若存在则绑定ERP项次, 项序用于接口传参
-        /*List<WorkorderBomDTO> bomList = workorderService.getWorkorderBom(issueHeaderDO.getWorkorderCode());
+        List<WorkorderBomDTO> bomList = workorderService.getWorkorderBom(issueHeaderDO.getWorkorderCode());
         createReqVO.getItemCode();
         for (WorkorderBomDTO bom : bomList) {
             // 校验当前物料是否属于BOM列表
@@ -170,7 +176,7 @@ public class IssueLineController {
                 break;
             }
         }
-        if (createReqVO.getSequence() == null) {
+        /*if (createReqVO.getSequence() == null) {
             return error(ErrorCodeConstants.ISSUE_LINE_ITEM_NOT_CONTAIN_BOM);
         }*/
 
@@ -332,6 +338,44 @@ public class IssueLineController {
         List<IssueLineDO> lineList = issueLineService.getIssueLineList(ids);
         IssueHeaderDO headerDO = issueHeaderService.getIssueHeader(lineList.get(0).getIssueId());
 
+        // 追加ERP接口调用
+        Map<String, Object> params = new HashMap<>();
+        List<Map<String, Object>>  list = new ArrayList<>(); // 装填领料信息
+
+        for (IssueLineDO issueLineList: lineList) {
+            Long sequence = issueLineList.getSequence();
+            Long sequenceOrder = issueLineList.getSequenceOrder();
+            if(sequence == null || sequenceOrder == null){
+                // 不在bom中管控
+                // 不回传ERP
+                continue;
+            }
+            Map<String, Object> map = new HashMap<>();
+            map.put("sfdc001", headerDO.getWorkorderCode()); // 工单单号
+            map.put("sfdc002", issueLineList.getSequence()); // 工单项次
+            map.put("sfdc003", issueLineList.getSequenceOrder()); // 工单项序
+            map.put("sfdc007", issueLineList.getQuantityIssued()); // 申请数量
+            map.put("sfdc012", headerDO.getLocationCode()); // ERP库区
+            map.put("sfdc013", headerDO.getAreaCode()); // ERP库位
+            map.put("sfdc014", issueLineList.getBatchCode()); // 批号
+            map.put("sfdc015", "Y01"); // 理由码 成套发料对应H01，成套退料对应Y01，超领对应H02，超领退对应Y02
+            map.put("sfdc016", ""); // 库存管理特征
+            map.put("source_seq", ""); // MES项次
+            list.add(map);
+        }
+        params.put("goodsList", list);
+        params.put("sfda002", "23"); // 一般退料
+        params.put("source_no", headerDO.getIssueCode()); // 退料单号
+
+        if(list.size()>0) {
+            /*String erpResult = workorderERPAPI.workOrderIssueCreate(params);
+            if (!erpResult.contains("SUCCESS")) {
+                // 过账失败
+                System.out.println("ERP过账失败：" + erpResult);
+                return error(ErrorCodeConstants.RT_ISSUE_ERR_INTERFACE_ERROR);
+            }*/
+        }
+
         for (IssueLineDO line : lineList) {
             // 获取上料记录信息
             FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
@@ -388,10 +432,16 @@ public class IssueLineController {
             transaction_in.setLocationId(location.getId());
             transaction_in.setLocationCode(location.getLocationCode());
             transaction_in.setLocationName(location.getLocationName());
-            StorageAreaDO area = storageAreaService.selectWmStorageAreaByAreaCode(feedLine.getAreaCode());
-            transaction_in.setAreaId(area.getId());
-            transaction_in.setAreaCode(area.getAreaCode());
-            transaction_in.setAreaName(area.getAreaName());
+
+            StorageAreaExportReqVO areaExportReqVO = new StorageAreaExportReqVO();
+            areaExportReqVO.setLocationId(location.getId());
+            areaExportReqVO.setAreaCode(feedLine.getAreaCode());
+            StorageAreaDO area = storageAreaService.getStorageAreaList(areaExportReqVO).get(0) == null ? null : storageAreaService.getStorageAreaList(areaExportReqVO).get(0);
+            if(area != null){
+                transaction_in.setAreaId(area.getId());
+                transaction_in.setAreaCode(area.getAreaCode());
+                transaction_in.setAreaName(area.getAreaName());
+            }
             //设置入库相关联的出库事务ID
             transaction_in.setRelatedTransactionId(transaction_out.getId());
             transactionService.processTransaction(transaction_in);

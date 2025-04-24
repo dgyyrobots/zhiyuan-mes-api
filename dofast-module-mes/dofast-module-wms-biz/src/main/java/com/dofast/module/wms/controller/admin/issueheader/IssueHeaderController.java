@@ -9,6 +9,8 @@ import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.api.ProcessApi.dto.ProcessDTO;
 import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
+import com.dofast.module.pro.api.WorkorderApi.WorkorderApi;
+import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderBomDTO;
 import com.dofast.module.wms.api.ERPApi.WorkorderERPAPI;
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeaderExportReqVO;
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeaderUpdateReqVO;
@@ -49,6 +51,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -115,6 +118,9 @@ public class IssueHeaderController {
     @Resource
     private WorkorderERPAPI workorderERPAPI;
 
+    @Resource
+    private WorkorderApi workorderApi;
+
 
     @PostMapping("/create")
     @Operation(summary = "创建生产领料单头")
@@ -139,6 +145,10 @@ public class IssueHeaderController {
         // 生成3位随机数
         int random = (int) ((Math.random() * 9 + 1) * 100);
         createReqVO.setIssueName(taskDTO.getProcessName() + "领料单" + dateStr + random);
+
+        if(taskDTO.getAttr1() == null){
+            return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
+        }
 
         ProcessDTO processDTO = processApi.getcess(createReqVO.getProcessCode());
         createReqVO.setProcessName(processDTO.getProcessName());
@@ -220,11 +230,9 @@ public class IssueHeaderController {
         param.setStatus("Y");
         param.setFeedbackStatus("N");
         List<IssueLineDO> feedBacklines = issueLineService.selectList(param); // 当前领料单下已上料未报工的单身信息
-
         param.setStatus("N");
         param.setFeedbackStatus("N");
         List<IssueLineDO> noFeedBacklines = issueLineService.selectList(param); // 当前领料单下未上料未报工的单身信息
-
         if(!noFeedBacklines.isEmpty() && !feedBacklines.isEmpty()){
             for (IssueLineDO noFeedBackline : noFeedBacklines) {
                 for (IssueLineDO feedBackline : feedBacklines) {
@@ -237,7 +245,6 @@ public class IssueHeaderController {
         }else if(!feedBacklines.isEmpty()){
             return error(ErrorCodeConstants.ISSUE_HEADER_NOT_FEEDBACK_EXISTS);
         }
-
         param.setStatus("N");// 防止重复上料
         List<IssueLineDO> lines = issueLineService.selectList(param); // 当前领料单身中为上料的单据信息
         if (lines.isEmpty()) {
@@ -248,14 +255,43 @@ public class IssueHeaderController {
         Map<String, Object> params = new HashMap<>();
         List<Map<String, Object>>  list = new ArrayList<>(); // 装填领料信息
 
+        // 追加校验, 若当前领料不在BOM中, 即:流转半成品. 不予以回传ERP
         for (IssueLineDO issueLine: lines) {
-
+            Long sequence = issueLine.getSequence();
+            Long sequenceOrder = issueLine.getSequenceOrder();
+            if(sequence == null || sequenceOrder == null){
+                // 不在bom中管控
+                // 不回传ERP
+                continue;
+            }
             FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
             exportReqVO.setTaskCode(header.getTaskCode());
             exportReqVO.setItemCode(issueLine.getItemCode());
             exportReqVO.setBatchCode(issueLine.getBatchCode());
             exportReqVO.setBarcodeNumber(issueLine.getBarcodeNumber());
 
+            // 追加判定: 超出bom预估用量走超领
+            // 获取工单bom信息
+            /*List<WorkorderBomDTO> bomInfo = workorderApi.getWorkorderBom(header.getWorkorderId());
+            // 基于项次(sequence), 项序(sequenceOrder)判定唯一行
+            for (WorkorderBomDTO bomDTO : bomInfo) {
+                if(bomDTO.getSequence().equals(sequence) && bomDTO.getSequenceOrder().equals(sequenceOrder)){
+                    // 项次项序符合
+                    // 判定当前领料单, 使用物料是否超标
+                    BigDecimal planQuantity = new BigDecimal(bomDTO.getQuantity()); // 预计用量
+                    // 开始判定当前工单下领料单所有用量
+                    IssueHeaderExportReqVO headerExportReqVO = new IssueHeaderExportReqVO();
+                    headerExportReqVO.setWorkorderCode(header.getWorkorderCode());
+                    List<IssueHeaderDO> issueHeaderList = issueHeaderService.getIssueHeaderList(headerExportReqVO);
+
+
+
+                    if(bomDTO.getQuantity().compareTo(issueLine.getQuantityIssued().doubleValue()) > 0){
+
+
+                    }
+                }
+            }*/
             Map<String, Object> map = new HashMap<>();
             map.put("sfdc001", header.getWorkorderCode()); // 工单单号
             map.put("sfdc002", issueLine.getSequence()); // 工单项次
@@ -273,12 +309,15 @@ public class IssueHeaderController {
         params.put("sfda002", "11"); // 成套领料
         params.put("source_no", header.getIssueCode()); // 成套领料
 
-        /*String erpResult = workorderERPAPI.workOrderIssueCreate(params);
-
-        if(!erpResult.contains("success")){
-            // 过账失败
-            System.out.println("ERP过账失败：" + erpResult);
-        }*/
+        if(list.size()>0){
+            // 存在BOM信息
+            /*String erpResult = workorderERPAPI.workOrderIssueCreate(params);
+            if(!erpResult.contains("SUCCESS")){
+                // 过账失败
+                System.out.println("ERP过账失败：" + erpResult);
+                return error(ErrorCodeConstants.ISSUE_ERR_INTERFACE_ERROR);
+            }*/
+        }
 
         // 追加上料详情
         List<FeedLineDO> createReqVOList = new ArrayList<>();

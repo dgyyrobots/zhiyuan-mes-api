@@ -72,5 +72,8 @@ public class RouteProcessBaseVO {
     @Schema(description = "项次")
     private Long sequence;
 
+    @Schema(description = "工作序")
+    private Long workorderSequence;
+
     public Long getId(){return null;}
 }

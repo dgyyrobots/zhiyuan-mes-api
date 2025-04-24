@@ -55,6 +55,7 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getProcessId, reqVO.getProcessId())
                 .eqIfPresent(RouteProcessDO::getNextProcessId, reqVO.getNextProcessId())
                 .eqIfPresent(RouteProcessDO::getSequence, reqVO.getSequence())
+                .eqIfPresent(RouteProcessDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 .orderByDesc(RouteProcessDO::getId));
     }
     default List<RouteProcessDO> selectList(RouteProcessListVO reqVO) {
@@ -77,6 +78,8 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(RouteProcessDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(RouteProcessDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(RouteProcessDO::getSequence, reqVO.getSequence())
+                .eqIfPresent(RouteProcessDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 .eqIfPresent(RouteProcessDO::getCreateTime, reqVO.getCreateTime())
                 .orderByAsc(RouteProcessDO::getOrderNum));
     }
@@ -103,6 +106,7 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getProcessId, reqVO.getProcessId())
                 .eqIfPresent(RouteProcessDO::getNextProcessId, reqVO.getNextProcessId())
                 .eqIfPresent(RouteProcessDO::getSequence, reqVO.getSequence())
+                .eqIfPresent(RouteProcessDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 .orderByDesc(RouteProcessDO::getId));
     }
 

@@ -51,6 +51,8 @@ public interface ErrorCodeConstants {
     ErrorCode WORKORDER_NOT_EXIST = new ErrorCode(716003, "一键报工的工单不存在");
     ErrorCode FEEDBACK_TASK_NOT_EXISTS = new ErrorCode(716003, "当前报工单未选择任务单！");
     ErrorCode FEEDBACK_NOT_SAME = new ErrorCode(716003, "请选择相同任务单下的报工单");
+    ErrorCode FEEDBACK_ERP_ERROR = new ErrorCode(716003, "报工单接口调用异常!");
+    ErrorCode WAREHOUSING_ERP_ERROR = new ErrorCode(716003, "完工入库接口调用异常!");
 
     ErrorCode TASK_UPDATE_COUNT=new ErrorCode(717001,"更新生产任务的生产数量失败");
 

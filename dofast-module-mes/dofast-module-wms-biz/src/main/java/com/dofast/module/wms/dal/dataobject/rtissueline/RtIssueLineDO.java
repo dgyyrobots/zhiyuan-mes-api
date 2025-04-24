@@ -127,4 +127,14 @@ public class RtIssueLineDO extends BaseDO {
      */
     private String vendorCode;
 
+    /**
+     * ERP项次
+     */
+    private Long sequence;
+
+    /**
+     * ERP项次
+     */
+    private Long sequenceOrder;
+
 }

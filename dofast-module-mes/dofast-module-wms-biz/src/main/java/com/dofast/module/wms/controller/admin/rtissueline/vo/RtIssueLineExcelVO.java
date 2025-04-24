@@ -94,4 +94,10 @@ public class RtIssueLineExcelVO {
 
     @ExcelProperty("供应商编码")
     private String vendorCode;
+
+    @ExcelProperty("ERP项次")
+    private Long sequence;
+
+    @ExcelProperty("ERP项序")
+    private Long sequenceOrder;
 }

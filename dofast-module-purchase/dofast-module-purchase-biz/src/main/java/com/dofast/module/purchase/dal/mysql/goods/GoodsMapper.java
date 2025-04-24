@@ -2,6 +2,7 @@ package com.dofast.module.purchase.dal.mysql.goods;
 
 import java.util.*;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
@@ -42,6 +43,7 @@ public interface GoodsMapper extends BaseMapperX<GoodsDO> {
                 .eqIfPresent(GoodsDO::getErpReceiveCode, reqVO.getErpReceiveCode())
                 .likeIfPresent(GoodsDO::getVendorName, reqVO.getVendorName())
                 .eqIfPresent(GoodsDO::getReceiveSeq, reqVO.getReceiveSeq())
+                .eqIfPresent(GoodsDO::getReceivedNum, reqVO.getReceivedNum())
                 .orderByDesc(GoodsDO::getId));
     }
 
@@ -70,6 +72,7 @@ public interface GoodsMapper extends BaseMapperX<GoodsDO> {
                 .eqIfPresent(GoodsDO::getErpReceiveCode, reqVO.getErpReceiveCode())
                 .likeIfPresent(GoodsDO::getVendorName, reqVO.getVendorName())
                 .eqIfPresent(GoodsDO::getReceiveSeq, reqVO.getReceiveSeq())
+                .eqIfPresent(GoodsDO::getReceivedNum, reqVO.getReceivedNum())
                 .orderByDesc(GoodsDO::getId));
     }
 

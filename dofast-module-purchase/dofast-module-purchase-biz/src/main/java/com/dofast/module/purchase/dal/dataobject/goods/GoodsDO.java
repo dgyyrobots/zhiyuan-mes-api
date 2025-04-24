@@ -151,4 +151,8 @@ public class GoodsDO extends BaseDO {
      */
     private Integer receiveSeq;
 
+    /**
+     * 已收数量
+     */
+    private BigDecimal receivedNum;
 }

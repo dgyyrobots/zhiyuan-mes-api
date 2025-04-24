@@ -1,6 +1,7 @@
 package com.dofast.module.pro.controller.admin.feedback;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.dofast.framework.common.exception.ErrorCode;
 import com.dofast.framework.common.exception.ServiceException;
 import com.dofast.framework.common.pad.util.PadStringUtils;
@@ -51,6 +52,8 @@ import com.dofast.module.pro.enums.ErrorCodeConstants;
 import com.dofast.module.pro.service.feedback.FeedbackService;
 import com.dofast.module.pro.service.feedbackdefect.FeedbackDefectService;
 import com.dofast.module.pro.service.feedbackmember.FeedbackMemberService;
+import com.dofast.module.pro.service.process.ProcessOracleService;
+import com.dofast.module.pro.service.route.RouteOracleService;
 import com.dofast.module.pro.service.route.RouteService;
 import com.dofast.module.pro.service.routeprocess.RouteProcessService;
 import com.dofast.module.pro.service.task.TaskService;
@@ -109,6 +112,7 @@ import com.dofast.module.wms.service.warehouse.WarehouseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.poi.ss.formula.constant.ErrorConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -123,8 +127,10 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -242,6 +248,13 @@ public class FeedbackController {
 
     @Resource
     private WorkorderERPAPI workorderERPAPI;
+
+    @Resource
+    private RouteOracleService routeOracleService;
+
+    @Resource
+    private ProcessOracleService processOracleService;
+
 
     @PostMapping("/create")
     @Operation(summary = "创建生产报工记录")
@@ -608,8 +621,8 @@ public class FeedbackController {
             } else {
                 warehouse = warehouseApiImpl.selectWmWarehouseByWarehouseCode(Constant.WAREHOUSE_CODE);
                 // 传递至成品仓-基于正式库决定, 暂时写死
-                location = locationService.getStorageLocation(66L);
-                area = areaService.getStorageArea(55L);
+                location = locationService.getStorageLocation(40L);
+                area = areaService.getStorageArea(42L);
             }
         }
         result.put("warehouse", warehouse);
@@ -757,7 +770,7 @@ public class FeedbackController {
         FeedbackDO feedback = feedbackService.getFeedback(id);
 
         // 获得用户基本信息
-        Long loginUserId = SecurityFrameworkUtils.getLoginUserId();
+        Long loginUserId = getLoginUserId();
         AdminUserRespDTO userDTO = adminUserApi.getUser(loginUserId);
         feedback.setNickName(userDTO.getNickname());
         feedback.setUserName(userDTO.getUsername());
@@ -780,6 +793,94 @@ public class FeedbackController {
         }*/
         //更新生产任务的生产数量
         TaskDO task = taskService.getTask(feedback.getTaskId());
+        // 追加ERP报工接口调用
+
+        // 2025-03-13 追加需求: 判定当前任务单对应的领料单是否存在未上料单据信息, 存在则不允许其进行报工操作
+        // 基于任务单获取生产领料单
+        IssueheaderDTO issueHeader = new IssueheaderDTO();
+        issueHeader.setTaskId(task.getId());
+        issueHeader.setWorkorderCode(workorder.getWorkorderCode());
+        List<IssueheaderDTO> issueHeaderList = issueApi.listIssueHeader(issueHeader);
+        if (issueHeaderList.isEmpty()) {
+            return error(ErrorCodeConstants.ISSUE_NOT_EXISTS);
+        }
+
+        IssueheaderDTO issueHeaderDTO = issueHeaderList.get(0);
+        // 基于生产领料单获取已上料未报工的生产领料单行
+        IssueLineDTO issueLine = new IssueLineDTO();
+        issueLine.setIssueId(issueHeaderDTO.getId());
+        issueLine.setStatus("Y");
+        issueLine.setFeedbackStatus("N");
+        issueLine.setMachineryCode(feedback.getMachineryCode());
+        List<IssueLineDTO> issueLineList = issueApi.listIssueLine(issueLine);
+
+        // 获取当前已报工且勾选已启用的物料
+        IssueLineDTO enableIssue = new IssueLineDTO();
+        enableIssue.setIssueId(issueHeaderDTO.getId());
+        enableIssue.setFeedbackStatus("Y");
+        enableIssue.setEnableFlag("true");
+        issueLine.setMachineryCode(feedback.getMachineryCode());
+        List<IssueLineDTO> enableIssueList = issueApi.listIssueLine(enableIssue);
+
+        if (issueLineList.isEmpty() && enableIssueList.isEmpty()) {
+            // 不存在已上料未报工信息与残留物料
+            return error(ErrorCodeConstants.TASK_NOT_RECEPT);
+        }
+
+        // 将当前上料时间与报工时间进行比对, 算出上料到报工所经历的时长信息
+        LocalDateTime feedbackTime = feedback.getFeedbackTime();
+        // 判定issueLineList与enableIssueList哪个不为空, 取不为空的数据
+        List<IssueLineDTO> issueLineListNotEmpty = issueLineList.isEmpty() ? enableIssueList : issueLineList;
+
+        Date issueTime =  issueLineListNotEmpty.get(0).getCreateTime(); // 获取上料时间
+
+        String routeCode = workorder.getProductCode() + "-" + workorder.getRouteCode();
+        // 获取工作序
+        RouteDO route = routeService.getRoute(routeCode);
+        RouteProcessExportReqVO exportReqVO = new RouteProcessExportReqVO();
+        exportReqVO.setRouteId(route.getId());
+        exportReqVO.setProcessCode(task.getProcessCode());
+        List<RouteProcessDO> routeProcess = routeProcessService.getRouteProcessList(exportReqVO);
+        RouteProcessDO process = routeProcess.get(0);
+        Long workorderSequence = process.getWorkorderSequence();
+
+        // 获取ERP设备编码
+        DvMachineryDTO machineryDTO = dvMachineryApi.getMachineryInfo(feedback.getMachineryCode());
+
+        Map<String, Object> erpParams = new HashMap<>();
+        // 基础信息
+        erpParams.put("source_no", feedback.getFeedbackCode()); // MES报工单号
+        erpParams.put("sffb002", feedback.getUserName()); // 报工人员工号
+        erpParams.put("sffb005", workorder.getWorkorderCode()); // 工单单号
+        erpParams.put("sffb007", feedback.getProcessCode()); // 作业编号(工序编号)
+        erpParams.put("sffb009", feedback.getWorkstationCode()); // 工作站
+        erpParams.put("sffb010", machineryDTO.getErpMachineryCode()); // 设备编号
+        erpParams.put("sffb012", feedbackTime.toLocalDate()); // 完成日期
+        erpParams.put("sffb013", feedbackTime.toLocalTime()); // 完成时间
+        erpParams.put("sffb008", String.valueOf(workorderSequence)); // 完成时间
+
+        Date feedbackDate = Date.from(feedbackTime.atZone(ZoneId.systemDefault()).toInstant());
+
+        long durationInMillis = feedbackDate.getTime() - issueTime.getTime(); // 计算时间跨度毫秒
+        long durationInMinutes = durationInMillis / (60 * 1000); // 转为分钟
+
+        erpParams.put("sffb014", durationInMinutes); // 工时（分）
+        erpParams.put("sffb015", durationInMinutes); // 机时（分）
+        erpParams.put("sffb016", feedback.getUnitOfMeasure()); // 单位
+        erpParams.put("sffb017", feedback.getQuantityQualified()); // 良品数量
+        erpParams.put("sffb018", feedback.getQuantityUnquanlified()); // 报废数量
+
+        // 调用ERP接口
+       /* String erpResult = workorderERPAPI.workOrderReportCreate(erpParams);
+        // 解析响应结果
+        if (!erpResult.contains("SUCCESS")) { // 根据实际接口返回判断
+            return error(ErrorCodeConstants.FEEDBACK_ERP_ERROR);
+        }
+        String erpFeedback = erpResult.split(",")[1];
+        // 追加ERP报工单信息
+        feedback.setErpFeedback(erpFeedback);*/
+        feedbackService.updateFeedback(FeedbackConvert.INSTANCE.convert02(feedback));
+
         Double quantityProduced, quantityQuanlify, quantityUnquanlify;
         quantityQuanlify = task.getQuantityQuanlify() == null ? 0 : task.getQuantityQuanlify();
         quantityUnquanlify = task.getQuantityUnquanlify() == null ? 0 : task.getQuantityUnquanlify();
@@ -830,6 +931,8 @@ public class FeedbackController {
         feedbackService.updateFeedback(feedbackUpdateReqVO);
         return success();
     }
+
+
 
     private void checkKeyProcess(FeedbackDO feedback, WorkorderDO workorder) {
         //如果是关键工序，则更新当前工单的已生产数量，进行产品产出动作
@@ -953,7 +1056,6 @@ public class FeedbackController {
                 //执行产品产出入线边库
                 executeProductProduce(feedback, productRecord, workorder);
             }
-
         }
     }*/
 
@@ -965,11 +1067,9 @@ public class FeedbackController {
      * @return
      */
     @PostMapping("/wareHousing")
-    public String wareHousing(@RequestBody Map<String, Object> params) {
+    public CommonResult<String> wareHousing(@RequestBody Map<String, Object> params) {
         System.out.println(params.toString());
         List<Map<String, Object>> objList = (List<Map<String, Object>>) params.get("wareList");
-
-        System.out.println(objList.toString());
 
         // 准备调用ERP接口的参数容器
         Map<String, Object> erpParams = new HashMap<>();
@@ -980,6 +1080,25 @@ public class FeedbackController {
             // 构建goodsList明细（根据ERP接口要求）
             List<Map<String, Object>> goodsList = new ArrayList<>();
 
+            // 追加校验, 判定当前完工单任务是否为末工序
+            WorkorderDO workorder = workorderService.getWorkorder((String) ware.get("workorderCode"));
+            String routeCode = workorder.getProductCode() + "-" + workorder.getRouteCode();
+            // 获取工艺路线详情
+            RouteDO route = routeService.getRoute(routeCode);
+            RouteProcessExportReqVO routeProcessExportReqVO = new RouteProcessExportReqVO();
+            routeProcessExportReqVO.setRouteId(route.getId());
+            // 基于任务单判定所属工序
+            // 基于工序查看是否存在下道工序
+            // 存在->入下道制程线边仓  无->入本仓
+            routeProcessExportReqVO.setProcessCode((String) ware.get("processCode"));
+            List<RouteProcessDO> routeProcess = routeProcessService.getRouteProcessList(routeProcessExportReqVO);
+            RouteProcessDO process = routeProcess.get(0);
+            String nextProcessCode = Optional.ofNullable(routeProcess.get(0).getNextProcessCode()).orElse(null);
+
+            if(nextProcessCode != null){
+                // 存在下道制程, 不调用ERP接口
+                continue;
+            }
             Map<String, Object> detail = new HashMap<>();
             detail.put("sfeb001", ware.get("workorderCode"));       // 工单单号
             detail.put("sfeb003", "1");                             // 入库类型（示例值，需确认）
@@ -997,8 +1116,8 @@ public class FeedbackController {
             detail.put("sfeb014", materialStock.get(0).getAreaCode());                       // 储位（示例值）
             detail.put("sfeb015", ware.get("batchCode"));        // 批号
             detail.put("source_seq", "");     // MES项次
-            goodsList.add(detail);
 
+            goodsList.add(detail);
             // 构建单个工单的master数据
             Map<String, Object> workOrder = new HashMap<>();
             workOrder.put("source_no", ware.get("feedbackCode"));   // MES报工单号
@@ -1013,13 +1132,16 @@ public class FeedbackController {
 
         // 组装最终ERP接口参数
         erpParams.put("workOrders", workOrders);
-
-        // 调用接口方法
-      /*  String result = workorderERPAPI.workOrderFinishCreate(erpParams);
-        if(result!="success"){
-            return result;
+        // 校验当前完工入库是否为末工序, 末工序则回传ERP接口
+        if(workOrders.size() > 0 ){
+            // 存在入库信息
+            // 调用接口方法
+           /* String result = workorderERPAPI.workOrderFinishCreate(erpParams);
+            if(!result.contains("SUCCESS")){
+                return error(ErrorCodeConstants.WAREHOUSING_ERP_ERROR);
+            }*/
         }
-*/
+
         for (Map<String, Object> map : objList) {
             // 基于当前的库存信息
             MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
@@ -1035,7 +1157,7 @@ public class FeedbackController {
             feedbackDO.setStatus("WAREHOUSED");
             feedbackService.updateFeedback(FeedbackConvert.INSTANCE.convert02(feedbackDO));
         }
-        return "success";
+        return success("success");
     }
 
     @PostMapping("/splitFeedback")
@@ -1212,6 +1334,20 @@ public class FeedbackController {
         MdItemDO mdItem = mdItemService.getMdItem(workorder.getProductId());
         // 基于当前的报工单获取当前的子批次
         String batchCode = feedback.getBatchCode();
+
+        Map<String, Object> erpParams = new HashMap<>();
+        if(feedback.getErpFeedback() != null){
+            // 基础信息
+            erpParams.put("feedbackCode", feedback.getErpFeedback()); // ERP报工单号
+            // 调用ERP接口
+            String erpResult = workorderERPAPI.docRollback(erpParams);
+
+            // 解析响应结果
+            if (!erpResult.contains("SUCCESS")) { // 根据实际接口返回判断
+                return error(ErrorCodeConstants.FEEDBACK_ERP_ERROR);
+            }
+        }
+
         // 基于当前的子批次获取当前的产成品库存信息
         // 后续将产成品删除
         MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();

@@ -41,6 +41,7 @@ public interface DvCheckMachineryMapper extends BaseMapperX<DvCheckMachineryDO> 
                 .eqIfPresent(DvCheckMachineryDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(DvCheckMachineryDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(DvCheckMachineryDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(DvCheckMachineryDO::getErpMachineryCode, reqVO.getErpMachineryCode())
                 .orderByDesc(DvCheckMachineryDO::getId));
     }
 
@@ -58,6 +59,7 @@ public interface DvCheckMachineryMapper extends BaseMapperX<DvCheckMachineryDO> 
                 .eqIfPresent(DvCheckMachineryDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(DvCheckMachineryDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(DvCheckMachineryDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(DvCheckMachineryDO::getErpMachineryCode, reqVO.getErpMachineryCode())
                 .orderByDesc(DvCheckMachineryDO::getId));
     }
 

@@ -7,6 +7,7 @@ import com.dofast.module.pro.api.FeedbackApi.FeedbackApi;
 import com.dofast.module.pro.api.FeedbackApi.dto.FeedbackDTO;
 import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
+import com.dofast.module.wms.api.ERPApi.WorkorderERPAPI;
 import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineExportReqVO;
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
@@ -107,6 +108,8 @@ public class RtIssueController {
     @Resource
     private IssueHeaderService issueHeaderService;
 
+    @Resource
+    private WorkorderERPAPI workorderERPAPI;
 
     @PostMapping("/create")
     @Operation(summary = "创建生产退料单头")
@@ -117,9 +120,9 @@ public class RtIssueController {
         }
         // 校验当前的任务单是否已报工
         FeedbackDTO feedbackInfo = feedBackApi.getFeedBackByTaskCode(createReqVO.getTaskCode());
-        if(feedbackInfo != null){
+       /* if(feedbackInfo != null){
             return error(ErrorCodeConstants.RT_ISSUE_HAS_FEEDBACK);
-        }
+        }*/
 
         WarehouseDO warehouse = null;
         StorageLocationDO location = null;
@@ -173,6 +176,11 @@ public class RtIssueController {
             req.setMaterialStockId(materialStockList.get(0).getId());
             BigDecimal quantity = new BigDecimal(String.valueOf(line.get("quantity")));
             req.setQuantityRt(quantity);
+            // 追加ERP项次, 项序用于接口回传
+            Integer sequence = Optional.ofNullable((Integer) line.get("sequence")).orElse(0);
+            req.setSequence(sequence.longValue());
+            Integer setSequenceOrder = Optional.ofNullable((Integer) line.get("sequenceOrder")).orElse(0);
+            req.setSequenceOrder(setSequenceOrder.longValue());
             rtIssueLineService.createRtIssueLine(req);
         }
         // 追加退料单身信息
@@ -190,10 +198,10 @@ public class RtIssueController {
     public CommonResult execute(@PathVariable Long rtId){
         RtIssueDO rtIssue = rtIssueService.getRtIssue(rtId);
         // 校验当前的任务单是否已报工
-        FeedbackDTO feedbackInfo = feedBackApi.getFeedBackByTaskCode(rtIssue.getTaskCode());
+        /*FeedbackDTO feedbackInfo = feedBackApi.getFeedBackByTaskCode(rtIssue.getTaskCode());
         if(feedbackInfo != null){
             return error(ErrorCodeConstants.RT_ISSUE_HAS_FEEDBACK);
-        }
+        }*/
         RtIssueLineListVO param = new RtIssueLineListVO();
         param.setRtId(rtId);
         List<RtIssueLineDO> lines = rtIssueLineService.selectList(param);
@@ -201,6 +209,43 @@ public class RtIssueController {
             return error(ErrorCodeConstants.RT_ISSUE_NEED_MAT);
         }
 
+        // 追加ERP接口调用
+        Map<String, Object> params = new HashMap<>();
+        List<Map<String, Object>>  list = new ArrayList<>(); // 装填领料信息
+
+        for (RtIssueLineDO reIssueLine: lines) {
+            Long sequence = reIssueLine.getSequence();
+            Long sequenceOrder = reIssueLine.getSequenceOrder();
+            if(sequence == null || sequenceOrder == null){
+                // 不在bom中管控
+                // 不回传ERP
+                continue;
+            }
+            Map<String, Object> map = new HashMap<>();
+            map.put("sfdc001", rtIssue.getWorkorderCode()); // 工单单号
+            map.put("sfdc002", reIssueLine.getSequence()); // 工单项次
+            map.put("sfdc003", reIssueLine.getSequenceOrder()); // 工单项序
+            map.put("sfdc007", reIssueLine.getQuantityRt()); // 申请数量
+            map.put("sfdc012", rtIssue.getLocationCode()); // ERP库区
+            map.put("sfdc013", rtIssue.getAreaCode()); // ERP库位
+            map.put("sfdc014", reIssueLine.getBatchCode()); // 批号
+            map.put("sfdc015", "Y01"); // 理由码 成套发料对应H01，成套退料对应Y01，超领对应H02，超领退对应Y02
+            map.put("sfdc016", ""); // 库存管理特征
+            map.put("source_seq", ""); // MES项次
+            list.add(map);
+        }
+        params.put("goodsList", list);
+        params.put("sfda002", "23"); // 一般退料
+        params.put("source_no", rtIssue.getRtCode()); // 退料单号
+
+        if(list.size()>0) {
+            /*String erpResult = workorderERPAPI.workOrderIssueCreate(params);
+            if (!erpResult.contains("SUCCESS")) {
+                // 过账失败
+                System.out.println("ERP过账失败：" + erpResult);
+                return error(ErrorCodeConstants.RT_ISSUE_ERR_INTERFACE_ERROR);
+            }*/
+        }
         List<RtIssueTxBean> beans = rtIssueService.getTxBeans(rtId);
 
         //执行生产退料

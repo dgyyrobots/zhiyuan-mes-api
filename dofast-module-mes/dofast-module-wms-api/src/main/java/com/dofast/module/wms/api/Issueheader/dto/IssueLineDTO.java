@@ -3,6 +3,7 @@ package com.dofast.module.wms.api.Issueheader.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Data
 public class IssueLineDTO {
@@ -158,5 +159,15 @@ public class IssueLineDTO {
      * ERP项次
      */
     private Long sequenceOrder;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 创建时间
+     */
+    private Date updateTime;
 
 }

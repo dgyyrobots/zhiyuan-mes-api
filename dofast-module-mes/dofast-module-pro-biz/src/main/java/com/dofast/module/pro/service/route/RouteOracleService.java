@@ -3,6 +3,7 @@ package com.dofast.module.pro.service.route;
 import java.util.List;
 import java.util.Map;
 
+
 public interface RouteOracleService {
 
     /**
@@ -23,5 +24,6 @@ public interface RouteOracleService {
      */
     List<Map<String, Object>> initChangeWorkOrderRouteBindProcess(String workOrderNo);
 
+    Map<String, Object> initWorkSequence(String workOrderNo, String processCode);
 
 }

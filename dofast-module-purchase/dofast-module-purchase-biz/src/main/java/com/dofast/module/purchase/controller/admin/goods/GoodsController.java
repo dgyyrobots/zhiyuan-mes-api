@@ -37,6 +37,8 @@ import com.dofast.module.wms.service.storagecore.StorageCoreService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import com.dofast.module.wms.service.transaction.TransactionService;
 import com.dofast.module.wms.service.warehouse.WarehouseService;
+import liquibase.pro.packaged.D;
+import liquibase.pro.packaged.W;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -143,10 +145,25 @@ public class GoodsController {
     @Operation(summary = "更新采购商品明细")
     @PreAuthorize("@ss.hasPermission('purchase:goods:update')")
     public CommonResult<Boolean> updateGoods(@Valid @RequestBody GoodsUpdateReqVO updateReqVO) {
+        if (updateReqVO.getReceiveNum() != null && updateReqVO.getQuantity() != null) {
+            // receiveNum只允许超过quantity5%浮动
+            if (updateReqVO.getReceiveNum().compareTo(updateReqVO.getQuantity().multiply(new BigDecimal("1.05"))) > 0) {
+                return error(ErrorCodeConstants.RECEIVE_CANNOT_EXCEED);
+            }
+
+            // 收货数量 + 已拆分数量不能大于采购数量
+            BigDecimal sum = updateReqVO.getReceiveNum().add(updateReqVO.getReceivedNum()==null?BigDecimal.ZERO:updateReqVO.getReceivedNum());
+
+            if (sum.compareTo(updateReqVO.getQuantity().multiply(new BigDecimal("1.05"))) > 0) {
+                return error(ErrorCodeConstants.RECEIVE_CANNOT_EXCEED);
+            }
+        }
+
         if (updateReqVO.getReceiveTime() == null) {
             // 若入库时间为空，则默认当前时间
             updateReqVO.setReceiveTime(LocalDateTime.now());
         }
+
         if (updateReqVO.getBatchCode() == null) {
             // 校验采购单表是否存在母批次号
             OrderDO orderDO = orderService.getOrder(updateReqVO.getPoNo());
@@ -179,6 +196,18 @@ public class GoodsController {
                 orderService.updateOrder(OrderConvert.INSTANCE.convert01(orderDO));
             }
         }
+
+        // 原单据信息
+        GoodsDO originGoods = goodsService.getGoods(updateReqVO.getId());
+        // 追加校验: 若当前收货数量(receiveNum)为0, 已拆分数量(receivedNum)小于采购数量(quantity), 回滚单据为未收货(status = 0)
+        if(originGoods != null){
+            BigDecimal receiveNum = originGoods.getReceiveNum() == null ? BigDecimal.ZERO : originGoods.getReceiveNum();
+            BigDecimal receivedNum = originGoods.getReceivedNum() == null ? BigDecimal.ZERO : originGoods.getReceivedNum();
+            if (receiveNum.compareTo(BigDecimal.ZERO) == 0 && receivedNum.compareTo(originGoods.getQuantity()) < 0) {
+                    updateReqVO.setStatus(0);
+            }
+        }
+
         goodsService.updateGoods(updateReqVO);
         return success(true);
     }
@@ -245,7 +274,18 @@ public class GoodsController {
     @PreAuthorize("@ss.hasPermission('purchase:goods:query')")
     public CommonResult<List<GoodsRespVO>> getGoodsList(@RequestParam("ids") Collection<Integer> ids) {
         List<GoodsDO> list = goodsService.getGoodsList(ids);
-        return success(GoodsConvert.INSTANCE.convertList(list));
+        // 过滤list , 若list中的数据中符合received_num >= quantity AND receive_num = 0
+        List<GoodsDO> editGoods = new ArrayList<>();
+        for (GoodsDO goodsDO : list) {
+            BigDecimal receivedNum = goodsDO.getReceivedNum() == null? BigDecimal.ZERO:goodsDO.getReceivedNum();
+            BigDecimal quantity = goodsDO.getQuantity() == null? BigDecimal.ZERO:goodsDO.getQuantity();
+            BigDecimal receiveNum = goodsDO.getReceiveNum() == null? BigDecimal.ZERO:goodsDO.getReceiveNum();
+            if (receivedNum.compareTo(quantity) > -1 && receiveNum.compareTo(BigDecimal.ZERO) == 0) {
+                continue;
+            }
+            editGoods.add(goodsDO);
+        }
+        return success(GoodsConvert.INSTANCE.convertList(editGoods));
     }
 
     @GetMapping("/page")
@@ -253,6 +293,19 @@ public class GoodsController {
     @PreAuthorize("@ss.hasPermission('purchase:goods:query')")
     public CommonResult<PageResult<GoodsRespVO>> getGoodsPage(@Valid GoodsPageReqVO pageVO) {
         PageResult<GoodsDO> pageResult = goodsService.getGoodsPage(pageVO);
+        List<GoodsDO> list =  pageResult.getList();
+        // 过滤list , 若list中的数据中符合received_num >= quantity AND receive_num = 0
+        List<GoodsDO> editGoods = new ArrayList<>();
+        for (GoodsDO goodsDO : list) {
+            BigDecimal receivedNum = goodsDO.getReceivedNum() == null? BigDecimal.ZERO:goodsDO.getReceivedNum();
+            BigDecimal quantity = goodsDO.getQuantity() == null? BigDecimal.ZERO:goodsDO.getQuantity();
+            BigDecimal receiveNum = goodsDO.getReceiveNum() == null? BigDecimal.ZERO:goodsDO.getReceiveNum();
+            if (receivedNum.compareTo(quantity) > -1 && receiveNum.compareTo(BigDecimal.ZERO) == 0) {
+                continue;
+            }
+            editGoods.add(goodsDO);
+        }
+        pageResult.setList(editGoods);
         return success(GoodsConvert.INSTANCE.convertPage(pageResult));
     }
 
@@ -342,7 +395,7 @@ public class GoodsController {
             erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
             erpParams.put("pmds000", "6"); // 采购入库
             System.out.println(erpParams.toString());
-            /*String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+           /* String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
             if (!result.contains("success")) {
                 return result;
             }*/
@@ -466,7 +519,7 @@ public class GoodsController {
         MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
         exportReqVO.setItemCode(itemCode);
         exportReqVO.setBatchCode(batchCode);
-        if (recpt != "N" && recpt != "") {
+        if (!"N".equals(recpt)) {
             exportReqVO.setRecptStatus("Y");
         }
         List<MaterialStockDO> materialStock = materialStockService.getMaterialStockList(exportReqVO);
@@ -527,12 +580,15 @@ public class GoodsController {
             goodsDO.setGoodsSpecs(parent.getGoodsSpecs());
             goodsDO.setParentBatchCode(orderDO.getParentBatchCode());
             goodsDO.setReceiveTime(parent.getReceiveTime());
-            goodsDO.setStatus(0);
+            goodsDO.setStatus(parent.getStatus());
+            goodsDO.setVendorCode(parent.getVendorCode());
+            goodsDO.setVendorName(parent.getVendorName());
             goodsDO.setConsequence(parent.getConsequence()); // 继承拆分行项次
             goodsDO.setPurchaseBatch(parent.getPurchaseBatch());   // ERP采购批次
             goodsDO.setPurchaseConsequence(parent.getPurchaseConsequence()); // ERP采购批序
             goodsDO.setPurchaseBatchConsequence(parent.getPurchaseBatchConsequence()); // ERP采购分批序
-
+            goodsDO.setErpReceiveCode(parent.getErpReceiveCode()); // ERP收货单号
+            goodsDO.setReceiveSeq(parent.getReceiveSeq()); // ERP收货项次
             String serial = orderDO.getSerial();
             if (serial == null) {
                 serial = "001";
@@ -548,7 +604,7 @@ public class GoodsController {
             updateCount = updateCount.add(quantity);
 
             // 校验当前的单据是否已入库
-            if (parent.getStatus() == 2) {
+            if (parent.getStatus() == 3) {
                 // 当前单据已入库
                 // 获取库存信息, 修改当前已入库数量
                 MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
@@ -611,28 +667,29 @@ public class GoodsController {
                 transactionService.processTransaction(transaction_in);
 
                 // 更新拆分的条码状态
-                goodsDO.setStatus(2); // 已入库
+                goodsDO.setStatus(3); // 已入库
                 goodsDO.setId(lineId);
                 goodsService.updateGoods(GoodsConvert.INSTANCE.convert01(goodsDO));
             }
         }
         // 修改原有单据的数量
-        //parent.setReceiveNum(parent.getReceiveNum() - updateCount);
-        //parent.setQuantity(parent.getQuantity() - updateCount);
         parent.setReceiveNum(parent.getReceiveNum().subtract(updateCount));
-        parent.setQuantity(parent.getQuantity().subtract(updateCount));
+        //parent.setQuantity(parent.getQuantity().subtract(updateCount)); // 收货数量不允许修改
+        parent.setReceivedNum(parent.getReceivedNum() == null ? updateCount : parent.getReceivedNum().add(updateCount)); // 追加单据拆分状态
 
         goodsService.updateGoods(GoodsConvert.INSTANCE.convert01(parent));
         // 若原有单据数量为空, 删除
         if (parent.getReceiveNum().compareTo(BigDecimal.ZERO) <= 0) {
-            goodsService.deleteGoods(parent.getId());
+            // goodsService.deleteGoods(parent.getId());
             // 清空库存表中当前物料的数量信息
             MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
             exportReqVO.setItemCode(goodsNumber);
             exportReqVO.setBatchCode(parent.getBatchCode());
             List<MaterialStockDO> materialStockDO = materialStockService.getMaterialStockList(exportReqVO);
             if (materialStockDO.size() > 0) {
-                materialStockService.deleteMaterialStock(materialStockDO.get(0).getId());
+                materialStockDO.get(0).setQuantityOnhand(BigDecimal.ZERO);
+                materialStockService.updateMaterialStock(MaterialStockConvert.INSTANCE.convert02(materialStockDO.get(0)));
+                // materialStockService.deleteMaterialStock(materialStockDO.get(0).getId());
             }
         }
         return "操作成功";
@@ -683,7 +740,7 @@ public class GoodsController {
                 continue;
             }
             String poNo = goodsDO.get("poNo").toString();
-            String vendorCode = goodsDO.get("vendorCode").toString();
+            String vendorCode = Optional.ofNullable(goodsDO.get("vendorCode").toString()).orElse("");
             String key = poNo + "_" + vendorCode;
             // 如果Map中还没有这个组合的List，创建一个新的List
             if (!groupedGoodsMap.containsKey(key)) {
@@ -714,8 +771,8 @@ public class GoodsController {
             erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
             erpParams.put("pmds000", "1"); // 采购收货
             System.out.println(erpParams.toString());
-            /* 注释接口
-            String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+             // 注释接口
+            /*String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
             if (!result.contains("success")) {
                 return result;
             }
@@ -734,8 +791,8 @@ public class GoodsController {
             }
             goodsService.updateBatch(update);
             // 开始追加物料收获项次
-            /* 注释接口
-            for (Map<String, Object> goodsMap : goodsMapList) {
+            // 注释接口
+            /*for (Map<String, Object> goodsMap : goodsMapList) {
                 Integer id = (Integer) goodsMap.get("id");
                 GoodsDO goodsDO = goodsService.getGoods(id);
                 Map<String,Object> seqMap =  orderOracleService.getReceiveSeq(goodsDO);

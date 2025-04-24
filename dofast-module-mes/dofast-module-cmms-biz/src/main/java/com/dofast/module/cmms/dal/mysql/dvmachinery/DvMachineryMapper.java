@@ -35,6 +35,7 @@ public interface DvMachineryMapper extends BaseMapperX<DvMachineryDO> {
                 .eqIfPresent(DvMachineryDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(DvMachineryDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(DvMachineryDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(DvMachineryDO::getErpMachineryCode, reqVO.getErpMachineryCode())
                 .betweenIfPresent(DvMachineryDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(DvMachineryDO::getId));
     }
@@ -57,6 +58,7 @@ public interface DvMachineryMapper extends BaseMapperX<DvMachineryDO> {
                 .eqIfPresent(DvMachineryDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(DvMachineryDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(DvMachineryDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(DvMachineryDO::getErpMachineryCode, reqVO.getErpMachineryCode())
                 .betweenIfPresent(DvMachineryDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(DvMachineryDO::getId));
     }

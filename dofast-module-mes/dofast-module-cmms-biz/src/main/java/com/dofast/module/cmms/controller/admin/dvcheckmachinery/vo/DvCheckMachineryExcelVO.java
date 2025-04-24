@@ -52,6 +52,9 @@ public class DvCheckMachineryExcelVO {
     @ExcelProperty("预留字段4")
     private Integer attr4;
 
+    @ExcelProperty("ERP设备编码")
+    private String erpMachineryCode;
+
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 

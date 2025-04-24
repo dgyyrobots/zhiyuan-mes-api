@@ -1,6 +1,7 @@
 package com.dofast.module.pro.controller.admin.routeprocess.vo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -43,6 +44,10 @@ public class RouteProcessListVO {
     private Integer attr3;
 
     private Integer attr4;
+
+    private Long sequence;
+
+    private Long workorderSequence;
 
     private LocalDateTime createTime;
 

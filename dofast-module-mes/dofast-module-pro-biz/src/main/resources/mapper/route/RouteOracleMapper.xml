@@ -39,4 +39,17 @@
           AND a.sfoadocno = #{workOrderNo}
     </select>
 
+
+    <select id="initWorkSequence" parameterType="java.lang.String" resultType="java.util.HashMap">
+        select A.sfcb004 as WORKORDER_SEQUENCE
+        FROM
+            DSDATA.SFCB_T A
+        WHERE
+            A.SFCBENT = #{erpCode}
+          AND A.SFCBSITE = 'AM01'
+          AND A.SFCBDOCNO = #{workOrderNo}
+          AND A.SFCB003= #{processCode}
+    </select>
+
+
 </mapper>

@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.dofast.framework.common.util.http.HttpUtils;
 import com.dofast.module.mes.controller.admin.interfacelog.vo.InterfaceLogCreateReqVO;
 import com.dofast.module.mes.service.interfacelog.InterfaceLogService;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -185,6 +186,142 @@ public class WorkorderERPAPI {
     }
 
 
+    /**
+     * 报工单生成接口
+     */
+    public String workOrderReportCreate(Map<String, Object> params) {
+        Map<String, Object> request = createBaseRequest("WorkingProcedureCreate");
+
+        // 构建master
+        Map<String, Object> master = new HashMap<>();
+        master.put("sffbdocno", ""); // 单别
+        master.put("sffbdocdt", null); // 单据日期
+        master.put("sffb001", "3"); // 报工类别 默认值3
+        master.put("sffb002", params.get("sffb002")); // 报工人员
+        master.put("sffb005", params.get("sffb005")); // 工单号
+        master.put("sffb007", params.get("sffb007")); // 作业编号(工序编号)
+        master.put("sffb008", params.get("sffb008")); // 作业(工序序)
+        master.put("sffb009", params.get("sffb009")); // 工作站
+        master.put("sffb010", params.get("sffb010")); // 设备编码
+        master.put("sffb012", params.get("sffb012")); // 完成日期
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+        master.put("sffb013", timeFormat.format(new Date())); // 示例时间处理
+        master.put("sffb014", params.get("sffb014")); // 工时(分)
+        master.put("sffb015", params.get("sffb015")); // 机时(分)
+        master.put("sffb016", params.get("sffb016")); // 单位
+        master.put("sffb017", params.get("sffb017")); // 良品数量
+        master.put("sffb018", params.get("sffb018")); // 不良品数量
+        master.put("source_no", params.get("source_no")); // MES单号
+        Map<String, Object> payload = new HashMap<>();
+        Map<String, Object> stdData = new HashMap<>();
+        Map<String, Object> parameter = new HashMap<>();
+        parameter.put("master", Collections.singletonList(master));
+        stdData.put("parameter", parameter);
+        payload.put("std_data", stdData);
+        request.put("payload", payload);
+
+        System.out.println(JSONObject.toJSONString(request));
+        // 发送请求
+        // String url = "http://192.168.6.215/wtoptst/ws/r/awsp920"; // 测试地址
+        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
+        // 记录日志
+        InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
+        log.setInterfaceName("报工单资料生成接口");
+        log.setReceiver("ERP");
+        log.setRequester("MES");
+        log.setRequestType("POST");
+        log.setRequestMap(JSONObject.toJSONString(request));
+        log.setResultMap(result);
+        interfaceLogService.createInterfaceLog(log);
+
+        JSONObject jsonObject = JSONObject.parseObject(result);
+        // 防止jsonObject.getString("code")空指针异常
+        if (jsonObject == null) {
+            return "error";
+        }
+
+        // 提取执行状态信息
+        JSONObject reqPayload = jsonObject.getJSONObject("payload");
+        JSONObject reqStdData = payload != null ? reqPayload.getJSONObject("std_data") : null;
+        JSONObject reqExecution = stdData != null ? reqStdData.getJSONObject("execution") : null;
+        String code = reqExecution != null ? reqExecution.getString("code") : null;
+        String description = reqExecution != null ? reqExecution.getString("description") : null;
+
+        if ("0".equals(code)) {
+            // 若当前为采购收货, 则解析ERP回传的收货单号用于绑定入库单号
+            // 解析入库单号（source_no）
+            JSONObject reqParameter = stdData != null ? reqStdData.getJSONObject("parameter") : null;
+            JSONArray successReturn = parameter != null ? reqParameter.getJSONArray("success_return") : null;
+            String reqERPCode = null;
+            if (successReturn != null && !successReturn.isEmpty()) {
+                JSONObject firstSuccess = successReturn.getJSONObject(0);
+                reqERPCode = firstSuccess != null ? firstSuccess.getString("success_msg") : null; // 获取到的收货单号
+            }
+            // 示例：记录日志或处理sourceNo
+            if (reqERPCode != null) {
+                System.out.println("解析到的source_no: " + reqERPCode);
+                return "SUCCESS," + reqERPCode; // 返回sourceNo
+            } else {
+                return "ERROR: 未找到ERP入库单号!";
+            }
+        } else {
+            return description != null ? description : "error";
+        }
+    }
+
+
+    /**
+     * 撤销单据接口
+     *
+     * @param params
+     * @return
+     */
+    public String docRollback(Map<String, Object> params) {
+        Map<String, Object> request = createBaseRequest("DocRollback");
+        String feedbackCOde = (String) params.get("feedbackCode");
+        // 构建master
+        Map<String, Object> master = new HashMap<>();
+        master.put("doc_type", "1"); // 单据类型
+        master.put("doc_no", feedbackCOde); // 单据编号
+        Map<String, Object> payload = new HashMap<>();
+        Map<String, Object> stdData = new HashMap<>();
+        Map<String, Object> parameter = new HashMap<>();
+        parameter.put("master", Collections.singletonList(master));
+        stdData.put("parameter", parameter);
+        payload.put("std_data", stdData);
+        request.put("payload", payload);
+        System.out.println(JSONObject.toJSONString(request));
+        // 发送请求
+        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
+        // 记录日志
+        InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
+        log.setInterfaceName("撤销报工资料生成接口");
+        log.setReceiver("ERP");
+        log.setRequester("MES");
+        log.setRequestType("POST");
+        log.setRequestMap(JSONObject.toJSONString(request));
+        log.setResultMap(result);
+        interfaceLogService.createInterfaceLog(log);
+
+        JSONObject jsonObject = JSONObject.parseObject(result);
+        // 防止jsonObject.getString("code")空指针异常
+        if (jsonObject == null) {
+            return "error";
+        }
+        // 提取执行状态信息
+        JSONObject reqPayload = jsonObject.getJSONObject("payload");
+        JSONObject reqStdData = payload != null ? reqPayload.getJSONObject("std_data") : null;
+        JSONObject reqExecution = stdData != null ? reqStdData.getJSONObject("execution") : null;
+        String code = reqExecution != null ? reqExecution.getString("code") : null;
+        String description = reqExecution != null ? reqExecution.getString("description") : null;
+
+        if ("0".equals(code)) {
+            return description != null ? description : "error";
+        }
+        return result;
+    }
+
+
     private Map<String, Object> createBaseRequest(String interfaceName) {
         Map<String, Object> request = new HashMap<>();
         request.put("key", "f5458f5c0f9022db743a7c0710145903");
@@ -194,7 +331,7 @@ public class WorkorderERPAPI {
         hostInfo.put("prod", "MES");
         hostInfo.put("ip", getHostIp()); // 获取实际的IP地址
         hostInfo.put("lang", "zh_CN");
-        hostInfo.put("acct", "tiptst");
+        hostInfo.put("acct", "tiptop");
         hostInfo.put("timestamp", String.valueOf(System.currentTimeMillis()));
         request.put("host", hostInfo);
 

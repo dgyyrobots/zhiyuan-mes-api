@@ -67,4 +67,7 @@ public class DvMachineryBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "ERP设备编码")
+    private String erpMachineryCode;
+
 }

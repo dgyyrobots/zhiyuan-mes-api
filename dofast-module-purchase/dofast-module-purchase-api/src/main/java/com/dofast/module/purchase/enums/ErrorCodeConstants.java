@@ -34,5 +34,7 @@ public interface ErrorCodeConstants {
 
     ErrorCode RETREATE_ORDER_NOT_EXISTS = new ErrorCode(1030008000, "ERP仓退单不存在");
 
+    ErrorCode RECEIVE_CANNOT_EXCEED = new ErrorCode(1030009000, "收货总数不能超过采购数量的105%");
+
 
 }

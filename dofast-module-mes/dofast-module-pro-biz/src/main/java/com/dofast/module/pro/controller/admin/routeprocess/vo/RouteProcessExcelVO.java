@@ -79,4 +79,6 @@ public class RouteProcessExcelVO {
     @ExcelProperty("项次")
     private Long sequence;
 
+    @ExcelProperty("工作序")
+    private Long workorderSequence;
 }

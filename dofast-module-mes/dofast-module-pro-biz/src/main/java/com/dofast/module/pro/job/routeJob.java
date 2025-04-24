@@ -3,16 +3,19 @@ package com.dofast.module.pro.job;
 import com.dofast.framework.quartz.core.handler.JobHandler;
 import com.dofast.module.mes.dal.dataobject.mditem.MdItemDO;
 import com.dofast.module.mes.dal.mysql.mditem.MdItemMapper;
+import com.dofast.module.pro.controller.admin.workorder.vo.WorkorderListVO;
 import com.dofast.module.pro.dal.dataobject.process.ProcessDO;
 import com.dofast.module.pro.dal.dataobject.route.RouteDO;
 import com.dofast.module.pro.dal.dataobject.routeprocess.RouteProcessDO;
 import com.dofast.module.pro.dal.dataobject.routeproduct.RouteProductDO;
+import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
 import com.dofast.module.pro.dal.mysql.process.ProcessMapper;
 import com.dofast.module.pro.dal.mysql.route.RouteMapper;
 import com.dofast.module.pro.dal.mysql.routeprocess.RouteProcessMapper;
 import com.dofast.module.pro.dal.mysql.routeproduct.RouteProductMapper;
 import com.dofast.module.pro.service.process.ProcessOracleService;
 import com.dofast.module.pro.service.route.RouteOracleService;
+import com.dofast.module.pro.service.workorder.WorkorderService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -46,6 +49,12 @@ public class routeJob implements JobHandler {
 
     @Resource
     private MdItemMapper mdItemMapper;
+
+    @Resource
+    private WorkorderService workorderService;
+
+
+
 
     @Override
     public String execute(String param) throws Exception {
@@ -131,6 +140,8 @@ public class routeJob implements JobHandler {
         List<RouteProductDO> addProdcutList = new ArrayList<>();
         List<RouteProductDO> editProdcutList = new ArrayList<>();
 
+        List<RouteProcessDO> editSequenceList = new ArrayList<>();
+
 
         // 创建映射，用于存储基于物料料号和版本号的工序列表
         Map<String, List<Map<String, Object>>> finProcessMap = new HashMap<>();
@@ -166,7 +177,6 @@ public class routeJob implements JobHandler {
                     finRouteList.add(routeInfo);
                 }
         });
-
 
         // 构建工艺路线信息
         for (Map<String, Object> routeInfo : finRouteList) {
@@ -285,6 +295,35 @@ public class routeJob implements JobHandler {
             routeProductMapper.updateBatch(editProdcutList);
         }
         System.out.println("工艺路线定时器执行成功");
+
+        // 开始追加工单工作序
+        List<WorkorderDO> workorderList = workorderService.getWorkorderList(new WorkorderListVO());
+        for(WorkorderDO workorderDO : workorderList){
+           String fullRouteCode =  workorderDO.getProductCode() + "-" + workorderDO.getRouteCode();
+           // 获取工艺路线
+           RouteDO routeDO = routeMapper.selectOne(RouteDO::getRouteCode, fullRouteCode);
+           if(routeDO != null){
+               // 获取工艺路线工序
+               List<RouteProcessDO> routeProcessDOList = routeProcessMapper.selectList(RouteProcessDO::getRouteId, routeDO.getId());
+               if(!routeProcessDOList.isEmpty()){
+                   for(RouteProcessDO routeProcess: routeProcessDOList){
+                       // 获取工作序
+                       Map<String, Object> workOderSequence = routeOracleService.initWorkSequence(workorderDO.getWorkorderCode() , routeProcess.getProcessCode());
+                       if(workOderSequence == null){
+                           continue;
+                       }
+                       String workorderSequence = (String) workOderSequence.get("WORKORDER_SEQUENCE");
+                       routeProcess.setWorkorderSequence(Long.valueOf(workorderSequence));
+                       editSequenceList.add(routeProcess);
+                   }
+               }
+           }
+        }
+        // 追加工作序
+        if(!editSequenceList.isEmpty()){
+            routeProcessMapper.updateBatch(editSequenceList);
+        }
+        System.out.println("工作序初始化完成");
         return "success";
     }
 

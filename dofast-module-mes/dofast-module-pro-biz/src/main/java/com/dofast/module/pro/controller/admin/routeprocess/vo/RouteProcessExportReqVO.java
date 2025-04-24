@@ -76,4 +76,7 @@ public class RouteProcessExportReqVO {
     @Schema(description = "项次")
     private Long sequence;
 
+    @Schema(description = "工作序")
+    private Long workorderSequence;
+
 }

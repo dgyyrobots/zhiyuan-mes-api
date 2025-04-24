@@ -1,5 +1,6 @@
 package com.dofast.module.cmms.dal.dataobject.dvcheckmachinery;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -71,5 +72,10 @@ public class DvCheckMachineryDO extends BaseDO {
      * 预留字段4
      */
     private Integer attr4;
+
+    /**
+     * ERP设备编码
+     */
+    private String erpMachineryCode;
 
 }

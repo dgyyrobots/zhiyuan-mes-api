@@ -512,8 +512,8 @@ public class AllocatedHeaderController {
         params.put("allocatedList", erpRequestList);
 
        /* String result = materialStockERPAPI.requisitionNoteCreate(params);
-        if(result!="success"){
-            return error(500, "ERP接口调用失败");
+        if(!result.contains("SUCCESS")){
+           return error(ErrorCodeConstants.ALLOCATED_INTERFACE_ERROR);
         }*/
         List<AllocatedTxBean> beans = allocatedHeaderService.getTxBeans(allocatedId);
 
@@ -575,6 +575,7 @@ public class AllocatedHeaderController {
             MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
             exportReqVO.setItemCode(bom.getItemCode());
             exportReqVO.setBatchCode(bom.getBatchCode());
+            System.out.println("当前查询库存信息: " +  exportReqVO.toString());
             List<MaterialStockDO> materialStock = materialStockService.getMaterialStockList(exportReqVO);
             materialStock.get(0).setRecptStatus("Y");
             materialStockService.updateMaterialStock(BeanUtil.toBean(materialStock.get(0), MaterialStockUpdateReqVO.class));

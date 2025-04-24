@@ -105,4 +105,7 @@ public class GoodsExcelVO {
     @ExcelProperty("ERP收货项次")
     private Integer receiveSeq;
 
+    @ExcelProperty("已收数量")
+    private BigDecimal receivedNum;
+
 }

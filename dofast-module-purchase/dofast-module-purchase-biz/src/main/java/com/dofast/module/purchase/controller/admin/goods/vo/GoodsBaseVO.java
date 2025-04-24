@@ -104,5 +104,6 @@ public class GoodsBaseVO {
     @Schema(description = "ERP收货项次")
     private Integer receiveSeq;
 
-
+    @Schema(description = "已收数量")
+    private BigDecimal receivedNum;
 }

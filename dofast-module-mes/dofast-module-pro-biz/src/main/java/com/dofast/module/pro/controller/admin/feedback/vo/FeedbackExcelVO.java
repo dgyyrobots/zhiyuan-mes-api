@@ -164,4 +164,7 @@ public class FeedbackExcelVO {
     @ExcelProperty("设备编码")
     private String machineryCode;
 
+    @ExcelProperty("ERP报工单")
+    private String erpFeedback;
+
 }
