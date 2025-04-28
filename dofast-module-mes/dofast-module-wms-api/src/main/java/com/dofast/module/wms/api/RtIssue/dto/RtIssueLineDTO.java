@@ -1,17 +1,15 @@
-package com.dofast.module.wms.controller.admin.issueline.vo;
+package com.dofast.module.wms.api.RtIssue.dto;
 
-import com.alibaba.excel.annotation.ExcelProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
-public class IssueLineListVO {
+public class RtIssueLineDTO {
+
     private Long id;
 
-    private Long issueId;
+    private Long rtId;
 
     private Long materialStockId;
 
@@ -25,7 +23,7 @@ public class IssueLineListVO {
 
     private String unitOfMeasure;
 
-    private BigDecimal quantityIssued;
+    private BigDecimal quantityRt;
 
     private String batchCode;
 
@@ -57,25 +55,7 @@ public class IssueLineListVO {
 
     private Integer attr4;
 
-    private LocalDateTime createTime;
-
-    private String status;
-
     private String vendorCode;
-
-    private String feedbackStatus;
-
-    private String feedbackCode;
-
-    private String machineryName;
-
-    private String machineryCode;
-
-    private String machineryId;
-
-    private Long barcodeNumber;
-
-    private String enableFlag;
 
     private Long sequence;
 
@@ -83,5 +63,5 @@ public class IssueLineListVO {
 
     private String erpBatchCode;
 
-    private String erpEnable;
+
 }

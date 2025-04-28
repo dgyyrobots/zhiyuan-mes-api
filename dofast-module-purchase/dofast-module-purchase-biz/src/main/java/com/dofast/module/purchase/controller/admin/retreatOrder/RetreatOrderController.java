@@ -148,14 +148,14 @@ public class RetreatOrderController {
         }
         System.out.println(goodsMapList.toString());
         // 调用ERP接口
-        Map<String, Object> erpParams = new HashMap<>();
+       /* Map<String, Object> erpParams = new HashMap<>();
         erpParams.put("goodsList", goodsMapList);
         erpParams.put("sourceNo", goodsMapList.get(0).get("poNo"));
         erpParams.put("supplierCode", goodsMapList.get(0).get("supplierCode"));
         erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
         erpParams.put("pmds000", "7"); // 仓库退货
         System.out.println(erpParams.toString());
-       /* String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+        String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
         if (!result.contains("success")) {
             return result;
         }*/

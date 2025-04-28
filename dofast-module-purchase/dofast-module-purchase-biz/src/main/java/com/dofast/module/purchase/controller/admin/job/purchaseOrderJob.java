@@ -99,9 +99,6 @@ public class purchaseOrderJob implements JobHandler {
             String orderNo = Optional.ofNullable((String) purchaseGoods.get("PO_NO")).orElse(""); // 采购单号
             OrderDO orderDO = purchaseOrderMapper.selectOne(OrderDO::getPoNo, orderNo);
             if (orderDO != null) {
-                if(!"AMCG86-250422002".equals(orderNo)){
-                    continue;
-                }
                 // 修改审批的入库单信息
                 // 获取当前的入库单详情
                 Integer orderId = orderDO.getId(); // 采购单Id

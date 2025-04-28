@@ -37,6 +37,9 @@ public class FeedbackMemberExcelVO {
     @ExcelProperty("用户昵称")
     private String nickName;
 
+    @ExcelProperty("岗位Id")
+    private String postIds;
+
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 

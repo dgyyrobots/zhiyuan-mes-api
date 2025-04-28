@@ -334,7 +334,7 @@ public class StorageCoreServiceImpl implements StorageCoreService {
 
             //StorageAreaDO areaIn = storageAreaService.selectWmStorageAreaByAreaCode(rtIssueDO.getAreaCode());
             StorageAreaExportReqVO exReqVO = new StorageAreaExportReqVO();
-            exReqVO.setAreaCode(line.getAreaCode());
+            exReqVO.setAreaCode(rtIssueDO.getAreaCode());
             exReqVO.setLocationId(location.getId());
             List<StorageAreaDO> areaListIn = storageAreaService.getStorageAreaList(exportReqVO);
             StorageAreaDO areaIn = areaListIn.get(0);

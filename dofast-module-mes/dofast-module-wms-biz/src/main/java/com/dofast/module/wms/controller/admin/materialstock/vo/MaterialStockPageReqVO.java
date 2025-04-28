@@ -113,4 +113,7 @@ public class MaterialStockPageReqVO extends PageParam {
     @Schema(description = "入库状态(Y/N)", example = "2")
     private String recptStatus;
 
+    @Schema(description = "ERP批次")
+    private String erpBatchCode;
+
 }

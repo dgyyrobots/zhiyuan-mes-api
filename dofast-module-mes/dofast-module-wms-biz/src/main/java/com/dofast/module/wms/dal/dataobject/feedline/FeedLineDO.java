@@ -187,4 +187,9 @@ public class FeedLineDO extends BaseDO {
      * ERP项次
      */
     private Long sequenceOrder;
+
+    /**
+     * ERP批次
+     */
+    private String erpBatchCode;
 }

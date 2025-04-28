@@ -5,6 +5,7 @@ import java.util.*;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
+import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
 import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.wms.controller.admin.issueline.vo.*;
@@ -53,6 +54,8 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getEnableFlag, reqVO.getEnableFlag())
                 .eqIfPresent(IssueLineDO::getSequence, reqVO.getSequence())
                 .eqIfPresent(IssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
+                .eqIfPresent(IssueLineDO::getErpBatchCode, reqVO.getErpBatchCode())
+                .eqIfPresent(IssueLineDO::getErpEnable, reqVO.getErpEnable())
                 .orderByDesc(IssueLineDO::getId));
     }
 
@@ -97,6 +100,8 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getEnableFlag, reqVO.getEnableFlag())
                 .eqIfPresent(IssueLineDO::getSequence, reqVO.getSequence())
                 .eqIfPresent(IssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
+                .eqIfPresent(IssueLineDO::getErpBatchCode, reqVO.getErpBatchCode())
+                .eqIfPresent(IssueLineDO::getErpEnable, reqVO.getErpEnable())
                 .orderByDesc(IssueLineDO::getId));
     }
 
@@ -137,6 +142,8 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getEnableFlag, reqVO.getEnableFlag())
                 .eqIfPresent(IssueLineDO::getSequence, reqVO.getSequence())
                 .eqIfPresent(IssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
+                .eqIfPresent(IssueLineDO::getErpBatchCode, reqVO.getErpBatchCode())
+                .eqIfPresent(IssueLineDO::getErpEnable, reqVO.getErpEnable())
                 .orderByDesc(IssueLineDO::getId));
     }
 

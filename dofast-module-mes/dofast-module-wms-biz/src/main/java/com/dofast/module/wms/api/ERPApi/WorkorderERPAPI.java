@@ -3,6 +3,7 @@ package com.dofast.module.wms.api.ERPApi;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.dofast.framework.common.util.http.HttpUtils;
+import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.mes.controller.admin.interfacelog.vo.InterfaceLogCreateReqVO;
 import com.dofast.module.mes.service.interfacelog.InterfaceLogService;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -68,8 +69,10 @@ public class WorkorderERPAPI {
 
         request.put("payload", payload);
         System.out.println(JSONObject.toJSONString(request));
-        // String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); //正式区
-        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); //测试区
+        String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); //正式区
+        // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); //测试区
+
+        // String result = "ERROR";
 
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
@@ -154,8 +157,9 @@ public class WorkorderERPAPI {
 
         System.out.println(JSONObject.toJSONString(request));
 
-        // 发送请求（测试区地址）
-        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
+        // 发送请求
+        String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); //正式区
+        // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
 
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
@@ -200,7 +204,10 @@ public class WorkorderERPAPI {
         master.put("sffb002", params.get("sffb002")); // 报工人员
         master.put("sffb005", params.get("sffb005")); // 工单号
         master.put("sffb007", params.get("sffb007")); // 作业编号(工序编号)
-        master.put("sffb008", params.get("sffb008")); // 作业(工序序)
+        String sffb008 = params.get("sffb008") == null ? null : (String) params.get("sffb008");
+        if(sffb008!="null"){
+            master.put("sffb008", params.get("sffb008") == null ? null : params.get("sffb008")); // 作业(工作序)
+        }
         master.put("sffb009", params.get("sffb009")); // 工作站
         master.put("sffb010", params.get("sffb010")); // 设备编码
         master.put("sffb012", params.get("sffb012")); // 完成日期
@@ -223,7 +230,9 @@ public class WorkorderERPAPI {
         System.out.println(JSONObject.toJSONString(request));
         // 发送请求
         // String url = "http://192.168.6.215/wtoptst/ws/r/awsp920"; // 测试地址
-        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
+        String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); //正式区
+        // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
+
         // 记录日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
         log.setInterfaceName("报工单资料生成接口");
@@ -292,7 +301,8 @@ public class WorkorderERPAPI {
         request.put("payload", payload);
         System.out.println(JSONObject.toJSONString(request));
         // 发送请求
-        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
+        String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); //正式区
+        // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
         // 记录日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
         log.setInterfaceName("撤销报工资料生成接口");
@@ -343,7 +353,7 @@ public class WorkorderERPAPI {
         request.put("service", serviceInfo);
 
         Map<String, Object> dataKey = new HashMap<>();
-        dataKey.put("EntId", "100"); // 根据文档要求修改
+        dataKey.put("EntId", Constant.ERP_PROD_DODE); // 根据文档要求修改
         dataKey.put("CompanyId", "AM01");
         request.put("datakey", dataKey);
 

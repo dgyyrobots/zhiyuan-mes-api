@@ -109,6 +109,7 @@ import com.dofast.module.wms.service.storagecore.StorageCoreService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import com.dofast.module.wms.service.transaction.TransactionService;
 import com.dofast.module.wms.service.warehouse.WarehouseService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -143,6 +144,7 @@ import static com.dofast.framework.common.pojo.CommonResult.success;
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
 import static com.dofast.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static com.dofast.module.pro.enums.ErrorCodeConstants.QUENTITYP_RODUCED_IS_MORE;
+
 
 @Tag(name = "生产管理 - 生产报工记录")
 @RestController
@@ -312,6 +314,8 @@ public class FeedbackController {
         taskService.updateTask(TaskConvert.INSTANCE.convert01(task));
         for (Map<String, Object> map : list) {
             FeedbackMemberCreateReqVO req = new FeedbackMemberCreateReqVO();
+
+            List<Integer> postIdsStr = (List<Integer>) map.get("postIds");
             req.setFeedbackId(String.valueOf(feedbackId));
             req.setNickName((String) map.get("nickname"));
             Integer userId = (Integer) map.get("id");
@@ -319,6 +323,7 @@ public class FeedbackController {
             req.setUserName((String) map.get("username"));
             req.setTaskCode(createReqVO.getTaskCode());
             req.setTeamCode(createReqVO.getTeamCode());
+            req.setPostIds(postIdsStr.toString());
             feedBackMemberService.createFeedbackMember(req);
         }
 
@@ -374,6 +379,7 @@ public class FeedbackController {
         }
         if (!list.isEmpty()) {
             for (Map<String, Object> map : list) {
+                List<Integer> postIdsStr = (List<Integer>) map.get("postIds");
                 FeedbackMemberCreateReqVO req = new FeedbackMemberCreateReqVO();
                 req.setFeedbackId(String.valueOf(updateReqVO.getId()));
                 req.setNickName((String) map.get("nickname"));
@@ -382,6 +388,7 @@ public class FeedbackController {
                 req.setUserName((String) map.get("username"));
                 req.setTaskCode(updateReqVO.getTaskCode());
                 req.setTeamCode(updateReqVO.getTeamCode());
+                req.setPostIds(postIdsStr.toString());
                 feedBackMemberService.createFeedbackMember(req);
             }
         }
@@ -444,10 +451,12 @@ public class FeedbackController {
         FeedbackRespVO req = FeedbackConvert.INSTANCE.convert(feedback);
         FeedbackMemberExportReqVO memberReq = new FeedbackMemberExportReqVO();
         memberReq.setFeedbackId(String.valueOf(id));
-        req.setMemberList(feedBackMemberService.getFeedbackMemberList(memberReq));
+        List<FeedbackMemberDO> memberList = feedBackMemberService.getFeedbackMemberList(memberReq);
+        req.setMemberList(memberList);
         FeedbackDefectExportReqVO defectReq = new FeedbackDefectExportReqVO();
         defectReq.setFeedbackId(String.valueOf(id));
         req.setProcessDefectList(feedbackDefectService.getFeedbackDefectList(defectReq));
+        System.out.println(req.getMemberList());
         return success(req);
     }
 
@@ -871,15 +880,15 @@ public class FeedbackController {
         erpParams.put("sffb018", feedback.getQuantityUnquanlified()); // 报废数量
 
         // 调用ERP接口
-       /* String erpResult = workorderERPAPI.workOrderReportCreate(erpParams);
+        /*String erpResult = workorderERPAPI.workOrderReportCreate(erpParams);
         // 解析响应结果
         if (!erpResult.contains("SUCCESS")) { // 根据实际接口返回判断
             return error(ErrorCodeConstants.FEEDBACK_ERP_ERROR);
         }
         String erpFeedback = erpResult.split(",")[1];
         // 追加ERP报工单信息
-        feedback.setErpFeedback(erpFeedback);*/
-        feedbackService.updateFeedback(FeedbackConvert.INSTANCE.convert02(feedback));
+        feedback.setErpFeedback(erpFeedback);
+        feedbackService.updateFeedback(FeedbackConvert.INSTANCE.convert02(feedback));*/
 
         Double quantityProduced, quantityQuanlify, quantityUnquanlify;
         quantityQuanlify = task.getQuantityQuanlify() == null ? 0 : task.getQuantityQuanlify();
@@ -1133,14 +1142,14 @@ public class FeedbackController {
         // 组装最终ERP接口参数
         erpParams.put("workOrders", workOrders);
         // 校验当前完工入库是否为末工序, 末工序则回传ERP接口
-        if(workOrders.size() > 0 ){
+        /*if(workOrders.size() > 0 ){
             // 存在入库信息
             // 调用接口方法
-           /* String result = workorderERPAPI.workOrderFinishCreate(erpParams);
+            String result = workorderERPAPI.workOrderFinishCreate(erpParams);
             if(!result.contains("SUCCESS")){
                 return error(ErrorCodeConstants.WAREHOUSING_ERP_ERROR);
-            }*/
-        }
+            }
+        }*/
 
         for (Map<String, Object> map : objList) {
             // 基于当前的库存信息
@@ -1220,6 +1229,7 @@ public class FeedbackController {
             MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
             exportReqVO.setItemCode(itemCode);
             exportReqVO.setBatchCode(feedbackDO.getBatchCode());
+            exportReqVO.setRecptStatus("N"); // 已完成状态的单据为未入库("N");
             List<MaterialStockDO> materialStockDO = materialStockService.getMaterialStockList(exportReqVO);
             if (!materialStockDO.isEmpty()) {
                 MaterialStockDO materialStock = materialStockDO.get(0);
@@ -1336,7 +1346,7 @@ public class FeedbackController {
         String batchCode = feedback.getBatchCode();
 
         Map<String, Object> erpParams = new HashMap<>();
-        if(feedback.getErpFeedback() != null){
+        /*if(feedback.getErpFeedback() != null){
             // 基础信息
             erpParams.put("feedbackCode", feedback.getErpFeedback()); // ERP报工单号
             // 调用ERP接口
@@ -1346,7 +1356,7 @@ public class FeedbackController {
             if (!erpResult.contains("SUCCESS")) { // 根据实际接口返回判断
                 return error(ErrorCodeConstants.FEEDBACK_ERP_ERROR);
             }
-        }
+        }*/
 
         // 基于当前的子批次获取当前的产成品库存信息
         // 后续将产成品删除

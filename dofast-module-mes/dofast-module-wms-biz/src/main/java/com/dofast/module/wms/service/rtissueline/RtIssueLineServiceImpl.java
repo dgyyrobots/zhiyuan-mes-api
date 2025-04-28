@@ -94,4 +94,10 @@ public class RtIssueLineServiceImpl implements RtIssueLineService {
         rtIssueLineMapper.updateBatch(list);
     }
 
+    @Override
+    public void insertRtIssueLineBatch(List<RtIssueLineDO> list){
+        rtIssueLineMapper.insertBatch(list);
+    }
+
+
 }

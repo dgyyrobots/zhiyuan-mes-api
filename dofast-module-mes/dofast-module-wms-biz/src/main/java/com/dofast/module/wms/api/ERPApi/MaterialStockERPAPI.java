@@ -127,8 +127,8 @@ public class MaterialStockERPAPI {
         request.put("payload", payload);
         System.out.println(JSONObject.toJSONString(request));
 
-        // String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
-        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
+        String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
+        //String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
         if(pmds000.equals("1")){
@@ -246,8 +246,8 @@ public class MaterialStockERPAPI {
 
         request.put("payload", payload);
         System.out.println(JSONObject.toJSONString(request));
-        // String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
-        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
+        String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
+        // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
         log.setInterfaceName("调拨单生成接口");
@@ -293,7 +293,7 @@ public class MaterialStockERPAPI {
         serviceInfo.put("prod", "T100");
         serviceInfo.put("name", interfaceName);
         serviceInfo.put("ip", "192.168.127.7");
-        serviceInfo.put("id", "toptst"); // topprd正式库 toptst测试库
+        serviceInfo.put("id", "topprd"); // topprd正式库 toptst测试库
         request.put("service", serviceInfo);
 
         Map<String, Object> dataKey = new HashMap<>();
@@ -370,8 +370,8 @@ public class MaterialStockERPAPI {
 
         request.put("payload", payload);
         System.out.println(JSONObject.toJSONString(request));
-        // String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
-        String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
+        String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
+        //String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
 
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();

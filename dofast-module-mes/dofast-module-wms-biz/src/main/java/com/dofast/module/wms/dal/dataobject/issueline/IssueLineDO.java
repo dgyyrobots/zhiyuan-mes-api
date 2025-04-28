@@ -177,5 +177,13 @@ public class IssueLineDO extends BaseDO {
      */
     private Long sequenceOrder;
 
+    /**
+     * ERP批次
+     */
+    private String erpBatchCode;
 
+    /**
+     * ERP调用标识
+     */
+    private String erpEnable;
 }

@@ -1,5 +1,6 @@
 package com.dofast.module.wms.dal.dataobject.materialstock;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -152,4 +153,9 @@ public class MaterialStockDO extends BaseDO {
      * 入库单状态
      */
     private String recptStatus;
+
+    /**
+     * 批次
+     */
+    private String erpBatchCode;
 }

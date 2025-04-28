@@ -25,6 +25,7 @@ public interface FeedbackMemberMapper extends BaseMapperX<FeedbackMemberDO> {
                 .eqIfPresent(FeedbackMemberDO::getUserId, reqVO.getUserId())
                 .likeIfPresent(FeedbackMemberDO::getUserName, reqVO.getUserName())
                 .likeIfPresent(FeedbackMemberDO::getNickName, reqVO.getNickName())
+                .eqIfPresent(FeedbackMemberDO::getPostIds, reqVO.getPostIds())
                 .betweenIfPresent(FeedbackMemberDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(FeedbackMemberDO::getId));
     }
@@ -37,6 +38,7 @@ public interface FeedbackMemberMapper extends BaseMapperX<FeedbackMemberDO> {
                 .eqIfPresent(FeedbackMemberDO::getUserId, reqVO.getUserId())
                 .likeIfPresent(FeedbackMemberDO::getUserName, reqVO.getUserName())
                 .likeIfPresent(FeedbackMemberDO::getNickName, reqVO.getNickName())
+                .eqIfPresent(FeedbackMemberDO::getPostIds, reqVO.getPostIds())
                 .betweenIfPresent(FeedbackMemberDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(FeedbackMemberDO::getId));
     }

@@ -1,5 +1,7 @@
 package com.dofast.framework.common.pojo;
 
+import java.time.LocalDate;
+
 /**
  * 用户常量信息
  * 
@@ -236,4 +238,8 @@ public class UserConstants
     public static final String MESSAGE_STATUS_READ = "READ";//已读
     public static final String MESSAGE_STATUS_PROCEED = "PROCEED";//已处理
 
+    /**
+     * erp同步日期
+     */
+    public static final LocalDate BATCH_CODE_SWITCH_DATE = LocalDate.of(2025, 4, 28);
 }

@@ -31,6 +31,9 @@ public class FeedbackMemberExportReqVO {
     @Schema(description = "用户昵称", example = "赵六")
     private String nickName;
 
+    @Schema(description = "岗位Id")
+    private String postIds;
+
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;

@@ -2,6 +2,8 @@ package com.dofast.module.wms.controller.admin.issueheader;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.alibaba.excel.util.StringUtils;
+import com.dofast.framework.common.pojo.UserConstants;
 import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.module.cmms.api.dvmachinery.DvMachineryApi;
 import com.dofast.module.cmms.api.dvmachinery.dto.DvMachineryDTO;
@@ -16,6 +18,7 @@ import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeader
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeaderUpdateReqVO;
 import com.dofast.module.wms.controller.admin.allocatedrecord.vo.AllocatedRecordExportReqVO;
 import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineExportReqVO;
+import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineExportReqVO;
 import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineListVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockUpdateReqVO;
@@ -33,6 +36,7 @@ import com.dofast.module.wms.dal.mysql.issueline.IssueLineMapper;
 import com.dofast.module.wms.enums.ErrorCodeConstants;
 import com.dofast.module.wms.service.feedline.FeedLineService;
 import com.dofast.module.wms.service.issueline.IssueLineService;
+import com.dofast.module.wms.service.materialstock.MaterialStockService;
 import com.dofast.module.wms.service.storagearea.StorageAreaService;
 import com.dofast.module.wms.service.storagecore.StorageCoreService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
@@ -52,10 +56,13 @@ import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.pojo.CommonResult;
@@ -67,6 +74,7 @@ import com.dofast.framework.excel.core.util.ExcelUtils;
 
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
 
+import static com.dofast.framework.common.pojo.UserConstants.BATCH_CODE_SWITCH_DATE;
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.*;
 
 import com.dofast.module.wms.controller.admin.issueheader.vo.*;
@@ -121,6 +129,8 @@ public class IssueHeaderController {
     @Resource
     private WorkorderApi workorderApi;
 
+    @Resource
+    private MaterialStockService materialStockService;
 
     @PostMapping("/create")
     @Operation(summary = "创建生产领料单头")
@@ -251,72 +261,117 @@ public class IssueHeaderController {
             return error(ErrorCodeConstants.ISSUE_HEADER_NEED_LINE);
         }
 
-        // 追加ERP接口调用
-        Map<String, Object> params = new HashMap<>();
-        List<Map<String, Object>>  list = new ArrayList<>(); // 装填领料信息
+        // 构建ERP接口参数
+        Map<String, Object> erpParams = new HashMap<>();
+        List<Map<String, Object>> goodsList = new ArrayList<>();
 
-        // 追加校验, 若当前领料不在BOM中, 即:流转半成品. 不予以回传ERP
-        for (IssueLineDO issueLine: lines) {
-            Long sequence = issueLine.getSequence();
-            Long sequenceOrder = issueLine.getSequenceOrder();
-            if(sequence == null || sequenceOrder == null){
-                // 不在bom中管控
-                // 不回传ERP
+        // ERP接口调用标识
+        List<IssueLineDO> erpEnableList = new ArrayList<>();
+        for (IssueLineDO line : lines) {
+            Long sequence = line.getSequence();
+            Long sequenceOrder = line.getSequenceOrder();
+            if (sequence == null || sequenceOrder == null) {
                 continue;
             }
-            FeedLineExportReqVO exportReqVO = new FeedLineExportReqVO();
-            exportReqVO.setTaskCode(header.getTaskCode());
-            exportReqVO.setItemCode(issueLine.getItemCode());
-            exportReqVO.setBatchCode(issueLine.getBatchCode());
-            exportReqVO.setBarcodeNumber(issueLine.getBarcodeNumber());
 
-            // 追加判定: 超出bom预估用量走超领
-            // 获取工单bom信息
-            /*List<WorkorderBomDTO> bomInfo = workorderApi.getWorkorderBom(header.getWorkorderId());
-            // 基于项次(sequence), 项序(sequenceOrder)判定唯一行
-            for (WorkorderBomDTO bomDTO : bomInfo) {
-                if(bomDTO.getSequence().equals(sequence) && bomDTO.getSequenceOrder().equals(sequenceOrder)){
-                    // 项次项序符合
-                    // 判定当前领料单, 使用物料是否超标
-                    BigDecimal planQuantity = new BigDecimal(bomDTO.getQuantity()); // 预计用量
-                    // 开始判定当前工单下领料单所有用量
-                    IssueHeaderExportReqVO headerExportReqVO = new IssueHeaderExportReqVO();
-                    headerExportReqVO.setWorkorderCode(header.getWorkorderCode());
-                    List<IssueHeaderDO> issueHeaderList = issueHeaderService.getIssueHeaderList(headerExportReqVO);
+            // 获取BOM信息
+            WorkorderBomDTO bom = workorderApi.getWorkorderBom(header.getWorkorderId()).stream()
+                    .filter(dto -> dto.getItemCode().equals(line.getItemCode()) && dto.getSequence().equals(sequence) && dto.getSequenceOrder().equals(sequenceOrder))
+                    .findFirst()
+                    .orElse(null);
+            if (bom == null) {
+                continue;
+            }
 
+            // 判定当前领料单, 使用物料是否超标
+            // 开始判定当前领料单下改物料的所有用量
+            IssueLineExportReqVO lineExportReqVO = new IssueLineExportReqVO();
+            lineExportReqVO.setIssueId(header.getId());
+            lineExportReqVO.setItemCode(line.getItemCode());
+            lineExportReqVO.setSequence(line.getSequence()); // 卡控项次与项序
+            lineExportReqVO.setSequenceOrder(line.getSequenceOrder());
+            lineExportReqVO.setStatus("Y"); // 已上料
+            List<IssueLineDO> lineDOList = issueLineService.getIssueLineList(lineExportReqVO);
 
+            // 循环lineDOlist, 获取每一行数据的使用量并进行汇总
+            BigDecimal totalUsed = new BigDecimal(0);
+            for (IssueLineDO lineDO : lineDOList) {
+                totalUsed = totalUsed.add(lineDO.getQuantityIssued());
+            }
 
-                    if(bomDTO.getQuantity().compareTo(issueLine.getQuantityIssued().doubleValue()) > 0){
+            BigDecimal currentQty = line.getQuantityIssued();
+            BigDecimal bomQty = new BigDecimal(bom.getQuantity());
 
+            // 计算可分配数量
+            BigDecimal remaining = bomQty.subtract(totalUsed);
+            BigDecimal h01Qty = BigDecimal.ZERO;
+            BigDecimal h02Qty = BigDecimal.ZERO;
 
-                    }
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+                // 全部超领
+                h02Qty = currentQty;
+            } else if (currentQty.compareTo(remaining) <= 0) {
+                // 全部成套领料
+                h01Qty = currentQty;
+            } else {
+                // 拆分领料
+                h01Qty = remaining;
+                h02Qty = currentQty.subtract(remaining);
+            }
+
+            // 配置4为小数
+            h01Qty = h01Qty.setScale(4, RoundingMode.HALF_UP);
+            h02Qty = h02Qty.setScale(4, RoundingMode.HALF_UP);
+
+            // 生成H01报文
+            if (h01Qty.compareTo(BigDecimal.ZERO) > 0) {
+                Map<String, Object> item = buildErpItem(header, line, "H01", h01Qty);
+                if (item != null) {
+                    goodsList.add(item);
                 }
-            }*/
-            Map<String, Object> map = new HashMap<>();
-            map.put("sfdc001", header.getWorkorderCode()); // 工单单号
-            map.put("sfdc002", issueLine.getSequence()); // 工单项次
-            map.put("sfdc003", issueLine.getSequenceOrder()); // 工单项序
-            map.put("sfdc007", issueLine.getQuantityIssued()); // 申请数量
-            map.put("sfdc012", issueLine.getLocationCode()); // ERP库区
-            map.put("sfdc013", issueLine.getAreaCode()); // ERP库位
-            map.put("sfdc014", issueLine.getBatchCode()); // 批号
-            map.put("sfdc015", "H01"); // 理由码 成套发料对应H01，成套退料对应Y01，超领对应H02，超领退对应Y02
-            map.put("sfdc016", ""); // 库存管理特征
-            map.put("source_seq", ""); // MES项次
-            list.add(map);
-        }
-        params.put("goodsList", list);
-        params.put("sfda002", "11"); // 成套领料
-        params.put("source_no", header.getIssueCode()); // 成套领料
+            }
 
-        if(list.size()>0){
-            // 存在BOM信息
-            /*String erpResult = workorderERPAPI.workOrderIssueCreate(params);
-            if(!erpResult.contains("SUCCESS")){
-                // 过账失败
-                System.out.println("ERP过账失败：" + erpResult);
+            // 生成H02报文
+            if (h02Qty.compareTo(BigDecimal.ZERO) > 0) {
+                Map<String, Object> item = buildErpItem(header, line, "H02", h02Qty);
+                if (item != null) {
+                    goodsList.add(item);
+                }
+            }
+
+            erpEnableList.add(line);
+        }
+
+        // 按领料类型分组（H01/H02）
+        Map<String, List<Map<String, Object>>> groupedData = goodsList.stream()
+                .collect(Collectors.groupingBy(item -> (String) item.get("sfdc015")));
+
+        // 统一ERP参数基础配置
+        erpParams.put("sfda002", "11");  // 保持原值，根据实际情况调整
+        erpParams.put("source_no", header.getIssueCode());
+
+        /*if(true){
+            return error(ErrorCodeConstants.RT_ISSUE_CODE_EXISTS);
+        }*/
+
+        // 遍历分组进行接口调用
+        for (Map.Entry<String, List<Map<String, Object>>> entry : groupedData.entrySet()) {
+            // 设置当前分组的领料数据
+            erpParams.put("goodsList", entry.getValue());
+            System.out.println("发送分组数据：" + erpParams);
+            // 调用ERP接口
+            /*String erpResult = workorderERPAPI.workOrderIssueCreate(erpParams);
+            if (!erpResult.contains("SUCCESS")) {
                 return error(ErrorCodeConstants.ISSUE_ERR_INTERFACE_ERROR);
             }*/
+        }
+
+        if(!erpEnableList.isEmpty()){
+            // 将当前领料信息追加ERP调用标识
+            erpEnableList.forEach(line -> {
+                line.setErpEnable("Y");
+            });
+            issueLineService.updateIssueLineBatch(erpEnableList);
         }
 
         // 追加上料详情
@@ -357,6 +412,8 @@ public class IssueHeaderController {
             // 2025-04-03: 追加ERP项次, 项序用于领料接口
             lineDO.setSequence(issueLine.getSequence());
             lineDO.setSequenceOrder(issueLine.getSequenceOrder());
+            // 2025-04-25: 追加ERP母批次
+            lineDO.setErpBatchCode(issueLine.getErpBatchCode());
             createReqVOList.add(lineDO);
         }
         feedLineService.insertBatch(createReqVOList);
@@ -397,6 +454,51 @@ public class IssueHeaderController {
         dvMachineryApi.updateMachineryInfo(dvMachineryDTO);*/
         issuLineMapper.updateBatch(lines);
         return success(true);
+    }
+
+
+    private Map<String, Object> buildErpItem(IssueHeaderDO header, IssueLineDO line, String reasonCode, BigDecimal qty) {
+        // 前置校验批次号
+        String batchCode;
+        MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
+        exportReqVO.setItemCode(line.getItemCode());
+        exportReqVO.setBatchCode(line.getBatchCode());
+        exportReqVO.setRecptStatus("Y");
+        MaterialStockDO stockDO = materialStockService.getMaterialStockList(exportReqVO) == null ? null : materialStockService.getMaterialStockList(exportReqVO).get(0);
+        if(stockDO==null){
+            return null;
+        }
+        if (stockDO.getCreateTime().isBefore(BATCH_CODE_SWITCH_DATE.atStartOfDay())) {
+            batchCode = stockDO.getErpBatchCode();
+            // 关键校验：当需要erpBatchCode但为空时返回null
+            if (StringUtils.isBlank(batchCode)) {
+                System.out.println("ERP批次号缺失 | 领料单行ID：" +  line.getId());
+                return null;
+            }
+        } else {
+            batchCode = line.getBatchCode();
+            if (StringUtils.isBlank(batchCode)) {
+                System.out.println("批次号缺失 | 领料单行ID：" +  line.getId());
+                return null;
+            }
+        }
+
+        Map<String, Object> item = new HashMap<>();
+        item.put("sfdc001", header.getWorkorderCode()); // 工单号
+        item.put("sfdc002", line.getSequence());        // 项次
+        item.put("sfdc003", line.getSequenceOrder());   // 项序
+        item.put("sfdc007", qty);                       // 数量
+        item.put("sfdc012", line.getLocationCode());    // 库区
+        item.put("sfdc013", line.getAreaCode());        // 库位
+        // 校验当前line行的创建时间, 若时间小于2025-04-26, 则传递erpBatchCode字段
+        if (line.getCreateTime().isBefore(LocalDateTime.of(2025, 4, 26, 0, 0, 0))) {
+            item.put("sfdc014", line.getErpBatchCode());       // 批次
+        }else{
+            item.put("sfdc014", batchCode);       // 批次
+        }
+        item.put("sfdc015", reasonCode);                // 理由码
+        item.put("source_seq", "");   // MES项次
+        return item;
     }
 
     @DeleteMapping("/delete")

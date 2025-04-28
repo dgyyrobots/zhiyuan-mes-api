@@ -108,7 +108,10 @@ public class MaterialStockExportReqVO {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
-    @Schema(description = "入库状态(Y/N)", example = "2")
+    @Schema(description = "入库状态(Y/N)", example = "Y")
     private String recptStatus;
+
+    @Schema(description = "ERP批次")
+    private String erpBatchCode;
 
 }

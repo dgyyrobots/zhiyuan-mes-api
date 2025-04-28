@@ -125,4 +125,9 @@ public class IssueLineExcelVO {
     @ExcelProperty("ERP项序")
     private Long sequenceOrder;
 
+    @ExcelProperty("ERP批次")
+    private String erpBatchCode;
+
+    @ExcelProperty("ERP调用标识")
+    private String erpEnable;
 }

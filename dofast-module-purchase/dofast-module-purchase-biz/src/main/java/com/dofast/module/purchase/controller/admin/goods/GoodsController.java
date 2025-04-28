@@ -15,6 +15,8 @@ import com.dofast.module.purchase.service.order.OrderService;
 import com.dofast.module.tm.dal.dataobject.tool.ToolDO;
 import com.dofast.module.tm.service.tool.ToolService;
 import com.dofast.module.wms.api.ERPApi.MaterialStockERPAPI;
+import com.dofast.module.wms.api.RtIssue.RtIssueApi;
+import com.dofast.module.wms.api.RtIssue.dto.RtIssueLineDTO;
 import com.dofast.module.wms.api.StorageAreaApi.StorageAreaApi;
 import com.dofast.module.wms.api.StorageAreaApi.dto.StorageAreaDTO;
 import com.dofast.module.wms.api.StorageLocationApi.StorageLocationApi;
@@ -28,6 +30,7 @@ import com.dofast.module.wms.controller.admin.transaction.vo.TransactionUpdateRe
 import com.dofast.module.wms.convert.materialstock.MaterialStockConvert;
 import com.dofast.module.wms.dal.dataobject.itemrecpt.ItemRecptTxBean;
 import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
+import com.dofast.module.wms.dal.dataobject.rtissueline.RtIssueLineDO;
 import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
@@ -130,6 +133,9 @@ public class GoodsController {
 
     @Resource
     private ToolService toolService;
+
+    @Resource
+    private RtIssueApi rtIssueApi;
 
     @Resource
     private OrderOracleService orderOracleService;
@@ -395,7 +401,7 @@ public class GoodsController {
             erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
             erpParams.put("pmds000", "6"); // 采购入库
             System.out.println(erpParams.toString());
-           /* String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+            /*String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
             if (!result.contains("success")) {
                 return result;
             }*/
@@ -489,6 +495,11 @@ public class GoodsController {
                 batchCode = feedbackDO.getBatchCode();
                 break;
             case "eject":
+                RtIssueLineDTO query = new RtIssueLineDTO();
+                query.setId(id.longValue());
+                RtIssueLineDTO rtIssueLineDTO = rtIssueApi.listRtIssueLine(query).get(0);
+                itemCode = rtIssueLineDTO.getItemCode();
+                batchCode = rtIssueLineDTO.getBatchCode();
                 break;
             case "tool":
                 ToolDO toolDO = toolService.getTool(id.longValue());
@@ -792,7 +803,7 @@ public class GoodsController {
             goodsService.updateBatch(update);
             // 开始追加物料收获项次
             // 注释接口
-            /*for (Map<String, Object> goodsMap : goodsMapList) {
+           /* for (Map<String, Object> goodsMap : goodsMapList) {
                 Integer id = (Integer) goodsMap.get("id");
                 GoodsDO goodsDO = goodsService.getGoods(id);
                 Map<String,Object> seqMap =  orderOracleService.getReceiveSeq(goodsDO);

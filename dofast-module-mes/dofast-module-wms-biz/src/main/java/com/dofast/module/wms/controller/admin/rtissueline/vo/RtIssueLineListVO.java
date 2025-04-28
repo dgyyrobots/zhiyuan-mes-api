@@ -71,6 +71,8 @@ public class RtIssueLineListVO {
 
     private Long sequenceOrder;
 
+    private String erpBatchCode;
+
     private LocalDateTime createTime;
 
 }

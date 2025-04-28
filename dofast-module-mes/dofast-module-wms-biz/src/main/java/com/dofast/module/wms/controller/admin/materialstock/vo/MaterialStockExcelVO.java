@@ -115,4 +115,7 @@ public class MaterialStockExcelVO {
 
     @ExcelProperty("入库状态(Y/N)")
     private String recptStatus;
+
+    @ExcelProperty("ERP批次")
+    private String erpBatchCode;
 }

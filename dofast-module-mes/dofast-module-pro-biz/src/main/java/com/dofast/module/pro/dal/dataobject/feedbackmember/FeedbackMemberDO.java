@@ -1,5 +1,6 @@
 package com.dofast.module.pro.dal.dataobject.feedbackmember;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -51,5 +52,10 @@ public class FeedbackMemberDO extends BaseDO {
      * 用户昵称
      */
     private String nickName;
+
+    /**
+     * 岗位Id
+     */
+    private String postIds;
 
 }

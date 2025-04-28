@@ -48,6 +48,7 @@ public interface RtIssueLineMapper extends BaseMapperX<RtIssueLineDO> {
                 .betweenIfPresent(RtIssueLineDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(RtIssueLineDO::getSequence, reqVO.getSequence())
                 .eqIfPresent(RtIssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
+                .eqIfPresent(RtIssueLineDO::getErpBatchCode, reqVO.getErpBatchCode())
                 .orderByDesc(RtIssueLineDO::getId));
     }
 
@@ -80,6 +81,7 @@ public interface RtIssueLineMapper extends BaseMapperX<RtIssueLineDO> {
                 .eqIfPresent(RtIssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(RtIssueLineDO::getSequence, reqVO.getSequence())
                 .eqIfPresent(RtIssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
+                .eqIfPresent(RtIssueLineDO::getErpBatchCode, reqVO.getErpBatchCode())
                 .orderByDesc(RtIssueLineDO::getId));
     }
 
@@ -112,6 +114,7 @@ public interface RtIssueLineMapper extends BaseMapperX<RtIssueLineDO> {
                 .eqIfPresent(RtIssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(RtIssueLineDO::getSequence, reqVO.getSequence())
                 .eqIfPresent(RtIssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
+                .eqIfPresent(RtIssueLineDO::getErpBatchCode, reqVO.getErpBatchCode())
                 .orderByDesc(RtIssueLineDO::getId));
     }
 

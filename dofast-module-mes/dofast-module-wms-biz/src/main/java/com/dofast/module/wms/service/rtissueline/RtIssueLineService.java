@@ -69,4 +69,6 @@ public interface RtIssueLineService {
     List<RtIssueLineDO> getRtIssueLineList(RtIssueLineExportReqVO exportReqVO);
 
     void updateRtIssueLineBatch(List<RtIssueLineDO> list);
+
+    void insertRtIssueLineBatch(List<RtIssueLineDO> list);
 }

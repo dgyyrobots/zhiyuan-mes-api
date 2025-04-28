@@ -100,4 +100,7 @@ public class RtIssueLineExcelVO {
 
     @ExcelProperty("ERP项序")
     private Long sequenceOrder;
+
+    @ExcelProperty("ERP批次")
+    private String erpBatchCode;
 }

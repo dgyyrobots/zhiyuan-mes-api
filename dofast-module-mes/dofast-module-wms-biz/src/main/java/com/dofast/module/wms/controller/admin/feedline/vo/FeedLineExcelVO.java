@@ -136,6 +136,7 @@ public class FeedLineExcelVO {
     @ExcelProperty("ERP项次")
     private Long sequenceOrder;
 
-
+    @ExcelProperty("ERP批次")
+    private String erpBatchCode;
 
 }

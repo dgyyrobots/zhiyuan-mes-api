@@ -1,5 +1,8 @@
 package com.dofast.module.wms.controller.admin.issueline;
 
+import cn.hutool.core.date.DateUtil;
+import com.alibaba.excel.util.StringUtils;
+import com.dofast.framework.common.pojo.UserConstants;
 import com.dofast.framework.common.util.bean.BeanUtils;
 import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.framework.web.core.util.WebFrameworkUtils;
@@ -15,18 +18,29 @@ import com.dofast.module.tm.dal.dataobject.tool.ToolDO;
 import com.dofast.module.wms.api.ERPApi.WorkorderERPAPI;
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.AllocatedHeaderExportReqVO;
 import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineExportReqVO;
+import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
+import com.dofast.module.wms.controller.admin.rtissue.vo.RtIssueCreateReqVO;
+import com.dofast.module.wms.controller.admin.rtissue.vo.RtIssueExportReqVO;
+import com.dofast.module.wms.controller.admin.rtissueline.vo.RtIssueLineCreateReqVO;
+import com.dofast.module.wms.controller.admin.rtissueline.vo.RtIssueLineExportReqVO;
 import com.dofast.module.wms.controller.admin.storagearea.vo.StorageAreaExportReqVO;
 import com.dofast.module.wms.controller.admin.transaction.vo.TransactionUpdateReqVO;
 import com.dofast.module.wms.convert.issueheader.IssueHeaderConvert;
+import com.dofast.module.wms.convert.rtissue.RtIssueConvert;
 import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueTxBean;
+import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
+import com.dofast.module.wms.dal.dataobject.rtissue.RtIssueDO;
 import com.dofast.module.wms.dal.dataobject.rtissueline.RtIssueLineDO;
 import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
 import com.dofast.module.wms.service.feedline.FeedLineService;
 import com.dofast.module.wms.service.issueheader.IssueHeaderService;
+import com.dofast.module.wms.service.materialstock.MaterialStockService;
+import com.dofast.module.wms.service.rtissue.RtIssueService;
+import com.dofast.module.wms.service.rtissueline.RtIssueLineService;
 import com.dofast.module.wms.service.storagearea.StorageAreaService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import com.dofast.module.wms.service.transaction.TransactionService;
@@ -47,11 +61,13 @@ import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.pojo.CommonResult;
@@ -64,6 +80,7 @@ import com.dofast.framework.excel.core.util.ExcelUtils;
 
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
 
+import static com.dofast.framework.common.pojo.UserConstants.BATCH_CODE_SWITCH_DATE;
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.*;
 
 import com.dofast.module.wms.controller.admin.issueline.vo.*;
@@ -110,6 +127,18 @@ public class IssueLineController {
 
     @Resource
     private WorkorderERPAPI workorderERPAPI;
+
+    @Resource
+    private RtIssueService rtIssueService;
+
+    @Resource
+    private WorkorderApi workorderApi;
+
+    @Resource
+    private RtIssueLineService rtIssueLineService;
+
+    @Resource
+    private MaterialStockService materialStockService;
 
     @PostMapping("/create")
     @Operation(summary = "创建生产领料单行")
@@ -197,7 +226,9 @@ public class IssueLineController {
             exportReqVO.setIssueId(createReqVO.getIssueId());
             List<IssueLineDO> issueLineByMachineryId = issueLineService.getIssueLineList(exportReqVO);
             // 当前设备存在物料
-            if (!issueLineByMachineryId.isEmpty()) {
+            // 2025-4-25注释: 分条不是每次都给复合18000的膜
+            // 特殊情况: 分条膜3000 , 复合需扫码两次以对应6000米的纸
+            /*if (!issueLineByMachineryId.isEmpty()) {
                 for (IssueLineDO line : issueLineByMachineryId) {
                     if (line.getItemCode().startsWith("61")) {
                         // 校验最新一卷膜类物料状态, 禁止多次上膜
@@ -216,7 +247,7 @@ public class IssueLineController {
                         }
                     }
                 }
-            }
+            }*/
         }
         return success(count);
     }
@@ -251,9 +282,10 @@ public class IssueLineController {
     public CommonResult<Boolean> deleteIssueLine(@RequestParam("id") ArrayList<Long> ids) {
         // 追加卡控，无法删除已领料行数据
         for (Long id : ids) {
-            if("Y".equals(issueLineService.getIssueLine(id).getStatus())){
+            if ("Y".equals(issueLineService.getIssueLine(id).getStatus())) {
                 return error(ErrorCodeConstants.ISSUE_LINE_DELETE_ERROR);
-            };
+            }
+            ;
         }
         issueLineService.batchDeleteIssueLine(ids);
         return success(true);
@@ -338,43 +370,178 @@ public class IssueLineController {
         List<IssueLineDO> lineList = issueLineService.getIssueLineList(ids);
         IssueHeaderDO headerDO = issueHeaderService.getIssueHeader(lineList.get(0).getIssueId());
 
+        // 在ERP接口调用部分替换原有逻辑
         // 追加ERP接口调用
         Map<String, Object> params = new HashMap<>();
-        List<Map<String, Object>>  list = new ArrayList<>(); // 装填领料信息
+        List<Map<String, Object>> list = new ArrayList<>();
 
-        for (IssueLineDO issueLineList: lineList) {
-            Long sequence = issueLineList.getSequence();
-            Long sequenceOrder = issueLineList.getSequenceOrder();
-            if(sequence == null || sequenceOrder == null){
-                // 不在bom中管控
-                // 不回传ERP
-                continue;
+        // 获取工单BOM信息
+        List<WorkorderBomDTO> bomList = workorderApi.getWorkorderBom(headerDO.getWorkorderId());
+
+        // 按物料维度分组处理
+        Map<String, List<IssueLineDO>> materialGroups = lineList.stream()
+                .filter(line -> line.getSequence() != null && line.getSequenceOrder() != null)
+                .collect(Collectors.groupingBy(IssueLineDO::getItemCode));
+
+        // 处理每个物料批次组
+        for (Map.Entry<String, List<IssueLineDO>> entry : materialGroups.entrySet()) {
+            String key = entry.getKey();
+            List<IssueLineDO> lines = entry.getValue();
+
+            // 获取首行基本信息
+            IssueLineDO sampleLine = lines.get(0);
+            // 获取工单BOM应发量
+            BigDecimal bomQty = BigDecimal.ZERO;
+            for (WorkorderBomDTO bom : bomList) {
+                if (bom.getSequence().equals(sampleLine.getSequence()) && bom.getSequenceOrder().equals(sampleLine.getSequenceOrder())) {
+                    bomQty = new BigDecimal(bom.getQuantity());
+                    break;
+                }
             }
-            Map<String, Object> map = new HashMap<>();
-            map.put("sfdc001", headerDO.getWorkorderCode()); // 工单单号
-            map.put("sfdc002", issueLineList.getSequence()); // 工单项次
-            map.put("sfdc003", issueLineList.getSequenceOrder()); // 工单项序
-            map.put("sfdc007", issueLineList.getQuantityIssued()); // 申请数量
-            map.put("sfdc012", headerDO.getLocationCode()); // ERP库区
-            map.put("sfdc013", headerDO.getAreaCode()); // ERP库位
-            map.put("sfdc014", issueLineList.getBatchCode()); // 批号
-            map.put("sfdc015", "Y01"); // 理由码 成套发料对应H01，成套退料对应Y01，超领对应H02，超领退对应Y02
-            map.put("sfdc016", ""); // 库存管理特征
-            map.put("source_seq", ""); // MES项次
-            list.add(map);
-        }
-        params.put("goodsList", list);
-        params.put("sfda002", "23"); // 一般退料
-        params.put("source_no", headerDO.getIssueCode()); // 退料单号
 
-        if(list.size()>0) {
-            /*String erpResult = workorderERPAPI.workOrderIssueCreate(params);
-            if (!erpResult.contains("SUCCESS")) {
-                // 过账失败
-                System.out.println("ERP过账失败：" + erpResult);
-                return error(ErrorCodeConstants.RT_ISSUE_ERR_INTERFACE_ERROR);
+            // 获取历史已退量
+            // 获取当前已完成的退料单信息
+            RtIssueExportReqVO usedRtIssue = new RtIssueExportReqVO();
+            usedRtIssue.setTaskCode(headerDO.getTaskCode());
+            usedRtIssue.setWorkorderCode(headerDO.getAreaCode());
+            usedRtIssue.setStatus("FINISHED"); // 仅获取已完成物料
+            List<RtIssueDO> usedRtIssueDOList = rtIssueService.getRtIssueList(usedRtIssue);
+
+            BigDecimal totalReturned = BigDecimal.ZERO;
+            for (RtIssueDO rtIssue : usedRtIssueDOList) {
+                RtIssueLineExportReqVO usedLineExportReqVO = new RtIssueLineExportReqVO();
+                usedLineExportReqVO.setItemCode(sampleLine.getItemCode());
+                // usedLineExportReqVO.setBatchCode(sampleLine.getBatchCode());
+                usedLineExportReqVO.setRtId(rtIssue.getId());
+                usedLineExportReqVO.setSequence(sampleLine.getSequence());
+                usedLineExportReqVO.setSequenceOrder(sampleLine.getSequenceOrder());
+                List<RtIssueLineDO> rtIssueLine = rtIssueLineService.getRtIssueLineList(usedLineExportReqVO) == null ? new ArrayList<>() : rtIssueLineService.getRtIssueLineList(usedLineExportReqVO);
+
+                if (!rtIssueLine.isEmpty()) {
+                    for (RtIssueLineDO rt : rtIssueLine) {
+                        totalReturned = totalReturned.add(rt.getQuantityRt());
+                    }
+                }
+            }
+
+            // 计算当前待退总量
+            BigDecimal currentTotal = BigDecimal.ZERO;
+            for (IssueLineDO line : lines) {
+                currentTotal = currentTotal.add(line.getQuantityIssued());
+            }
+
+            // 计算可退量分配
+            BigDecimal remaining = bomQty.subtract(totalReturned);
+            BigDecimal y01Qty = BigDecimal.ZERO;
+            BigDecimal y02Qty = BigDecimal.ZERO;
+
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+                // 全部超退
+                y02Qty = currentTotal;
+            } else if (currentTotal.compareTo(remaining) <= 0) {
+                // 全部正常退
+                y01Qty = currentTotal;
+            } else {
+                // 拆分退料
+                y01Qty = remaining;
+                y02Qty = currentTotal.subtract(remaining);
+            }
+
+            // 生成H01报文
+            if (y01Qty.compareTo(BigDecimal.ZERO) > 0) {
+                Map<String, Object> item = buildErpItem(headerDO, sampleLine, "Y01", y01Qty);
+                if (item != null) {
+                    list.add(item);
+                }
+            }
+
+            if (y02Qty.compareTo(BigDecimal.ZERO) > 0) {
+                Map<String, Object> item = buildErpItem(headerDO, sampleLine, "Y02", y02Qty);
+                if (item != null) {
+                    list.add(item);
+                }
+            }
+        }
+        // 按退料类型分组调用
+        Map<String, List<Map<String, Object>>> typeGroups = list.stream()
+                .collect(Collectors.groupingBy(item -> (String) item.get("sfdc015")));
+        // 执行分组调用
+        for (Map.Entry<String, List<Map<String, Object>>> entry : typeGroups.entrySet()) {
+            String type = entry.getKey();
+            List<Map<String, Object>> items = entry.getValue();
+            Map<String, Object> erpParams = new HashMap<>();
+            erpParams.put("goodsList", items);
+            erpParams.put("sfda002", "21");
+            erpParams.put("source_no", headerDO.getIssueCode());
+            /*if (!items.isEmpty()) {
+                String erpResult = workorderERPAPI.workOrderIssueCreate(erpParams);
+                if (!erpResult.contains("SUCCESS")) {
+                    return error(ErrorCodeConstants.RT_ISSUE_ERR_INTERFACE_ERROR);
+                }
             }*/
         }
+        System.out.println(typeGroups.entrySet());
+        // 开始追加生产退料单信息 - 后续用于统计已退料总数, 判定是否超退
+        RtIssueCreateReqVO rtIssueCreateReqVO = new RtIssueCreateReqVO();
+        rtIssueCreateReqVO.setTaskCode(headerDO.getTaskCode());
+        rtIssueCreateReqVO.setWorkorderCode(headerDO.getWorkorderCode());
+        rtIssueCreateReqVO.setWorkorderId(headerDO.getWorkorderId());
+
+        // 退料仓库默认为当前领料仓库
+        rtIssueCreateReqVO.setWarehouseId(headerDO.getWarehouseId());
+        rtIssueCreateReqVO.setWarehouseCode(headerDO.getWarehouseCode());
+        rtIssueCreateReqVO.setWarehouseName(headerDO.getWarehouseName());
+        rtIssueCreateReqVO.setLocationId(headerDO.getLocationId());
+        rtIssueCreateReqVO.setLocationCode(headerDO.getLocationCode());
+        rtIssueCreateReqVO.setLocationName(headerDO.getLocationName());
+        rtIssueCreateReqVO.setAreaId(headerDO.getAreaId());
+        rtIssueCreateReqVO.setAreaCode(headerDO.getAreaCode());
+        rtIssueCreateReqVO.setAreaName(headerDO.getAreaName());
+        rtIssueCreateReqVO.setStatus("FINISHED"); // ERP回传成功后转为已完成
+        Random random = new Random();
+        int randomNum = random.nextInt(900) + 100;
+        // 为避免与正常退料重复, 此处使用CX(撤销)作为开头, 以随机数结尾
+        rtIssueCreateReqVO.setRtCode("CX" + DateUtil.format(new Date(), "yyyyMMdd") + randomNum);
+        Long rtIssueHeaderId = rtIssueService.createRtIssue(rtIssueCreateReqVO);
+        List<RtIssueLineDO> rtIssueList = new ArrayList<>();
+
+        // 获取对应的上料详情
+        for (IssueLineDO issueLine : lineList) {
+            FeedLineExportReqVO feedLineExportReqVO = new FeedLineExportReqVO();
+            feedLineExportReqVO.setIssueId(issueLine.getIssueId());
+            feedLineExportReqVO.setItemCode(issueLine.getItemCode());
+            feedLineExportReqVO.setBatchCode(issueLine.getBatchCode());
+            feedLineExportReqVO.setBarcodeNumber(issueLine.getBarcodeNumber());
+            FeedLineDO feedLineDO = feedLineService.getFeedLineList(feedLineExportReqVO).get(0) == null ? null: feedLineService.getFeedLineList(feedLineExportReqVO).get(0);
+            if (feedLineDO == null) {
+                continue; // 若用户勾选到未上料单据直接略过
+            }
+            // 开始追加退料单身信息
+            RtIssueLineDO rtIssueLineCreateReqVO = new RtIssueLineDO();
+            rtIssueLineCreateReqVO.setRtId(rtIssueHeaderId);
+            rtIssueLineCreateReqVO.setItemCode(feedLineDO.getItemCode());
+            rtIssueLineCreateReqVO.setItemName(feedLineDO.getItemName());
+            rtIssueLineCreateReqVO.setItemId(feedLineDO.getItemId());
+            rtIssueLineCreateReqVO.setSpecification(feedLineDO.getSpecification());
+            rtIssueLineCreateReqVO.setUnitOfMeasure(feedLineDO.getUnitOfMeasure());
+            rtIssueLineCreateReqVO.setSequence(feedLineDO.getSequence());
+            rtIssueLineCreateReqVO.setSequenceOrder(feedLineDO.getSequenceOrder());
+            rtIssueLineCreateReqVO.setBatchCode(feedLineDO.getBatchCode());
+            // 追加库存
+            rtIssueLineCreateReqVO.setWarehouseId(feedLineDO.getWarehouseId());
+            rtIssueLineCreateReqVO.setWarehouseCode(feedLineDO.getWarehouseCode());
+            rtIssueLineCreateReqVO.setWarehouseName(feedLineDO.getWarehouseName());
+            rtIssueLineCreateReqVO.setLocationId(feedLineDO.getLocationId());
+            rtIssueLineCreateReqVO.setLocationCode(feedLineDO.getLocationCode());
+            rtIssueLineCreateReqVO.setLocationName(feedLineDO.getLocationName());
+            rtIssueLineCreateReqVO.setAreaId(feedLineDO.getAreaId());
+            rtIssueLineCreateReqVO.setAreaCode(feedLineDO.getAreaCode());
+            rtIssueLineCreateReqVO.setAreaName(feedLineDO.getAreaName());
+            BigDecimal rtQuantity = new BigDecimal(feedLineDO.getQuantity());
+            rtIssueLineCreateReqVO.setQuantityRt(rtQuantity);
+            rtIssueList.add(rtIssueLineCreateReqVO);
+        }
+        rtIssueLineService.insertRtIssueLineBatch(rtIssueList);
 
         for (IssueLineDO line : lineList) {
             // 获取上料记录信息
@@ -402,9 +569,7 @@ public class IssueLineController {
             transaction_out.setSourceDocCode(headerDO.getIssueCode());
             transaction_out.setSourceDocId(headerDO.getId());
             transaction_out.setSourceDocLineId(line.getId());
-
             transactionService.processTransaction(transaction_out);
-
             //再构造一条目的库存增加的事务
             TransactionUpdateReqVO transaction_in = new TransactionUpdateReqVO();
             BeanUtils.copyBeanProp(transaction_in, feedLine);
@@ -416,13 +581,11 @@ public class IssueLineController {
             transaction_in.setSourceDocCode(headerDO.getIssueCode());
             transaction_in.setSourceDocId(headerDO.getId());
             transaction_in.setSourceDocLineId(line.getId());
-
             //使用出库事务的供应商初始化入库事务的供应商
             transaction_in.setVendorId(transaction_out.getVendorId());
             transaction_in.setVendorCode(transaction_out.getVendorCode());
             transaction_in.setVendorName(transaction_out.getVendorName());
             transaction_in.setVendorNick(transaction_out.getVendorNick());
-
             //这里使用上料记录的线边库初始化对应的入库仓库、库区、库位
             WarehouseDO warehouse = warehouseService.selectWmWarehouseByWarehouseCode(feedLine.getWarehouseCode());
             transaction_in.setWarehouseId(warehouse.getId());
@@ -432,12 +595,11 @@ public class IssueLineController {
             transaction_in.setLocationId(location.getId());
             transaction_in.setLocationCode(location.getLocationCode());
             transaction_in.setLocationName(location.getLocationName());
-
             StorageAreaExportReqVO areaExportReqVO = new StorageAreaExportReqVO();
             areaExportReqVO.setLocationId(location.getId());
             areaExportReqVO.setAreaCode(feedLine.getAreaCode());
             StorageAreaDO area = storageAreaService.getStorageAreaList(areaExportReqVO).get(0) == null ? null : storageAreaService.getStorageAreaList(areaExportReqVO).get(0);
-            if(area != null){
+            if (area != null) {
                 transaction_in.setAreaId(area.getId());
                 transaction_in.setAreaCode(area.getAreaCode());
                 transaction_in.setAreaName(area.getAreaName());
@@ -446,13 +608,65 @@ public class IssueLineController {
             transaction_in.setRelatedTransactionId(transaction_out.getId());
             transactionService.processTransaction(transaction_in);
 
-            // 移除上料记录
-            feedLineService.deleteFeedLine(feedLine.getId());
             // 修改领料单行状态
             line.setStatus("N");
+            line.setWarehouseId(feedLine.getWarehouseId());
+            line.setWarehouseCode(feedLine.getWarehouseCode());
+            line.setWarehouseName(feedLine.getWarehouseName());
+            line.setLocationId(feedLine.getLocationId());
+            line.setLocationCode(feedLine.getLocationCode());
+            line.setLocationName(feedLine.getLocationName());
+            line.setAreaId(feedLine.getAreaId());
+            line.setAreaCode(feedLine.getAreaCode());
+            line.setAreaName(feedLine.getAreaName());
             issueLineService.updateIssueLine(IssueLineConvert.INSTANCE.convert01(line));
+
+            // 移除上料记录
+            feedLineService.deleteFeedLine(feedLine.getId());
         }
         return success(true);
+    }
+
+    private Map<String, Object> buildErpItem(IssueHeaderDO header, IssueLineDO line,
+                                             String reasonCode, BigDecimal qty) {
+
+        // 前置校验批次号
+        String batchCode;
+        MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
+        exportReqVO.setItemCode(line.getItemCode());
+        exportReqVO.setBatchCode(line.getBatchCode());
+        exportReqVO.setRecptStatus("Y");
+        MaterialStockDO stockDO = materialStockService.getMaterialStockList(exportReqVO) == null ? null : materialStockService.getMaterialStockList(exportReqVO).get(0);
+        if(stockDO==null){
+            return null;
+        }
+
+        if (stockDO.getCreateTime().isBefore(BATCH_CODE_SWITCH_DATE.atStartOfDay())) {
+            batchCode = stockDO.getErpBatchCode();
+            // 关键校验：当需要erpBatchCode但为空时返回null
+            if (StringUtils.isBlank(batchCode)) {
+                System.out.println("ERP批次号缺失 | 要撤销的领料单行ID：" +  line.getId());
+                return null;
+            }
+        } else {
+            batchCode = line.getBatchCode();
+            if (StringUtils.isBlank(batchCode)) {
+                System.out.println("批次号缺失 | 要撤销的领料单行ID：" +  line.getId());
+                return null;
+            }
+        }
+
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("sfdc001", header.getWorkorderCode()); // 工单号
+        item.put("sfdc002", line.getSequence()); // 项次
+        item.put("sfdc003", line.getSequenceOrder()); // 项序
+        item.put("sfdc007", qty.setScale(4, RoundingMode.HALF_UP)); // 撤销数量
+        item.put("sfdc012", header.getLocationCode()); // 库区
+        item.put("sfdc013", header.getAreaCode()); // 库位
+        item.put("sfdc014", batchCode); // 批次
+        item.put("sfdc015", reasonCode); // 理由码
+        item.put("sfdc016", ""); // 库存管理特征
+        return item;
     }
 
 

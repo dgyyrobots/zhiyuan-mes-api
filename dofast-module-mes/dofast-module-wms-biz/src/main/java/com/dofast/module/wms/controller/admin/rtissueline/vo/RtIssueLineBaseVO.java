@@ -95,4 +95,7 @@ public class RtIssueLineBaseVO {
     @Schema(description = "ERP项次")
     private Long sequenceOrder;
 
+    @Schema(description = "ERP批次")
+    private String erpBatchCode;
+
 }

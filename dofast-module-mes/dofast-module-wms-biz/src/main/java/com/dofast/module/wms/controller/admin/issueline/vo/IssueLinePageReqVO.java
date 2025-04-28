@@ -123,5 +123,10 @@ public class IssueLinePageReqVO extends PageParam {
     @Schema(description = "ERP项次")
     private Long sequenceOrder;
 
+    @Schema(description = "ERP批次")
+    private String erpBatchCode;
+
+    @Schema(description = "ERP调用标识")
+    private String erpEnable;
 
 }

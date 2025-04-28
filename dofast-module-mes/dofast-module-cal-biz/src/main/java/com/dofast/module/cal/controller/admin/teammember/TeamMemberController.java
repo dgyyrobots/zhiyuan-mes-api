@@ -1,8 +1,11 @@
 package com.dofast.module.cal.controller.admin.teammember;
 
 import com.dofast.framework.common.util.bean.BeanUtils;
+import com.dofast.framework.web.core.util.WebFrameworkUtils;
 import com.dofast.module.cal.dal.dataobject.team.TeamDO;
 import com.dofast.module.cal.service.team.TeamService;
+import com.dofast.module.system.api.user.AdminUserApi;
+import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -39,6 +42,9 @@ public class TeamMemberController {
 
     @Resource
     private TeamMemberService teamMemberService;
+
+    @Resource
+    private AdminUserApi adminUserApi;
 
     @Resource
     private TeamService teamSerice;
@@ -113,6 +119,9 @@ public class TeamMemberController {
         List<TeamMemberDO> teamMember = teamMemberService.getTeamMemberList(exportReqVO);
         List<Map<String, Object>> result = new ArrayList<>();
         for (TeamMemberDO member : teamMember) {
+            // 追加当前的岗位信息
+            AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(member.getUserId());
+            Set<Long> postIds = adminUserRespDTO.getPostIds();
             Map<String, Object> map = new HashMap<>();
             BeanUtils.copyProperties(member, map);
             map.put("teamId", member.getTeamId());
@@ -122,6 +131,7 @@ public class TeamMemberController {
             map.put("id",member.getId());
             map.put("principalId", team.getPrincipalId());
             map.put("principalName", team.getPrincipalName());
+            map.put("postIds" , postIds);
             result.add(map);
         }
         return success(result);
