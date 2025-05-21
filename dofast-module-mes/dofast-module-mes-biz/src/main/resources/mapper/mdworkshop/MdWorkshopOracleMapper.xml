@@ -12,10 +12,27 @@
     <select id="initWorkShop" parameterType="java.lang.String" resultType="java.util.HashMap">
         -- 获取所有车间信息
         -- 生成的ID后续要丢给工作站信息做绑定
-        select distinct a.OOEF001 AS WORKSHOPCODE , B.OOEFL003 AS WORKSHOPNAME , a.OOEFSTUS AS DELETED from DSDATA.OOEF_T a
-            left join DSDATA.OOEFL_T b on a.OOEF001 = B.OOEFL001
-            where b.ooefl002 = 'zh_CN' and b.OOEFL003 LIKE '%澳美-生产车间%' AND a.ooefent = #{erpCode} and a.OOEFSTUS = 'Y'
-    </select>
+        SELECT
+            a.ECAA003 AS WORKSHOPCODE,
+            MAX(DP.OOEFL003) AS WORKSHOPNAME,
+			MAX(a.ecaastus) AS DELETED
+        FROM
+            DSDATA.ECAA_T a
+                LEFT JOIN DSDATA.ECAAL_T l ON a.ECAA001 = l.ECAAL001
+                AND a.ECAAENT = l.ECAALENT
+                AND a.ECAASITE = l.ECAALSITE
+                LEFT JOIN DSDATA.OOEFL_T dp ON a.ECAAENT = dp.OOEFLENT
+                AND a.ECAA003 = DP.OOEFL001
+                AND l.ECAAL002 = dp.OOEFL002
+        WHERE
+            a.ECAAENT = #{erpCode}
+          AND a.ECAASITE = 'ZY01'
+          AND l.ECAAL002 = 'zh_CN'
+				GROUP BY a.ECAA003
+</select>
+<!--        select distinct a.OOEF001 AS WORKSHOPCODE , B.OOEFL003 AS WORKSHOPNAME , a.OOEFSTUS AS DELETED from DSDATA.OOEF_T a-->
+<!--            left join DSDATA.OOEFL_T b on a.OOEF001 = B.OOEFL001-->
+<!--            where b.ooefl002 = 'zh_CN' and b.OOEFL003 LIKE '%澳美-生产车间%' AND a.ooefent = #{erpCode} and a.OOEFSTUS = 'Y'-->
 
 
 </mapper>

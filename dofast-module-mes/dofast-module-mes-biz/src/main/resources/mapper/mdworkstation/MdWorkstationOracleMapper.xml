@@ -8,17 +8,28 @@
         代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
-
     <select id="initWorkstation" parameterType="java.lang.String" resultType="java.util.HashMap">
-        -- 获取所有工作站信息
-        -- 包含车间绑定信息
-        select distinct a.ecaa001 as WORKSTATIONCODE , a.ecaa002 as WORKSTATIONNAME ,a.ecaa003 as WORKSHOPCODE, d.ooefl003 as WORKSHOPNAME,
-                        DECODE(a.ecaa003, '0030050301', 15, '0030050304', 16, '0030050305', 17, '0030050306', 18 , '0030050302', 19 , '00300503', 20 , '0030050303', 21, '0030050399', 22) as WORKSHOPID ,
-                        a.ecaastus as DELETED from DSDATA.ECAA_T a
-                                                       left join DSDATA.ECAAL_T b on a.ecaa001 = b.ECAAL001 and a.ECAAENT = b.ECAALENT and a.ECAASITE = b.ECAALSITE
-                                                       left join DSDATA.OOEF_T c on a.ecaa003 = c.ooef001
-                                                       left join DSDATA.OOEFL_T d on a.ecaa003 = d.ooefl001 and c.ooef001 = d.ooefl001
-        WHERE A.ECAAENT = #{erpCode} AND A.ECAASITE = 'AM01' AND b.ecaal002 = 'zh_CN' and ooefl002 = 'zh_CN' and a.ecaastus = 'Y'
+    SELECT DISTINCT
+	a.ecaa001 AS WORKSTATIONCODE,
+	b.ecaal003 AS WORKSTATIONNAME,
+	a.ecaa003 AS WORKSHOPCODE,
+	d.ooefl003 AS WORKSHOPNAME,
+	a.ecaa003 AS WORKSHOPID,
+	a.ecaastus AS DELETED
+FROM
+	DSDATA.ECAA_T a
+	LEFT JOIN DSDATA.ECAAL_T b ON a.ecaa001 = b.ECAAL001
+	AND a.ECAAENT = b.ECAALENT
+	AND a.ECAASITE = b.ECAALSITE
+	LEFT JOIN DSDATA.OOEF_T c ON a.ecaa003 = c.ooef001
+	LEFT JOIN DSDATA.OOEFL_T d ON a.ecaa003 = d.ooefl001
+	AND c.ooef001 = d.ooefl001
+WHERE
+	A.ECAAENT = #{erpCode}
+	AND A.ECAASITE = 'ZY01'
+	AND b.ecaal002 = 'zh_CN'
+	AND ooefl002 = 'zh_CN'
+	AND a.ecaastus = 'Y'
     </select>
 
 </mapper>

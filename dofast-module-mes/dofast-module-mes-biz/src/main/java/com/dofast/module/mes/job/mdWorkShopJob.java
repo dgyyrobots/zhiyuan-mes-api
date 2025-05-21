@@ -93,15 +93,18 @@ public class mdWorkShopJob implements JobHandler {
         for (Map<String, Object> workstation : workstationList) {
             // 判定MES中是否存在工作站信息
             String workstationCode = (String) workstation.get("WORKSTATIONCODE");
+            String workshopCode = (String) workstation.get("WORKSHOPCODE");
             MdWorkstationDO exist = mdWorkstationMapper.selectOne(MdWorkstationDO::getWorkstationCode, workstationCode);
+            MdWorkshopDO workshop = mdWorkshopmapper.selectOne(MdWorkshopDO::getWorkshopCode, workshopCode);
             if (exist == null) {
                 // 若不存在, 则新增
                 MdWorkstationDO addWorkstation = new MdWorkstationDO();
                 addWorkstation.setWorkstationCode(workstationCode);
                 addWorkstation.setWorkstationName((String) workstation.get("WORKSTATIONNAME"));
                 //addWorkstation.setWorkshopId((Long) workstation.get("WORKSHOPID"));
-                BigDecimal workshopId = (BigDecimal)workstation.get("WORKSHOPID");// 车间ID
-                addWorkstation.setWorkshopId(workshopId.longValue());
+//                BigDecimal workshopId = (BigDecimal)workstation.get("WORKSHOPID");// 车间ID
+//                addWorkstation.setWorkshopId(workshopId.longValue());
+                addWorkstation.setWorkshopId(workshop.getId());
                 addWorkstation.setWorkshopCode((String) workstation.get("WORKSHOPCODE"));
                 addWorkstation.setWorkshopName((String) workstation.get("WORKSHOPNAME"));
                 addWorkstation.setDeleted(!"Y".equals(workstation.get("DELETED"))); // 是否删除
@@ -111,8 +114,9 @@ public class mdWorkShopJob implements JobHandler {
                 exist.setWorkstationCode(workstationCode);
                 exist.setWorkstationName((String) workstation.get("WORKSTATIONNAME"));
                 // exist.setWorkshopId((Long) workstation.get("WORKSHOPID")); // 车间ID
-                BigDecimal workshopId = (BigDecimal)workstation.get("WORKSHOPID");// 车间ID
-                exist.setWorkshopId(workshopId.longValue());
+//                BigDecimal workshopId = (BigDecimal)workstation.get("WORKSHOPID");// 车间ID
+//                exist.setWorkshopId(workshopId.longValue());
+                exist.setWorkshopId(workshop.getId());
                 exist.setWorkshopCode((String) workstation.get("WORKSHOPCODE"));
                 exist.setWorkshopName((String) workstation.get("WORKSHOPNAME"));
                 exist.setDeleted(!"Y".equals(workstation.get("DELETED"))); // 是否删除
