@@ -45,39 +45,39 @@ spring:
       datasource:
         master:
           name: ruoyi-vue-pro
-          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
-          #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
-          #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://172.16.12.101:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+            #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+            #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
             #          url: jdbc:mysql://127.0.0.1:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT # MySQL Connector/J 5.X 连接的示例
             #          url: jdbc:postgresql://127.0.0.1:5432/${spring.datasource.dynamic.datasource.slave.name} # PostgreSQL 连接的示例
-            #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
+          #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
           #          url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=${spring.datasource.dynamic.datasource.master.name} # SQLServer 连接的示例
           driver-class-name: com.mysql.cj.jdbc.Driver
           username: root
-          #password: Aa123123!@#
-          password: root
+          password: Aa123123!@#
+          #password: root
           validation-query: SELECT 1 # 配置检测连接是否有效
           #username: root
           #          username: sa
           #          password: JSm:g(*%lU4ZAkz06cd52KqT3)i1?H7W
         slave: # 模拟从库，可根据自己需要修改 1.117.176.203:9936
           name: ruoyi-vue-pro
-          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
-          #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
-          #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          url: jdbc:mysql://172.16.12.101:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+            #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+            #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
             #          url: jdbc:mysql://127.0.0.1:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT # MySQL Connector/J 5.X 连接的示例
             #          url: jdbc:postgresql://127.0.0.1:5432/${spring.datasource.dynamic.datasource.slave.name} # PostgreSQL 连接的示例
-           #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
+          #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
           #          url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=${spring.datasource.dynamic.datasource.master.name} # SQLServer 连接的示例
           driver-class-name: com.mysql.cj.jdbc.Driver
           username: root
-          password: root
-          #password: Aa123123!@#
+          #password: root
+          password: Aa123123!@#
           validation-query: SELECT 1 # 配置检测连接是否有效
         oracle: # 添加Oracle数据库配置
           name: oracle_db
           url: jdbc:oracle:thin:@//192.168.127.7:1521/TOPPRD # ERP正式库
-          #url: jdbc:oracle:thin:@//192.168.127.7:1521/TOPTST # ERP测试库
+#          url: jdbc:oracle:thin:@//192.168.127.7:1521/TOPTST # ERP测试库
           driver-class-name: oracle.jdbc.driver.OracleDriver
           username: amuser
           password: am123456
@@ -87,10 +87,11 @@ spring:
 
   # Redis 配置。Redisson 默认的配置足够使用，一般不需要进行调优
   redis:
-    host: 172.18.12.250
-    port: 16379
+    # host: 172.18.12.250
+    host: 172.16.12.101
+    #port: 16379
     #host: 127.0.0.1
-    #port: 6379 # 端口
+    port: 6379 # 端口
 
     database: 8 # 数据库索引
 #    password: 123456 # 密码，建议生产环境开启
@@ -229,8 +230,8 @@ wx:
     useRedis: false
     defaultContent: \u60A8\u597D\uFF0C\u6709\u4EC0\u4E48\u95EE\u9898\uFF1F
     redisConfig:
-      #host: 127.0.0.1
-      host: 172.18.12.250
+      host: 172.16.12.101
+      #host: 172.18.12.250
       port: 16379
       #port: 6379
       password:
@@ -248,12 +249,12 @@ kdniao:
 
 # minio 文件存储配置信息
 minio:
-  endpoint: http://172.18.12.250:9000
-  accessKey: admin
-  secretKey: admin123
+  endpoint: http://172.16.12.101:9000
+  #accessKey: admin
+  #secretKey: admin123
   #endpoint: http://127.0.0.1:9000
-  #accessKey: minioadmin
-  #secretKey: minioadmin
+  accessKey: minioadmin
+  secretKey: minioadmin
   bucketName: ammes
 
 

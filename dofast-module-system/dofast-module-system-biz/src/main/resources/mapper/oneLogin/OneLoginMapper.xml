@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.system.oneLogin.mapper.OneLoginMapper">
+    <resultMap type="com.dofast.module.system.oneLogin.domain.InitLoginVo" id="gjMap">
+        <result column="dept_name" property="deptName"/>
+        <result column="sys_name" property="sysName"/>
+        <result column="sys_log_url" property="sysLogUrl"/>
+        <result column="sys_url" property="sysUrl"/>
+        <result column="sys_url_net" property="sysUrlNet"/>
+        <result column="user_name" property="userName"/>
+        <result column="password" property="password"/>
+        <result column="sys_id" property="sysId"/>
+    </resultMap>
+
+    <select id="initOneLogin" resultMap="gjMap">
+        <!--select t1.user_name, t1.password, t1.sys_id,t2.*
+        from t_dj001 t1,
+        t_dj002 t2
+        <where>
+            t1.sys_id = t2.id
+            and t1.tenant_id = #{param1,jdbcType=VARCHAR}
+            and t2.tenant_id = #{param1,jdbcType=VARCHAR}
+        </where>-->
+        select t1.*,t3.user_name,t3.PASSWORD,t3.sys_id
+        from t_dj002 t1,
+        system_users t2,
+        t_dj001 t3
+        where t1.tenant_id = t2.tenant_id
+        and t1.id = t3.sys_id
+        and t1.tenant_id = t3.tenant_id
+        and t2.tenant_id = t3.tenant_id
+        and t2.id = t3.user_id
+        and t2.id = #{userId,jdbcType=VARCHAR}
+        and t2.tenant_id = #{tenantId,jdbcType=VARCHAR}
+    </select>
+
+    <update id="register">
+        UPDATE t_dj001 t
+        SET t.user_name = #{param2,jdbcType=VARCHAR},
+            t.PASSWORD  = #{param3,jdbcType=VARCHAR}
+        WHERE t.user_id = #{param1,jdbcType=VARCHAR}
+          AND t.sys_id = #{param4,jdbcType=VARCHAR}
+          AND t.tenant_id = #{param5,jdbcType=VARCHAR}
+    </update>
+
+    <select id="getLoginAddress" resultType="java.lang.String">
+        select
+        <if test="net == '内网' || net == ''">
+            sys_url
+        </if>
+        <if test="net == '外网'">
+            sys_url_net
+        </if>
+        from t_dj002 where tenant_id = #{tenantId,jdbcType=VARCHAR} and sys_name = #{sysName,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getTenantNameByTenantId" resultType="java.lang.String">
+        select name
+        from system_tenant
+        where id = #{tenantId,jdbcType=VARCHAR}
+    </select>
+
+    <update id="updateDj002Net">
+        update t_dj002
+        set sys_url     = #{sysUrl,jdbcType=VARCHAR},
+            sys_url_net = #{sysUrlNet,jdbcType=VARCHAR},
+            sys_log_url = #{sysLogUrl,jdbcType=VARCHAR},
+            update_time = sysdate(),
+            update_user = #{updater,jdbcType=VARCHAR},
+            updater     = #{updater,jdbcType=VARCHAR},
+            pg          = 'dj002'
+        where sys_name = #{sysName,jdbcType=VARCHAR}
+    </update>
+</mapper>

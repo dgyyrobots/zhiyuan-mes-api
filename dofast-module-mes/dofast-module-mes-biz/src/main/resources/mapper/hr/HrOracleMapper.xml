@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dofast.module.mes.dal.oracle.HrOracleMapper">
+
+    <!--
+        一般情况下，尽可能使用 Mapper 进行 CRUD 增删改查即可。
+        无法满足的场景，例如说多表关联查询，才使用 XML 编写 SQL。
+        代码生成器暂时只生成 Mapper XML 文件本身，更多推荐 MybatisX 快速开发插件来生成查询。
+        文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
+     -->
+
+
+    <select id="selectHrList" resultType="com.dofast.module.mes.dal.dataobject.oracle.oracle.HrDTO">
+        SELECT ooag011               name,
+               gzxc001               userName,
+               ooag003               deptNo,
+               ooefl003              deptName,
+               ooag004               judian,
+               listagg(gzxc004, '-') within GROUP ( ORDER BY gzxc004 ) judianQx
+        FROM DSDATA.ooag_t, DSDATA.ooefl_t, ( SELECT DISTINCT gzxc001, gzxc004, gzxcent, gzxcstus FROM DSDATA.gzxc_t WHERE gzxcent = 100 AND gzxc002 = 1 ) gzxc_t
+        WHERE ooagent = ooeflent
+          AND ooag003 = ooefl001
+          AND gzxcent = ooagent
+          AND gzxc001 = ooag001
+          AND ooefl002 = 'zh_CN'
+          AND ooagent = 100
+          AND gzxcstus = 'Y'
+        GROUP BY gzxc001, ooag011, ooag003, ooag004, ooefl003
+        ORDER BY gzxc001
+    </select>
+</mapper>

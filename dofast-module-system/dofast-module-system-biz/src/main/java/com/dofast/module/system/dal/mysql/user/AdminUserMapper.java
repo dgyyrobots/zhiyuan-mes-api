@@ -1,8 +1,10 @@
 package com.dofast.module.system.dal.mysql.user;
 
+import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.dofast.framework.tenant.core.aop.TenantIgnore;
 import com.dofast.framework.tenant.core.db.TenantBaseDO;
 import com.dofast.module.system.controller.admin.auth.vo.AuthNewLoginReqVO;
 import com.dofast.module.system.controller.admin.user.vo.user.UserExportReqVO;
